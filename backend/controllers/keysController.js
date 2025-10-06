@@ -4,48 +4,26 @@ import { testPineconeConnection, testGeminiConnection } from '../services/apiTes
 
 /**
  * @route   POST /api/keys/add
- * @desc    Add or update user's API keys
+ * @desc    Add or update user's global Gemini API key
  */
 export const addKeys = async (req, res) => {
   try {
     const userId = req.user.uid;
-    const {
-      pineconeKey,
-      pineconeEnvironment,
-      pineconeIndexName,
-      geminiKey,
-    } = req.body;
+    const { geminiKey } = req.body;
 
-    // Validate that at least one key is provided
-    if (!pineconeKey && !geminiKey) {
+    // Validate that Gemini key is provided
+    if (!geminiKey) {
       return res.status(400).json({
         success: false,
-        error: 'Please provide at least one API key (Pinecone or Gemini)',
+        error: 'Please provide your Gemini API key',
       });
     }
 
     // Prepare update data
-    const updateData = {};
-
-    // Encrypt and add Pinecone keys if provided
-    if (pineconeKey) {
-      if (!pineconeEnvironment || !pineconeIndexName) {
-        return res.status(400).json({
-          success: false,
-          error: 'Pinecone environment and index name are required',
-        });
-      }
-      updateData.pineconeKey = encrypt(pineconeKey);
-      updateData.pineconeEnvironment = pineconeEnvironment;
-      updateData.pineconeIndexName = pineconeIndexName;
-      updateData.pineconeVerified = false; // Reset verification status
-    }
-
-    // Encrypt and add Gemini key if provided
-    if (geminiKey) {
-      updateData.geminiKey = encrypt(geminiKey);
-      updateData.geminiVerified = false; // Reset verification status
-    }
+    const updateData = {
+      geminiKey: encrypt(geminiKey),
+      geminiVerified: false, // Reset verification status
+    };
 
     // Update or create API keys document
     const apiKeys = await ApiKey.findOneAndUpdate(
@@ -56,26 +34,24 @@ export const addKeys = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: 'API keys saved successfully',
+      message: 'Global Gemini API key saved successfully',
       data: {
-        hasPineconeKey: !!apiKeys.pineconeKey,
         hasGeminiKey: !!apiKeys.geminiKey,
-        pineconeVerified: apiKeys.pineconeVerified,
         geminiVerified: apiKeys.geminiVerified,
       },
     });
   } catch (error) {
-    console.error('Error saving API keys:', error);
+    console.error('Error saving API key:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to save API keys',
+      error: 'Failed to save API key',
     });
   }
 };
 
 /**
  * @route   GET /api/keys
- * @desc    Get user's API keys status (not the actual keys)
+ * @desc    Get user's global Gemini API key status
  */
 export const getKeys = async (req, res) => {
   try {
@@ -84,20 +60,22 @@ export const getKeys = async (req, res) => {
     const apiKeys = await ApiKey.findOne({ userId });
 
     if (!apiKeys) {
-      return res.status(404).json({
-        success: false,
-        error: 'No API keys found for this user',
+      return res.status(200).json({
+        success: true,
+        data: {
+          hasKeys: false,
+          hasGeminiKey: false,
+          geminiVerified: false,
+          lastVerified: null,
+        },
       });
     }
 
     res.status(200).json({
       success: true,
       data: {
-        hasPineconeKey: !!apiKeys.pineconeKey,
+        hasKeys: !!apiKeys.geminiKey,
         hasGeminiKey: !!apiKeys.geminiKey,
-        pineconeEnvironment: apiKeys.pineconeEnvironment || null,
-        pineconeIndexName: apiKeys.pineconeIndexName || null,
-        pineconeVerified: apiKeys.pineconeVerified,
         geminiVerified: apiKeys.geminiVerified,
         lastVerified: apiKeys.lastVerified || null,
         updatedAt: apiKeys.updatedAt,
@@ -114,7 +92,7 @@ export const getKeys = async (req, res) => {
 
 /**
  * @route   POST /api/keys/test
- * @desc    Test connection to Pinecone and Gemini
+ * @desc    Test connection to Gemini
  */
 export const testConnection = async (req, res) => {
   try {
@@ -122,75 +100,42 @@ export const testConnection = async (req, res) => {
 
     const apiKeys = await ApiKey.findOne({ userId });
 
-    if (!apiKeys) {
+    if (!apiKeys || !apiKeys.geminiKey) {
       return res.status(404).json({
         success: false,
-        error: 'No API keys found. Please add your keys first.',
+        error: 'No Gemini API key found. Please add your key first.',
       });
     }
 
     const results = {
-      pinecone: { success: false, message: '' },
       gemini: { success: false, message: '' },
     };
 
-    // Test Pinecone connection
-    if (apiKeys.pineconeKey) {
-      try {
-        const decryptedPineconeKey = decrypt(apiKeys.pineconeKey);
-        const pineconeResult = await testPineconeConnection(
-          decryptedPineconeKey,
-          apiKeys.pineconeEnvironment,
-          apiKeys.pineconeIndexName
-        );
-        results.pinecone = pineconeResult;
-        
-        // Update verification status
-        apiKeys.pineconeVerified = pineconeResult.success;
-      } catch (error) {
-        results.pinecone = {
-          success: false,
-          message: error.message,
-        };
-        apiKeys.pineconeVerified = false;
-      }
-    } else {
-      results.pinecone.message = 'No Pinecone key configured';
-    }
-
     // Test Gemini connection
-    if (apiKeys.geminiKey) {
-      try {
-        const decryptedGeminiKey = decrypt(apiKeys.geminiKey);
-        const geminiResult = await testGeminiConnection(decryptedGeminiKey);
-        results.gemini = geminiResult;
-        
-        // Update verification status
-        apiKeys.geminiVerified = geminiResult.success;
-      } catch (error) {
-        results.gemini = {
-          success: false,
-          message: error.message,
-        };
-        apiKeys.geminiVerified = false;
-      }
-    } else {
-      results.gemini.message = 'No Gemini key configured';
+    try {
+      const decryptedGeminiKey = decrypt(apiKeys.geminiKey);
+      const geminiResult = await testGeminiConnection(decryptedGeminiKey);
+      results.gemini = geminiResult;
+      
+      // Update verification status
+      apiKeys.geminiVerified = geminiResult.success;
+    } catch (error) {
+      results.gemini = {
+        success: false,
+        message: error.message,
+      };
+      apiKeys.geminiVerified = false;
     }
 
     // Update last verified timestamp
     apiKeys.lastVerified = new Date();
     await apiKeys.save();
 
-    const overallSuccess = 
-      (apiKeys.pineconeKey ? results.pinecone.success : true) &&
-      (apiKeys.geminiKey ? results.gemini.success : true);
-
     res.status(200).json({
-      success: overallSuccess,
-      message: overallSuccess 
-        ? 'All configured API connections successful' 
-        : 'Some API connections failed',
+      success: results.gemini.success,
+      message: results.gemini.success 
+        ? 'Gemini API connection successful' 
+        : 'Gemini API connection failed',
       data: results,
     });
   } catch (error) {

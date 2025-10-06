@@ -6,29 +6,13 @@ const apiKeySchema = new mongoose.Schema(
       type: String, // Firebase UID
       required: true,
     },
-    // Pinecone credentials (encrypted)
-    pineconeKey: {
-      type: String,
-      required: false,
-    },
-    pineconeEnvironment: {
-      type: String,
-      required: false,
-    },
-    pineconeIndexName: {
-      type: String,
-      required: false,
-    },
-    // Gemini credentials (encrypted)
+    // Global Gemini API Key (encrypted)
+    // This will be used by default for all bots unless they specify their own
     geminiKey: {
       type: String,
       required: false,
     },
     // Status flags
-    pineconeVerified: {
-      type: Boolean,
-      default: false,
-    },
     geminiVerified: {
       type: Boolean,
       default: false,
