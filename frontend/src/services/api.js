@@ -85,4 +85,31 @@ export const botsService = {
   },
 };
 
+// Analytics endpoints
+export const analyticsService = {
+  // Get overview analytics
+  getOverview: async () => {
+    const response = await api.get('/api/analytics/overview');
+    return response.data;
+  },
+
+  // Get bot-specific analytics
+  getBotAnalytics: async (botId) => {
+    const response = await api.get(`/api/analytics/bot/${botId}`);
+    return response.data;
+  },
+
+  // Get daily analytics
+  getDailyAnalytics: async (days = 7) => {
+    const response = await api.get(`/api/analytics/daily?days=${days}`);
+    return response.data;
+  },
+
+  // Get top performing bots
+  getTopBots: async (limit = 5, sortBy = 'queries') => {
+    const response = await api.get(`/api/analytics/top-bots?limit=${limit}&sortBy=${sortBy}`);
+    return response.data;
+  },
+};
+
 export default api;

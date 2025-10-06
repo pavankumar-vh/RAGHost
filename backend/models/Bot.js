@@ -73,6 +73,20 @@ const botSchema = new mongoose.Schema(
       type: Number,
       default: 0, // percentage
     },
+    totalTokensUsed: {
+      type: Number,
+      default: 0,
+    },
+    estimatedCost: {
+      type: Number,
+      default: 0, // in USD
+    },
+    dailyStats: [{
+      date: { type: Date, required: true },
+      queries: { type: Number, default: 0 },
+      tokens: { type: Number, default: 0 },
+      avgResponseTime: { type: Number, default: 0 },
+    }],
     
     // Configuration
     lastVerified: {

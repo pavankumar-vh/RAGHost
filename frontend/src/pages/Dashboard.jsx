@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { botsService, setAuthToken } from '../services/api';
+import { botsService, setAuthToken, analyticsService } from '../services/api';
 import BotConfigModal from '../components/BotConfigModal';
 import EmbedCodeModal from '../components/EmbedCodeModal';
 import { 
@@ -24,8 +24,25 @@ import {
   Loader2,
   Trash2,
   Edit,
-  Code
+  Code,
+  DollarSign,
+  Clock,
+  Target
 } from 'lucide-react';
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+} from 'recharts';
 
 const Dashboard = () => {
   const { currentUser, logout, getIdToken } = useAuth();
@@ -85,6 +102,8 @@ const Dashboard = () => {
     totalBots: bots.length,
     activeBot: bots.filter(b => b.status === 'active').length,
     totalQueries: bots.reduce((sum, bot) => sum + (bot.totalQueries || 0), 0),
+    totalTokens: bots.reduce((sum, bot) => sum + (bot.totalTokensUsed || 0), 0),
+    estimatedCost: bots.reduce((sum, bot) => sum + (bot.estimatedCost || 0), 0),
     avgAccuracy: bots.length > 0 
       ? Math.round(bots.reduce((sum, bot) => sum + (bot.accuracy || 0), 0) / bots.length)
       : 0
@@ -786,53 +805,228 @@ const ApiKeysView = ({ bots, loading }) => {
 
 // Analytics View
 const AnalyticsView = ({ bots, loading }) => {
-  if (loading) {
+  const { getIdToken } = useAuth();
+  const [analyticsData, setAnalyticsData] = React.useState(null);
+  const [dailyData, setDailyData] = React.useState([]);
+  const [topBots, setTopBots] = React.useState([]);
+  const [timeRange, setTimeRange] = React.useState(7);
+  const [analyticsLoading, setAnalyticsLoading] = React.useState(true);
+
+  useEffect(() => {
+    if (!loading && bots.length > 0) {
+      loadAnalytics();
+    }
+  }, [loading, bots, timeRange]);
+
+  const loadAnalytics = async () => {
+    try {
+      setAnalyticsLoading(true);
+      const token = await getIdToken();
+      if (token) {
+        setAuthToken(token);
+        const [overview, daily, top] = await Promise.all([
+          analyticsService.getOverview(),
+          analyticsService.getDailyAnalytics(timeRange),
+          analyticsService.getTopBots(5, 'queries'),
+        ]);
+        
+        setAnalyticsData(overview.data);
+        setDailyData(daily.data || []);
+        setTopBots(top.data || []);
+      }
+    } catch (error) {
+      console.error('Error loading analytics:', error);
+    } finally {
+      setAnalyticsLoading(false);
+    }
+  };
+
+  if (loading || analyticsLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 size={48} className="animate-spin text-accent-blue" />
+        <div className="relative">
+          <Loader2 size={48} className="animate-spin text-accent-blue" />
+          <div className="absolute inset-0 blur-xl bg-accent-blue/20 animate-pulse"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (bots.length === 0) {
+    return (
+      <div className="relative bg-gradient-to-br from-gray-900/50 to-black border border-gray-800 rounded-3xl p-16 text-center overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-accent-blue/5 via-transparent to-accent-pink/5"></div>
+        <div className="relative z-10">
+          <div className="w-24 h-24 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-accent-blue/20 to-accent-pink/20 flex items-center justify-center backdrop-blur-sm">
+            <BarChart3 size={48} className="text-accent-blue" />
+          </div>
+          <h3 className="text-2xl font-bold mb-3">No Analytics Data</h3>
+          <p className="text-gray-400">Create bots to see analytics and insights</p>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold">Analytics</h2>
-        <p className="text-gray-500 mt-1">Track your bot performance</p>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+            Analytics
+          </h2>
+          <p className="text-gray-400 mt-2">Track performance and usage metrics</p>
+        </div>
+        <div className="flex gap-2">
+          {[7, 14, 30].map(days => (
+            <button
+              key={days}
+              onClick={() => setTimeRange(days)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                timeRange === days
+                  ? 'bg-accent-blue text-black'
+                  : 'bg-gray-900 text-gray-400 hover:bg-gray-800'
+              }`}
+            >
+              {days}D
+            </button>
+          ))}
+        </div>
       </div>
 
-      {bots.length === 0 ? (
-        <div className="bg-[#0A0A0A] border border-gray-800 rounded-2xl p-12 text-center">
-          <BarChart3 size={48} className="text-gray-600 mx-auto mb-4" />
-          <h3 className="text-xl font-bold mb-2">No Analytics Data</h3>
-          <p className="text-gray-500">Create bots to see analytics</p>
+      {/* Overview Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="bg-gradient-to-br from-accent-blue/10 to-accent-blue/5 border border-accent-blue/30 rounded-2xl p-6">
+          <div className="flex items-center justify-between mb-3">
+            <MessageSquare className="text-accent-blue" size={24} />
+            <TrendingUp size={16} className="text-green-400" />
+          </div>
+          <div className="text-3xl font-bold mb-1">{analyticsData?.totalQueries?.toLocaleString() || 0}</div>
+          <div className="text-sm text-gray-400">Total Queries</div>
         </div>
-      ) : (
-        <div className="bg-[#0A0A0A] border border-gray-800 rounded-2xl p-6">
-          <h3 className="text-xl font-bold mb-4">Bot Performance</h3>
-          <div className="space-y-4">
-            {bots.map((bot) => (
-              <div key={bot.id} className="flex items-center gap-4 transition-all duration-300 hover:scale-102">
-                <div className={`w-10 h-10 rounded-lg bg-accent-${bot.color}/20 flex items-center justify-center`}>
-                  <Bot size={20} className={`text-accent-${bot.color}`} />
+
+        <div className="bg-gradient-to-br from-accent-pink/10 to-accent-pink/5 border border-accent-pink/30 rounded-2xl p-6">
+          <div className="flex items-center justify-between mb-3">
+            <Zap className="text-accent-pink" size={24} />
+            <Database size={16} className="text-accent-pink" />
+          </div>
+          <div className="text-3xl font-bold mb-1">{(analyticsData?.totalTokens || 0).toLocaleString()}</div>
+          <div className="text-sm text-gray-400">Tokens Used</div>
+        </div>
+
+        <div className="bg-gradient-to-br from-accent-yellow/10 to-accent-yellow/5 border border-accent-yellow/30 rounded-2xl p-6">
+          <div className="flex items-center justify-between mb-3">
+            <DollarSign className="text-accent-yellow" size={24} />
+            <TrendingUp size={16} className="text-green-400" />
+          </div>
+          <div className="text-3xl font-bold mb-1">${(analyticsData?.totalCost || 0).toFixed(4)}</div>
+          <div className="text-sm text-gray-400">Estimated Cost</div>
+        </div>
+
+        <div className="bg-gradient-to-br from-green-500/10 to-green-500/5 border border-green-500/30 rounded-2xl p-6">
+          <div className="flex items-center justify-between mb-3">
+            <Clock className="text-green-400" size={24} />
+            <Activity size={16} className="text-green-400" />
+          </div>
+          <div className="text-3xl font-bold mb-1">{analyticsData?.avgResponseTime || 0}ms</div>
+          <div className="text-sm text-gray-400">Avg Response</div>
+        </div>
+      </div>
+
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Daily Queries Chart */}
+        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
+          <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+            <BarChart3 size={20} className="text-accent-blue" />
+            Daily Queries
+          </h3>
+          <ResponsiveContainer width="100%" height={250}>
+            <BarChart data={dailyData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+              <XAxis 
+                dataKey="date" 
+                stroke="#666"
+                tick={{ fill: '#999' }}
+                tickFormatter={(date) => new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+              />
+              <YAxis stroke="#666" tick={{ fill: '#999' }} />
+              <Tooltip 
+                contentStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #333', borderRadius: '8px' }}
+                labelStyle={{ color: '#fff' }}
+              />
+              <Bar dataKey="queries" fill="#B7BEFE" radius={[8, 8, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Token Usage Chart */}
+        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
+          <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+            <Zap size={20} className="text-accent-pink" />
+            Token Usage
+          </h3>
+          <ResponsiveContainer width="100%" height={250}>
+            <AreaChart data={dailyData}>
+              <defs>
+                <linearGradient id="tokenGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#FF95DD" stopOpacity={0.8}/>
+                  <stop offset="95%" stopColor="#FF95DD" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+              <XAxis 
+                dataKey="date" 
+                stroke="#666"
+                tick={{ fill: '#999' }}
+                tickFormatter={(date) => new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+              />
+              <YAxis stroke="#666" tick={{ fill: '#999' }} />
+              <Tooltip 
+                contentStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #333', borderRadius: '8px' }}
+                labelStyle={{ color: '#fff' }}
+              />
+              <Area type="monotone" dataKey="tokens" stroke="#FF95DD" fillOpacity={1} fill="url(#tokenGradient)" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Top Performing Bots */}
+      <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
+        <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
+          <Target size={24} className="text-accent-yellow" />
+          Top Performing Bots
+        </h3>
+        <div className="space-y-4">
+          {topBots.map((bot, index) => (
+            <div key={bot.id} className="flex items-center gap-4 p-4 bg-black/30 rounded-xl border border-gray-800/50 hover:border-gray-700 transition-all">
+              <div className="text-2xl font-bold text-gray-600 w-8">#{index + 1}</div>
+              <div className={`w-12 h-12 rounded-xl bg-gradient-to-br from-accent-${bot.color} to-accent-${bot.color}/60 flex items-center justify-center shadow-lg`}>
+                <Bot size={24} className="text-black" />
+              </div>
+              <div className="flex-1">
+                <div className="font-bold text-lg">{bot.name}</div>
+                <div className="text-sm text-gray-400">{bot.type}</div>
+              </div>
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div>
+                  <div className="text-lg font-bold">{bot.totalQueries.toLocaleString()}</div>
+                  <div className="text-xs text-gray-500">Queries</div>
                 </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-semibold">{bot.name}</span>
-                    <span className="text-sm text-gray-500">{bot.accuracy || 0}%</span>
-                  </div>
-                  <div className="h-2 bg-gray-900 rounded-full overflow-hidden">
-                    <div 
-                      className={`h-full bg-accent-${bot.color} transition-all duration-500`}
-                      style={{ width: `${bot.accuracy || 0}%` }}
-                    ></div>
-                  </div>
+                <div>
+                  <div className="text-lg font-bold">{(bot.totalTokens || 0).toLocaleString()}</div>
+                  <div className="text-xs text-gray-500">Tokens</div>
+                </div>
+                <div>
+                  <div className="text-lg font-bold">${(bot.estimatedCost || 0).toFixed(4)}</div>
+                  <div className="text-xs text-gray-500">Cost</div>
                 </div>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
-      )}
+      </div>
     </div>
   );
 };

@@ -63,6 +63,12 @@ export const sendMessage = async (req, res) => {
 
     const responseTime = Date.now() - startTime;
 
+    // Estimate token usage (rough estimation: 1 token ≈ 4 characters)
+    const promptTokens = Math.ceil((message + JSON.stringify(context)).length / 4);
+    const responseTokens = Math.ceil(response.text.length / 4);
+    const totalTokens = promptTokens + responseTokens;
+    const estimatedCost = (totalTokens / 1000) * 0.001; // Rough cost estimate
+
     // Step 3: Save chat history
     let chatSession = await ChatSession.findOne({ sessionId, botId });
     
@@ -99,6 +105,39 @@ export const sendMessage = async (req, res) => {
       bot.avgResponseTime === 0
         ? responseTime
         : (bot.avgResponseTime + responseTime) / 2;
+    bot.totalTokensUsed = (bot.totalTokensUsed || 0) + totalTokens;
+    bot.estimatedCost = (bot.estimatedCost || 0) + estimatedCost;
+
+    // Update daily stats
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (!bot.dailyStats) bot.dailyStats = [];
+    
+    const todayStats = bot.dailyStats.find(stat => 
+      new Date(stat.date).setHours(0, 0, 0, 0) === today.getTime()
+    );
+
+    if (todayStats) {
+      todayStats.queries += 1;
+      todayStats.tokens += totalTokens;
+      todayStats.avgResponseTime = Math.round(
+        (todayStats.avgResponseTime * (todayStats.queries - 1) + responseTime) / todayStats.queries
+      );
+    } else {
+      bot.dailyStats.push({
+        date: today,
+        queries: 1,
+        tokens: totalTokens,
+        avgResponseTime: responseTime,
+      });
+      // Keep only last 30 days
+      if (bot.dailyStats.length > 30) {
+        bot.dailyStats.sort((a, b) => new Date(b.date) - new Date(a.date));
+        bot.dailyStats = bot.dailyStats.slice(0, 30);
+      }
+    }
+
     await bot.save();
 
     res.json({
