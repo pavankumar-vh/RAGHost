@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { botsService, setAuthToken } from '../services/api';
 import BotConfigModal from '../components/BotConfigModal';
+import EmbedCodeModal from '../components/EmbedCodeModal';
 import { 
   LogOut, 
   Bot, 
@@ -22,7 +23,8 @@ import {
   XCircle,
   Loader2,
   Trash2,
-  Edit
+  Edit,
+  Code
 } from 'lucide-react';
 
 const Dashboard = () => {
@@ -30,6 +32,8 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [activePage, setActivePage] = useState('Dashboard');
   const [showBotModal, setShowBotModal] = useState(false);
+  const [showEmbedModal, setShowEmbedModal] = useState(false);
+  const [selectedBot, setSelectedBot] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [bots, setBots] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -126,6 +130,10 @@ const Dashboard = () => {
               bots={bots} 
               setShowBotModal={setShowBotModal}
               onDelete={handleDeleteBot}
+              onShowEmbed={(bot) => {
+                setSelectedBot(bot);
+                setShowEmbedModal(true);
+              }}
               loading={loading}
             />
           )}
@@ -138,11 +146,11 @@ const Dashboard = () => {
         </div>
       </main>
 
-      {/* Bot Config Modal */}
-      {showBotModal && (
-        <BotConfigModal 
-          setShowModal={setShowBotModal}
-          onSave={handleCreateBot}
+      {/* Embed Code Modal */}
+      {showEmbedModal && selectedBot && (
+        <EmbedCodeModal 
+          bot={selectedBot}
+          setShowModal={setShowEmbedModal}
         />
       )}
     </div>
@@ -477,7 +485,7 @@ const BotCard = ({ bot }) => {
 };
 
 // My Bots View
-const MyBotsView = ({ bots, setShowBotModal, onDelete, loading }) => {
+const MyBotsView = ({ bots, setShowBotModal, onDelete, onShowEmbed, loading }) => {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -522,12 +530,22 @@ const MyBotsView = ({ bots, setShowBotModal, onDelete, loading }) => {
                 <div className={`w-12 h-12 rounded-xl bg-gradient-to-br from-accent-${bot.color} to-accent-${bot.color}/50 flex items-center justify-center`}>
                   <Bot size={24} className="text-black" />
                 </div>
-                <button 
-                  onClick={() => onDelete(bot.id)}
-                  className="text-gray-500 hover:text-red-400 transition-colors"
-                >
-                  <Trash2 size={20} />
-                </button>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => onShowEmbed(bot)}
+                    className="text-gray-500 hover:text-accent-blue transition-colors"
+                    title="Get embed code"
+                  >
+                    <Code size={20} />
+                  </button>
+                  <button 
+                    onClick={() => onDelete(bot.id)}
+                    className="text-gray-500 hover:text-red-400 transition-colors"
+                    title="Delete bot"
+                  >
+                    <Trash2 size={20} />
+                  </button>
+                </div>
               </div>
               
               <h3 className="text-lg font-bold mb-2">{bot.name}</h3>

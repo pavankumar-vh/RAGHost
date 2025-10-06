@@ -10,6 +10,7 @@ import connectDB from './config/database.js';
 import initializeFirebase from './config/firebase.js';
 import keysRoutes from './routes/keys.js';
 import botsRoutes from './routes/bots.js';
+import chatRoutes from './routes/chat.js';
 import { errorHandler, notFound } from './middleware/errorHandler.js';
 
 const app = express();
@@ -43,6 +44,7 @@ app.get('/health', (req, res) => {
 // API Routes
 app.use('/api/keys', keysRoutes);
 app.use('/api/bots', botsRoutes);
+app.use('/api/chat', chatRoutes); // Public chat API (no auth required)
 
 // Error handling
 app.use(notFound);

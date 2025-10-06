@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import AuthPage from './pages/AuthPage';
 import Dashboard from './pages/Dashboard';
+import ChatPage from './pages/ChatPage';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
 // Protected Route Component
@@ -58,6 +59,9 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+          {/* Public Chat Route (for embedded widget) */}
+          <Route path="/chat/:botId" element={<ChatPage />} />
 
           {/* Default Route */}
           <Route path="/" element={<Navigate to="/auth" />} />

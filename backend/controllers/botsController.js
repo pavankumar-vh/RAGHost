@@ -254,3 +254,58 @@ export const testBotConnection = async (req, res) => {
     res.status(500).json({ error: 'Failed to test connections' });
   }
 };
+
+// Get embed code for bot
+export const getEmbedCode = async (req, res) => {
+  try {
+    const userId = req.user.uid;
+    const { id } = req.params;
+
+    const bot = await Bot.findOne({ _id: id, userId });
+
+    if (!bot) {
+      return res.status(404).json({ error: 'Bot not found' });
+    }
+
+    // Generate embed code
+    const apiUrl = process.env.API_URL || 'http://localhost:5001';
+    const widgetUrl = process.env.WIDGET_URL || 'http://localhost:5174';
+    
+    const embedCode = `<!-- RAGhost Chat Widget -->
+<script>
+  (function() {
+    window.raghostConfig = {
+      botId: '${id}',
+      apiUrl: '${apiUrl}',
+      botName: '${bot.name}',
+      botType: '${bot.type}',
+      color: '${bot.color}',
+    };
+    var script = document.createElement('script');
+    script.src = '${widgetUrl}/widget.js';
+    script.async = true;
+    document.body.appendChild(script);
+  })();
+</script>`;
+
+    const iframeCode = `<!-- RAGhost Chat Widget (iframe) -->
+<iframe 
+  src="${widgetUrl}/chat/${id}" 
+  width="400" 
+  height="600" 
+  frameborder="0"
+  style="position: fixed; bottom: 20px; right: 20px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); z-index: 9999;"
+></iframe>`;
+
+    res.json({
+      success: true,
+      embedCode,
+      iframeCode,
+      botId: id,
+      botName: bot.name,
+    });
+  } catch (error) {
+    console.error('Error generating embed code:', error);
+    res.status(500).json({ error: 'Failed to generate embed code' });
+  }
+};

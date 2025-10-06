@@ -6,6 +6,7 @@ import {
   updateBot,
   deleteBot,
   testBotConnection,
+  getEmbedCode,
 } from '../controllers/botsController.js';
 
 const router = express.Router();
@@ -29,5 +30,8 @@ router.delete('/:id', deleteBot);
 
 // Test bot connections
 router.post('/:id/test', testBotConnection);
+
+// Get embed code for bot
+router.get('/:id/embed', getEmbedCode);
 
 export default router;
