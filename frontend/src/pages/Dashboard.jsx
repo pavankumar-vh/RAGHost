@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { botsService, setAuthToken, analyticsService } from '../services/api';
 import BotConfigModal from '../components/BotConfigModal';
 import EmbedCodeModal from '../components/EmbedCodeModal';
+import BotSettingsModal from '../components/BotSettingsModal';
 import { 
   LogOut, 
   Bot, 
@@ -54,6 +55,7 @@ const Dashboard = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [bots, setBots] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showBotSettings, setShowBotSettings] = useState(false);
 
   // Fetch bots on component mount
   useEffect(() => {
@@ -153,6 +155,10 @@ const Dashboard = () => {
                 setSelectedBot(bot);
                 setShowEmbedModal(true);
               }}
+              onShowSettings={(bot) => {
+                setSelectedBot(bot);
+                setShowBotSettings(true);
+              }}
               loading={loading}
             />
           )}
@@ -165,11 +171,26 @@ const Dashboard = () => {
         </div>
       </main>
 
-      {/* Embed Code Modal */}
+      {/* Modals */}
+      {showBotModal && (
+        <BotConfigModal 
+          setShowModal={setShowBotModal}
+          onSave={handleCreateBot}
+        />
+      )}
+
       {showEmbedModal && selectedBot && (
         <EmbedCodeModal 
           bot={selectedBot}
           setShowModal={setShowEmbedModal}
+        />
+      )}
+
+      {showBotSettings && selectedBot && (
+        <BotSettingsModal
+          bot={selectedBot}
+          setShowModal={setShowBotSettings}
+          onUpdate={fetchBots}
         />
       )}
     </div>
@@ -504,7 +525,7 @@ const BotCard = ({ bot }) => {
 };
 
 // My Bots View
-const MyBotsView = ({ bots, setShowBotModal, onDelete, onShowEmbed, loading }) => {
+const MyBotsView = ({ bots, setShowBotModal, onDelete, onShowEmbed, onShowSettings, loading }) => {
   const [hoveredBot, setHoveredBot] = React.useState(null);
 
   if (loading) {
@@ -593,6 +614,13 @@ const MyBotsView = ({ bots, setShowBotModal, onDelete, onShowEmbed, loading }) =
                   
                   {/* Action buttons - slide in on hover */}
                   <div className={`flex gap-2 transition-all duration-300 ${hoveredBot === bot.id ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4'}`}>
+                    <button 
+                      onClick={() => onShowSettings(bot)}
+                      className="p-2 rounded-lg bg-gray-800/50 hover:bg-accent-yellow/20 hover:text-accent-yellow transition-all duration-200 backdrop-blur-sm"
+                      title="Bot settings"
+                    >
+                      <Settings size={18} />
+                    </button>
                     <button 
                       onClick={() => onShowEmbed(bot)}
                       className="p-2 rounded-lg bg-gray-800/50 hover:bg-accent-blue/20 hover:text-accent-blue transition-all duration-200 backdrop-blur-sm"

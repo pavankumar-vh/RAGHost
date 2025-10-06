@@ -6,6 +6,9 @@
 # Firebase service account (NEVER commit this!)
 firebase-service-account.json
 
+# Uploads directory
+uploads/
+
 # Dependencies
 node_modules/
 

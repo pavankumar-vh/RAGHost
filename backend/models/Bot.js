@@ -88,6 +88,33 @@ const botSchema = new mongoose.Schema(
       avgResponseTime: { type: Number, default: 0 },
     }],
     
+    // Advanced Settings
+    temperature: {
+      type: Number,
+      default: 0.7,
+      min: 0,
+      max: 2,
+    },
+    maxTokens: {
+      type: Number,
+      default: 1024,
+    },
+    systemPrompt: {
+      type: String,
+      default: '',
+    },
+    
+    // Team Collaboration
+    teamMembers: [{
+      email: { type: String, required: true },
+      role: { 
+        type: String, 
+        enum: ['owner', 'editor', 'viewer'],
+        default: 'viewer'
+      },
+      addedAt: { type: Date, default: Date.now },
+    }],
+    
     // Configuration
     lastVerified: {
       type: Date,

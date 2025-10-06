@@ -83,6 +83,23 @@ export const botsService = {
     const response = await api.post(`/api/bots/${id}/test`);
     return response.data;
   },
+
+  // Team collaboration
+  addTeamMember: async (botId, email, role = 'viewer') => {
+    const response = await api.post(`/api/bots/${botId}/team`, { email, role });
+    return response.data;
+  },
+
+  removeTeamMember: async (botId, email) => {
+    const response = await api.delete(`/api/bots/${botId}/team/${email}`);
+    return response.data;
+  },
+
+  // Advanced settings
+  updateSettings: async (botId, settings) => {
+    const response = await api.put(`/api/bots/${botId}/settings`, settings);
+    return response.data;
+  },
 };
 
 // Analytics endpoints
@@ -108,6 +125,39 @@ export const analyticsService = {
   // Get top performing bots
   getTopBots: async (limit = 5, sortBy = 'queries') => {
     const response = await api.get(`/api/analytics/top-bots?limit=${limit}&sortBy=${sortBy}`);
+    return response.data;
+  },
+};
+
+// Knowledge Base endpoints
+export const knowledgeService = {
+  // Upload document
+  uploadDocument: async (botId, file) => {
+    const formData = new FormData();
+    formData.append('document', file);
+    const response = await api.post(`/api/knowledge/${botId}/upload`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
+
+  // Get knowledge base
+  getKnowledgeBase: async (botId) => {
+    const response = await api.get(`/api/knowledge/${botId}`);
+    return response.data;
+  },
+
+  // Delete document
+  deleteDocument: async (botId, documentId) => {
+    const response = await api.delete(`/api/knowledge/${botId}/document/${documentId}`);
+    return response.data;
+  },
+
+  // Search knowledge base
+  searchKnowledgeBase: async (botId, query) => {
+    const response = await api.get(`/api/knowledge/${botId}/search?query=${encodeURIComponent(query)}`);
     return response.data;
   },
 };
