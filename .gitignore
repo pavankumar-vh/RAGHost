@@ -34,14 +34,13 @@ Thumbs.db
 dist/
 build/
 
-# Documentation files (don't push)
+# Documentation files (keep repo professional)
 *.md
+*.txt
 README.md
-
-# Frontend folder (will push later)
-frontend/
-client/
 
 # Root level documentation
 FIREBASE_SETUP.md
 PHASE1_COMPLETE.md
+FIREBASE_SETUP.txt
+PHASE_1_COMPLETION.txt
