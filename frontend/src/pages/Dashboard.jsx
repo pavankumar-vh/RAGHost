@@ -486,103 +486,189 @@ const BotCard = ({ bot }) => {
 
 // My Bots View
 const MyBotsView = ({ bots, setShowBotModal, onDelete, onShowEmbed, loading }) => {
+  const [hoveredBot, setHoveredBot] = React.useState(null);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 size={48} className="animate-spin text-accent-blue" />
+        <div className="relative">
+          <Loader2 size={48} className="animate-spin text-accent-blue" />
+          <div className="absolute inset-0 blur-xl bg-accent-blue/20 animate-pulse"></div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
+      {/* Enhanced Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">My Bots</h2>
-          <p className="text-gray-500 mt-1">Manage all your chatbots</p>
+          <h2 className="text-3xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+            My Bots
+          </h2>
+          <p className="text-gray-400 mt-2 flex items-center gap-2">
+            <Bot size={16} />
+            {bots.length} bot{bots.length !== 1 ? 's' : ''} • Manage your AI assistants
+          </p>
         </div>
         <button
           onClick={() => setShowBotModal(true)}
-          className="flex items-center gap-2 bg-accent-blue text-black font-semibold px-6 py-3 rounded-xl hover:opacity-90 transition-all duration-200 hover:scale-105"
+          className="group relative flex items-center gap-2 bg-gradient-to-r from-accent-blue to-accent-blue/80 text-black font-bold px-6 py-3 rounded-xl overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-accent-blue/50"
         >
-          <Plus size={20} />
-          Create New Bot
+          <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          <Plus size={20} className="relative z-10" />
+          <span className="relative z-10">Create New Bot</span>
         </button>
       </div>
 
       {bots.length === 0 ? (
-        <div className="bg-[#0A0A0A] border border-gray-800 rounded-2xl p-12 text-center">
-          <Bot size={48} className="text-gray-600 mx-auto mb-4" />
-          <h3 className="text-xl font-bold mb-2">No Bots Yet</h3>
-          <p className="text-gray-500 mb-6">Create your first bot to get started</p>
-          <button
-            onClick={() => setShowBotModal(true)}
-            className="bg-accent-blue text-black font-semibold px-8 py-3 rounded-xl hover:opacity-90 transition-all duration-200 hover:scale-105"
-          >
-            Create Your First Bot
-          </button>
+        <div className="relative bg-gradient-to-br from-gray-900/50 to-black border border-gray-800 rounded-3xl p-16 text-center overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-accent-blue/5 via-transparent to-accent-pink/5"></div>
+          <div className="relative z-10">
+            <div className="w-24 h-24 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-accent-blue/20 to-accent-pink/20 flex items-center justify-center backdrop-blur-sm">
+              <Bot size={48} className="text-accent-blue" />
+            </div>
+            <h3 className="text-2xl font-bold mb-3">No Bots Yet</h3>
+            <p className="text-gray-400 mb-8 max-w-md mx-auto">
+              Create your first AI-powered chatbot and start engaging with your users
+            </p>
+            <button
+              onClick={() => setShowBotModal(true)}
+              className="group relative bg-gradient-to-r from-accent-blue to-accent-blue/80 text-black font-bold px-8 py-4 rounded-xl overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-accent-blue/50"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <span className="relative z-10 flex items-center gap-2">
+                <Plus size={20} />
+                Create Your First Bot
+              </span>
+            </button>
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {bots.map((bot) => (
-            <div key={bot.id} className="bg-[#0A0A0A] border border-gray-800 rounded-2xl p-6 hover:border-gray-700 transition-all duration-300 hover:scale-105">
-              <div className="flex items-start justify-between mb-4">
-                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br from-accent-${bot.color} to-accent-${bot.color}/50 flex items-center justify-center`}>
-                  <Bot size={24} className="text-black" />
-                </div>
-                <div className="flex gap-2">
-                  <button 
-                    onClick={() => onShowEmbed(bot)}
-                    className="text-gray-500 hover:text-accent-blue transition-colors"
-                    title="Get embed code"
-                  >
-                    <Code size={20} />
-                  </button>
-                  <button 
-                    onClick={() => onDelete(bot.id)}
-                    className="text-gray-500 hover:text-red-400 transition-colors"
-                    title="Delete bot"
-                  >
-                    <Trash2 size={20} />
-                  </button>
-                </div>
-              </div>
+            <div
+              key={bot.id}
+              onMouseEnter={() => setHoveredBot(bot.id)}
+              onMouseLeave={() => setHoveredBot(null)}
+              className="group relative bg-gradient-to-br from-gray-900/80 to-black border border-gray-800 rounded-2xl p-6 transition-all duration-500 hover:border-gray-600 hover:shadow-2xl hover:-translate-y-2 overflow-hidden"
+            >
+              {/* Animated gradient background on hover */}
+              <div className={`absolute inset-0 bg-gradient-to-br from-accent-${bot.color}/10 via-transparent to-accent-${bot.color}/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500`}></div>
               
-              <h3 className="text-lg font-bold mb-2">{bot.name}</h3>
-              <p className="text-sm text-gray-500 mb-4">{bot.type}</p>
-              
-              <div className="space-y-2 mb-4">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Status</span>
-                  <span className={`font-semibold ${
-                    bot.status === 'active' ? 'text-green-400' : 'text-gray-400'
+              {/* Status glow effect */}
+              {bot.status === 'active' && (
+                <div className="absolute top-0 right-0 w-32 h-32 bg-green-400/10 blur-3xl rounded-full"></div>
+              )}
+
+              <div className="relative z-10">
+                {/* Header with icon and actions */}
+                <div className="flex items-start justify-between mb-4">
+                  <div className={`relative w-14 h-14 rounded-xl bg-gradient-to-br from-accent-${bot.color} to-accent-${bot.color}/60 flex items-center justify-center shadow-lg shadow-accent-${bot.color}/30 group-hover:scale-110 transition-transform duration-300`}>
+                    <Bot size={28} className="text-black" />
+                    {bot.status === 'active' && (
+                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-black animate-pulse"></div>
+                    )}
+                  </div>
+                  
+                  {/* Action buttons - slide in on hover */}
+                  <div className={`flex gap-2 transition-all duration-300 ${hoveredBot === bot.id ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4'}`}>
+                    <button 
+                      onClick={() => onShowEmbed(bot)}
+                      className="p-2 rounded-lg bg-gray-800/50 hover:bg-accent-blue/20 hover:text-accent-blue transition-all duration-200 backdrop-blur-sm"
+                      title="Get embed code"
+                    >
+                      <Code size={18} />
+                    </button>
+                    <button 
+                      onClick={() => onDelete(bot.id)}
+                      className="p-2 rounded-lg bg-gray-800/50 hover:bg-red-500/20 hover:text-red-400 transition-all duration-200 backdrop-blur-sm"
+                      title="Delete bot"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Bot name and type */}
+                <h3 className="text-xl font-bold mb-1 group-hover:text-accent-blue transition-colors duration-300">
+                  {bot.name}
+                </h3>
+                <div className="flex items-center gap-2 mb-5">
+                  <span className={`text-xs px-3 py-1 rounded-full bg-accent-${bot.color}/10 text-accent-${bot.color} border border-accent-${bot.color}/30`}>
+                    {bot.type}
+                  </span>
+                  <span className={`text-xs px-3 py-1 rounded-full ${
+                    bot.status === 'active' 
+                      ? 'bg-green-500/10 text-green-400 border border-green-500/30' 
+                      : 'bg-gray-500/10 text-gray-400 border border-gray-500/30'
                   }`}>
-                    {bot.status === 'active' ? 'Active' : 'Inactive'}
+                    {bot.status === 'active' ? '● Active' : '○ Inactive'}
                   </span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Queries</span>
-                  <span className="font-semibold">{bot.totalQueries || 0}</span>
+                
+                {/* Stats grid */}
+                <div className="grid grid-cols-2 gap-3 mb-5">
+                  <div className="bg-black/30 rounded-lg p-3 border border-gray-800/50">
+                    <div className="text-xs text-gray-500 mb-1">Queries</div>
+                    <div className="text-lg font-bold">{bot.totalQueries || 0}</div>
+                  </div>
+                  <div className="bg-black/30 rounded-lg p-3 border border-gray-800/50">
+                    <div className="text-xs text-gray-500 mb-1">Accuracy</div>
+                    <div className="text-lg font-bold text-accent-blue">{bot.accuracy || 0}%</div>
+                  </div>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Accuracy</span>
-                  <span className="font-semibold">{bot.accuracy || 0}%</span>
+
+                {/* API Status */}
+                <div className="space-y-2 pt-4 border-t border-gray-800/50">
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2 text-gray-400">
+                      <Database size={14} />
+                      <span>Pinecone</span>
+                    </div>
+                    {bot.pineconeVerified ? (
+                      <div className="flex items-center gap-1 text-green-400">
+                        <CheckCircle2 size={14} />
+                        <span className="text-xs">Connected</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1 text-red-400">
+                        <XCircle size={14} />
+                        <span className="text-xs">Not verified</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2 text-gray-400">
+                      <Zap size={14} />
+                      <span>Gemini AI</span>
+                    </div>
+                    {bot.geminiVerified ? (
+                      <div className="flex items-center gap-1 text-green-400">
+                        <CheckCircle2 size={14} />
+                        <span className="text-xs">Connected</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1 text-red-400">
+                        <XCircle size={14} />
+                        <span className="text-xs">Not verified</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Pinecone</span>
-                  {bot.pineconeVerified ? (
-                    <CheckCircle2 size={16} className="text-green-400" />
-                  ) : (
-                    <XCircle size={16} className="text-red-400" />
-                  )}
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Gemini</span>
-                  {bot.geminiVerified ? (
-                    <CheckCircle2 size={16} className="text-green-400" />
-                  ) : (
-                    <XCircle size={16} className="text-red-400" />
-                  )}
+
+                {/* Quick action bar - appears on hover */}
+                <div className={`mt-4 pt-4 border-t border-gray-800/50 transition-all duration-300 ${
+                  hoveredBot === bot.id ? 'opacity-100 max-h-20' : 'opacity-0 max-h-0 overflow-hidden'
+                }`}>
+                  <button 
+                    onClick={() => onShowEmbed(bot)}
+                    className={`w-full py-2 rounded-lg bg-gradient-to-r from-accent-${bot.color}/20 to-accent-${bot.color}/10 border border-accent-${bot.color}/30 text-sm font-semibold hover:from-accent-${bot.color}/30 hover:to-accent-${bot.color}/20 transition-all duration-200`}
+                  >
+                    <Code size={14} className="inline mr-2" />
+                    Get Embed Code
+                  </button>
                 </div>
               </div>
             </div>

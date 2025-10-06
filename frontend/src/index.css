@@ -17,7 +17,7 @@ body {
 /* Smooth transitions and animations */
 @layer utilities {
   .animate-fadeIn {
-    animation: fadeIn 0.3s ease-in-out;
+    animation: fadeIn 0.5s ease-in-out;
   }
 
   .hover\:scale-102:hover {
@@ -35,6 +35,40 @@ body {
     }
   }
 
+  /* Card entrance animation */
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px) scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  /* Glow pulse animation */
+  @keyframes glowPulse {
+    0%, 100% {
+      opacity: 0.5;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.8;
+      transform: scale(1.05);
+    }
+  }
+
+  /* Shimmer effect */
+  @keyframes shimmer {
+    0% {
+      background-position: -1000px 0;
+    }
+    100% {
+      background-position: 1000px 0;
+    }
+  }
+
   /* Smooth scrolling */
   * {
     scroll-behavior: smooth;
@@ -42,20 +76,43 @@ body {
 
   /* Custom scrollbar */
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    height: 10px;
   }
 
   ::-webkit-scrollbar-track {
     background: #0A0A0A;
+    border-radius: 10px;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #333;
-    border-radius: 4px;
+    background: linear-gradient(to bottom, #333, #222);
+    border-radius: 10px;
+    border: 2px solid #0A0A0A;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #555;
+    background: linear-gradient(to bottom, #444, #333);
+  }
+
+  /* Smooth transitions for all interactive elements */
+  button, a, input, textarea, select {
+    transition: all 0.2s ease-in-out;
+  }
+
+  /* Glass morphism effect */
+  .glass {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    background: linear-gradient(135deg, #B7BEFE 0%, #FF95DD 50%, #F6FF7F 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
 }

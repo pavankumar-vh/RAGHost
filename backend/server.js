@@ -8,6 +8,7 @@ dotenv.config();
 
 import connectDB from './config/database.js';
 import initializeFirebase from './config/firebase.js';
+import { authenticate } from './middleware/auth.js';
 import keysRoutes from './routes/keys.js';
 import botsRoutes from './routes/bots.js';
 import chatRoutes from './routes/chat.js';
@@ -42,8 +43,8 @@ app.get('/health', (req, res) => {
 });
 
 // API Routes
-app.use('/api/keys', keysRoutes);
-app.use('/api/bots', botsRoutes);
+app.use('/api/keys', authenticate, keysRoutes);
+app.use('/api/bots', authenticate, botsRoutes);
 app.use('/api/chat', chatRoutes); // Public chat API (no auth required)
 
 // Error handling

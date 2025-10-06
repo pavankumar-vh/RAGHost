@@ -6,7 +6,9 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "setup": "node scripts/check-setup.js",
+    "generate-key": "node scripts/generate-encryption-key.js"
   },
   "keywords": [],
   "author": "",
