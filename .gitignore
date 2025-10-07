@@ -8,9 +8,12 @@ pnpm-lock.yaml
 .env
 .env.local
 .env.*.local
+.env.production
+.env.development
 
 # Firebase service account
 **/firebase-service-account.json
+**/*-firebase-adminsdk-*.json
 
 # Logs
 logs/
@@ -18,29 +21,53 @@ logs/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+lerna-debug.log*
 
 # OS files
 .DS_Store
 Thumbs.db
-
-# IDE
-.vscode/
-.idea/
 *.swp
 *.swo
 *~
 
+# IDE
+.vscode/
+.idea/
+*.iml
+.project
+.classpath
+.settings/
+
 # Build
 dist/
 build/
+.next/
+out/
+.cache/
 
-# Documentation files (keep repo professional)
-*.md
-*.txt
-README.md
+# Testing
+coverage/
+.nyc_output/
 
-# Root level documentation
-FIREBASE_SETUP.md
-PHASE1_COMPLETE.md
-FIREBASE_SETUP.txt
-PHASE_1_COMPLETION.txt
+# Temporary files
+*.tmp
+temp/
+tmp/
+
+# Database
+*.sqlite
+*.db
+
+# Keep important documentation
+!README.md
+!LICENSE
+!CONTRIBUTING.md
+!DEPLOYMENT.md
+!CODE_OF_CONDUCT.md
+
+# Private notes (keep these out)
+notes/
+private/
+TODO.md
+NOTES.md
+
