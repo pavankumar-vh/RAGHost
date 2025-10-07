@@ -46,10 +46,12 @@ const initializeFirebase = () => {
     admin.initializeApp({ credential });
 
     console.log('✅ Firebase Admin SDK initialized');
+    return true;
   } catch (error) {
-    console.error('❌ Firebase initialization failed:', error.message);
-    console.error('💡 Set FIREBASE_PROJECT_ID, FIREBASE_PRIVATE_KEY, and FIREBASE_CLIENT_EMAIL as environment variables');
-    process.exit(1);
+    console.warn('⚠️  Firebase initialization failed:', error.message);
+    console.warn('⚠️  Authentication will not work. Add Firebase credentials to enable auth.');
+    console.warn('💡 Set FIREBASE_PROJECT_ID, FIREBASE_PRIVATE_KEY, and FIREBASE_CLIENT_EMAIL as environment variables');
+    return false;
   }
 };
 
@@ -58,7 +60,13 @@ const initializeFirebase = () => {
  * @param {string} idToken - Firebase ID token from client
  * @returns {Promise<admin.auth.DecodedIdToken>}
  */
+
+let firebaseInitialized = false;
+
 export const verifyToken = async (idToken) => {
+  if (!firebaseInitialized) {
+    throw new Error('Firebase is not initialized. Please configure Firebase credentials.');
+  }
   try {
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     return decodedToken;
@@ -67,4 +75,7 @@ export const verifyToken = async (idToken) => {
   }
 };
 
-export default initializeFirebase;
+// Initialize Firebase
+firebaseInitialized = initializeFirebase();
+
+export default admin;

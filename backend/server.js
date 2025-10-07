@@ -12,7 +12,7 @@ const __dirname = path.dirname(__filename);
 dotenv.config();
 
 import connectDB from './config/database.js';
-import initializeFirebase from './config/firebase.js';
+import './config/firebase.js'; // Initialize Firebase (will warn if not configured)
 import keysRoutes from './routes/keys.js';
 import botsRoutes from './routes/bots.js';
 import chatRoutes from './routes/chat.js';
@@ -102,10 +102,10 @@ app.use(errorHandler);
 
 // Initialize and start server
 await connectDB();
-initializeFirebase();
 
 const server = app.listen(PORT, () => {
-  console.log(`\n🚀 Server running on port ${PORT}`);
+  console.log(`\n✅ Server initialization complete`);
+  console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🌐 Health check: http://localhost:${PORT}/health\n`);
 });
