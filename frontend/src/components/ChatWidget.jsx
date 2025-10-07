@@ -70,6 +70,8 @@ const ChatWidget = ({ botId, botName, botType, color = 'blue', apiUrl = 'http://
     setMessages((prev) => [...prev, userMessage]);
     setInput('');
     setLoading(true);
+    
+    console.log('💬 Sending message to bot:', { botId, sessionId, message: input.substring(0, 50) });
 
     try {
       const response = await axios.post(
@@ -79,6 +81,8 @@ const ChatWidget = ({ botId, botName, botType, color = 'blue', apiUrl = 'http://
           sessionId,
         }
       );
+      
+      console.log('✅ Chat response received:', response.data);
 
       if (response.data.success) {
         const assistantMessage = {
@@ -89,7 +93,8 @@ const ChatWidget = ({ botId, botName, botType, color = 'blue', apiUrl = 'http://
         setMessages((prev) => [...prev, assistantMessage]);
       }
     } catch (error) {
-      console.error('Failed to send message:', error);
+      console.error('❌ Failed to send message:', error);
+      console.error('Error details:', error.response?.data);
       const errorMessage = {
         role: 'assistant',
         content: 'Sorry, I encountered an error. Please try again.',

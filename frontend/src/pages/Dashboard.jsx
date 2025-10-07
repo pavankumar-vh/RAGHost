@@ -362,18 +362,11 @@ const Sidebar = ({ activePage, setActivePage, handleLogout, currentUser }) => {
 
 // Header Component
 const Header = ({ searchQuery, setSearchQuery }) => {
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Good morning';
-    if (hour < 18) return 'Good afternoon';
-    return 'Good evening';
-  };
-
   return (
     <header className="mb-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-3xl font-bold">{getGreeting()}! 👋</h2>
+          <h2 className="text-3xl font-bold">Dashboard</h2>
           <p className="text-gray-500 mt-1">Manage your chatbots and analytics</p>
         </div>
         
