@@ -38,8 +38,9 @@ app.use(cors({
     // Allow requests with no origin (like mobile apps, curl, Postman)
     if (!origin) return callback(null, true);
     
-    // Allow localhost and file:// protocol for testing
+    // Production and development allowed origins
     const allowedOrigins = [
+      'https://rag-host.vercel.app', // Production frontend
       'http://localhost:5173',
       'http://localhost:5174',
       'http://localhost:3000',
@@ -48,13 +49,15 @@ app.use(cors({
       'http://127.0.0.1:3000'
     ];
     
-    // Allow all origins for widget routes (for embedding)
+    // Check if origin is allowed
     if (allowedOrigins.indexOf(origin) !== -1 || origin.startsWith('file://') || origin.includes('localhost')) {
       return callback(null, true);
     }
     
-    // For production, you'd want to check against a whitelist
-    return callback(null, true); // Allow all for now (change in production!)
+    // For widget embedding, allow all origins (since widgets can be embedded anywhere)
+    // If you want to restrict this, uncomment the line below and comment out the return callback
+    // return callback(new Error('Not allowed by CORS'));
+    return callback(null, true); // Allow all for widget embedding
   },
   credentials: true,
 }));

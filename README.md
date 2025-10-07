@@ -3,8 +3,11 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
 [![React](https://img.shields.io/badge/React-18.2-blue.svg)](https://reactjs.org/)
+[![Live Demo](https://img.shields.io/badge/Demo-Live-success.svg)](https://rag-host.vercel.app)
 
 **RAGHost** is a powerful, open-source RAG (Retrieval-Augmented Generation) chatbot hosting platform that allows you to create, manage, and deploy AI-powered chatbots with ease.
+
+🌐 **Live Demo:** [https://rag-host.vercel.app](https://rag-host.vercel.app)
 
 ## ✨ Features
 
