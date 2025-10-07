@@ -27,10 +27,34 @@ const PORT = process.env.PORT || 5001;
 // Middleware setup
 app.use(helmet({
   contentSecurityPolicy: false, // Disable for widget embedding
-  crossOriginEmbedderPolicy: false
+  crossOriginEmbedderPolicy: false,
+  crossOriginResourcePolicy: false
 }));
+
+// CORS configuration - allow widget embedding from any origin
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:5174'],
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl, Postman)
+    if (!origin) return callback(null, true);
+    
+    // Allow localhost and file:// protocol for testing
+    const allowedOrigins = [
+      'http://localhost:5173',
+      'http://localhost:5174',
+      'http://localhost:3000',
+      'http://127.0.0.1:5173',
+      'http://127.0.0.1:5174',
+      'http://127.0.0.1:3000'
+    ];
+    
+    // Allow all origins for widget routes (for embedding)
+    if (allowedOrigins.indexOf(origin) !== -1 || origin.startsWith('file://') || origin.includes('localhost')) {
+      return callback(null, true);
+    }
+    
+    // For production, you'd want to check against a whitelist
+    return callback(null, true); // Allow all for now (change in production!)
+  },
   credentials: true,
 }));
 
@@ -43,8 +67,13 @@ app.use('/api/', limiter);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve widget static files
-app.use('/widget', express.static(path.join(__dirname, '../widget')));
+// Serve widget static files with proper headers
+app.use('/widget', (req, res, next) => {
+  res.setHeader('X-Frame-Options', 'ALLOWALL');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  next();
+}, express.static(path.join(__dirname, '../widget')));
 
 // Health check route
 app.get('/health', (req, res) => {
