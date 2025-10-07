@@ -9,6 +9,7 @@ const BotSettingsModal = ({ bot, setShowModal, onUpdate }) => {
   const [knowledge, setKnowledge] = useState({ documents: [], totalDocuments: 0 });
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState(null);
   
   // Advanced settings
   const [settings, setSettings] = useState({
@@ -45,17 +46,31 @@ const BotSettingsModal = ({ bot, setShowModal, onUpdate }) => {
 
     try {
       setUploading(true);
+      setUploadStatus({ type: 'info', message: 'Uploading and processing document...' });
       const token = await getIdToken();
       if (token) {
         setAuthToken(token);
-        await knowledgeService.uploadDocument(bot.id, file);
+        const result = await knowledgeService.uploadDocument(bot.id, file);
+        setUploadStatus({ 
+          type: 'success', 
+          message: `✅ ${file.name} uploaded! Embedding ${result.data.chunkCount} chunks to Pinecone...` 
+        });
         await loadKnowledgeBase();
+        
+        // Clear status after 5 seconds
+        setTimeout(() => setUploadStatus(null), 5000);
       }
     } catch (error) {
       console.error('Error uploading file:', error);
-      alert('Failed to upload file');
+      setUploadStatus({ 
+        type: 'error', 
+        message: error.response?.data?.error || 'Failed to upload file' 
+      });
+      setTimeout(() => setUploadStatus(null), 5000);
     } finally {
       setUploading(false);
+      // Reset file input
+      e.target.value = '';
     }
   };
 
@@ -177,6 +192,18 @@ const BotSettingsModal = ({ bot, setShowModal, onUpdate }) => {
             {/* Knowledge Base Tab */}
             {activeTab === 'knowledge' && (
               <div className="space-y-6">
+                {/* Upload Status */}
+                {uploadStatus && (
+                  <div className={`p-4 rounded-xl border flex items-center gap-2 ${
+                    uploadStatus.type === 'success' ? 'bg-green-500/10 border-green-500/30 text-green-400' :
+                    uploadStatus.type === 'error' ? 'bg-red-500/10 border-red-500/30 text-red-400' :
+                    'bg-blue-500/10 border-blue-500/30 text-blue-400'
+                  }`}>
+                    {uploadStatus.type === 'info' && <Loader2 size={18} className="animate-spin" />}
+                    <span className="text-sm">{uploadStatus.message}</span>
+                  </div>
+                )}
+
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-xl font-bold">Knowledge Base</h3>
@@ -205,7 +232,14 @@ const BotSettingsModal = ({ bot, setShowModal, onUpdate }) => {
                   <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-12 text-center">
                     <FileText size={48} className="text-gray-600 mx-auto mb-4" />
                     <h4 className="text-lg font-semibold mb-2">No Documents Yet</h4>
-                    <p className="text-gray-400 text-sm">Upload PDFs, Word docs, or text files to train your bot</p>
+                    <p className="text-gray-400 text-sm mb-4">Upload PDFs, Word docs, or text files to train your bot</p>
+                    <div className="bg-accent-blue/10 border border-accent-blue/30 rounded-lg p-3 text-xs text-left">
+                      <p className="font-semibold text-accent-blue mb-1">💡 How it works:</p>
+                      <p className="text-gray-300">1. Upload a document (PDF, DOCX, TXT, CSV, MD)</p>
+                      <p className="text-gray-300">2. We chunk and embed it using Gemini</p>
+                      <p className="text-gray-300">3. Store vectors in your Pinecone index</p>
+                      <p className="text-gray-300">4. Bot uses this context to answer questions!</p>
+                    </div>
                   </div>
                 ) : (
                   <div className="space-y-3">

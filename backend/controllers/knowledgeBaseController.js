@@ -3,8 +3,13 @@ import Bot from '../models/Bot.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import pdfParse from 'pdf-parse';
-import mammoth from 'mammoth';
+import { createRequire } from 'module';
+import { processAndUploadDocument, deleteDocumentFromPinecone } from '../services/embeddingService.js';
+import { decrypt } from '../utils/encryption.js';
+
+const require = createRequire(import.meta.url);
+const pdfParse = require('pdf-parse');
+const mammoth = require('mammoth');
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -86,7 +91,7 @@ export const uploadDocument = async (req, res) => {
       });
     }
 
-    // Add document
+    // Add document to knowledge base
     knowledgeBase.documents.push({
       filename: file.filename,
       originalName: file.originalname,
@@ -97,24 +102,51 @@ export const uploadDocument = async (req, res) => {
     });
 
     knowledgeBase.totalDocuments = knowledgeBase.documents.length;
-    knowledgeBase.totalChunks = knowledgeBase.documents.reduce((sum, doc) => sum + doc.chunkCount, 0);
-    knowledgeBase.lastUpdated = new Date();
+    const documentId = knowledgeBase.documents[knowledgeBase.documents.length - 1]._id;
 
     await knowledgeBase.save();
 
     // Delete the uploaded file from disk (we've saved the content in DB)
     fs.unlinkSync(file.path);
 
+    // Step 2: Process and upload to Pinecone (async - don't block response)
+    const pineconeKey = decrypt(bot.pineconeKey);
+    const geminiKey = decrypt(bot.geminiKey);
+
+    // Upload to Pinecone in background
+    processAndUploadDocument({
+      text: content,
+      documentId: documentId.toString(),
+      filename: file.originalname,
+      pineconeKey,
+      geminiKey,
+      environment: bot.pineconeEnvironment,
+      indexName: bot.pineconeIndexName,
+    })
+      .then(result => {
+        console.log(`✅ Document uploaded to Pinecone: ${file.originalname}`, result);
+        // Update chunk count with actual uploaded count
+        KnowledgeBase.findOne({ botId, userId }).then(kb => {
+          if (kb) {
+            kb.totalChunks = kb.documents.reduce((sum, doc) => sum + doc.chunkCount, 0);
+            kb.save();
+          }
+        });
+      })
+      .catch(error => {
+        console.error(`❌ Failed to upload to Pinecone: ${file.originalname}`, error);
+      });
+
     res.json({
       success: true,
-      message: 'Document uploaded successfully',
+      message: 'Document uploaded successfully. Embedding to Pinecone in progress...',
       data: {
-        documentId: knowledgeBase.documents[knowledgeBase.documents.length - 1]._id,
+        documentId,
         filename: file.originalname,
         fileType,
         chunkCount,
         totalDocuments: knowledgeBase.totalDocuments,
-        totalChunks: knowledgeBase.totalChunks,
+        status: 'processing',
       },
     });
   } catch (error) {
@@ -218,7 +250,10 @@ export const deleteDocument = async (req, res) => {
       });
     }
 
-    // Remove document
+    // Get document info before deleting
+    const document = knowledgeBase.documents.find(doc => doc._id.toString() === documentId);
+    
+    // Remove document from MongoDB
     knowledgeBase.documents = knowledgeBase.documents.filter(
       doc => doc._id.toString() !== documentId
     );
@@ -228,6 +263,19 @@ export const deleteDocument = async (req, res) => {
     knowledgeBase.lastUpdated = new Date();
 
     await knowledgeBase.save();
+
+    // Delete from Pinecone in background
+    if (document) {
+      const pineconeKey = decrypt(bot.pineconeKey);
+      deleteDocumentFromPinecone({
+        documentId: documentId,
+        pineconeKey,
+        environment: bot.pineconeEnvironment,
+        indexName: bot.pineconeIndexName,
+      })
+        .then(() => console.log(`✅ Document vectors deleted from Pinecone: ${documentId}`))
+        .catch(error => console.error(`❌ Failed to delete from Pinecone:`, error));
+    }
 
     res.json({
       success: true,

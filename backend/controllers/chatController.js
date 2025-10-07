@@ -43,12 +43,13 @@ export const sendMessage = async (req, res) => {
 
     const startTime = Date.now();
 
-    // Step 1: Query Pinecone for relevant context
+    // Step 1: Query Pinecone for relevant context (using Gemini for embeddings)
     const context = await queryPinecone({
       apiKey: pineconeKey,
       environment: bot.pineconeEnvironment,
       indexName: bot.pineconeIndexName,
       query: message,
+      geminiApiKey: geminiKey,
       topK: 3,
     });
 
@@ -59,6 +60,9 @@ export const sendMessage = async (req, res) => {
       context: context.matches || [],
       botName: bot.name,
       botType: bot.type,
+      customSystemPrompt: bot.systemPrompt,
+      temperature: bot.temperature || 0.7,
+      maxTokens: bot.maxTokens || 1024,
     });
 
     const responseTime = Date.now() - startTime;

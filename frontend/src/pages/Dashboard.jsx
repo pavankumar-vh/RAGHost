@@ -28,7 +28,8 @@ import {
   Code,
   DollarSign,
   Clock,
-  Target
+  Target,
+  AlertCircle
 } from 'lucide-react';
 import {
   LineChart,
@@ -133,7 +134,12 @@ const Dashboard = () => {
       {/* Main Content */}
       <main className="flex-1 ml-64 p-8 overflow-y-auto transition-all duration-300 ease-in-out">
         {/* Header */}
-        <Header searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+        <Header 
+          searchQuery={searchQuery} 
+          setSearchQuery={setSearchQuery}
+          showGreeting={activePage === 'Dashboard'}
+          activePage={activePage}
+        />
 
         {/* Content Based on Active Page with smooth transitions */}
         <div className="animate-fadeIn">
@@ -262,20 +268,33 @@ const Sidebar = ({ activePage, setActivePage, handleLogout, currentUser }) => {
 };
 
 // Header Component
-const Header = ({ searchQuery, setSearchQuery }) => {
+const Header = ({ searchQuery, setSearchQuery, showGreeting = false, activePage }) => {
   const getGreeting = () => {
     const hour = new Date().getHours();
-    if (hour < 12) return 'Good morning';
-    if (hour < 18) return 'Good afternoon';
-    return 'Good evening';
+    if (hour >= 5 && hour < 12) return { text: 'Good morning', emoji: '☀️' };
+    if (hour >= 12 && hour < 17) return { text: 'Good afternoon', emoji: '🌤️' };
+    if (hour >= 17 && hour < 21) return { text: 'Good evening', emoji: '🌆' };
+    return { text: 'Good night', emoji: '🌙' };
   };
+
+  const greeting = getGreeting();
+
+  // Only show greeting on Dashboard page
+  if (!showGreeting) {
+    return null;
+  }
 
   return (
     <header className="mb-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-3xl font-bold">{getGreeting()}! 👋</h2>
-          <p className="text-gray-500 mt-1">Manage your chatbots and analytics</p>
+          <h2 className="text-3xl font-bold flex items-center gap-3">
+            <span className="bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+              {greeting.text}!
+            </span>
+            <span className="text-4xl animate-pulse">{greeting.emoji}</span>
+          </h2>
+          <p className="text-gray-400 mt-2">Manage your chatbots and analytics</p>
         </div>
         
         {/* Search Bar */}

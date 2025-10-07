@@ -9,14 +9,23 @@
  * @param {string} config.environment - Pinecone environment
  * @param {string} config.indexName - Index name
  * @param {string} config.query - User query text
+ * @param {string} config.geminiApiKey - Gemini API key for embeddings
  * @param {number} config.topK - Number of results to return
  * @returns {Promise<Object>} - Query results
  */
-export const queryPinecone = async ({ apiKey, environment, indexName, query, topK = 3 }) => {
+export const queryPinecone = async ({ apiKey, environment, indexName, query, geminiApiKey, topK = 3 }) => {
   try {
-    // First, we need to convert text to embeddings
-    // For now, using a simple text-based query (you'll need to add embedding service)
-    const queryVector = await textToEmbedding(query, apiKey);
+    // Convert text to embeddings using Gemini
+    const queryVector = await textToEmbedding(query, geminiApiKey);
+
+    if (!queryVector || queryVector.length === 0) {
+      console.warn('Empty embedding vector, skipping Pinecone query');
+      return {
+        success: true,
+        matches: [],
+        count: 0,
+      };
+    }
 
     // Pinecone query endpoint
     const url = `https://${indexName}-${environment}.pinecone.io/query`;
@@ -61,33 +70,41 @@ export const queryPinecone = async ({ apiKey, environment, indexName, query, top
 };
 
 /**
- * Convert text to embedding vector
- * This is a placeholder - you'll need to integrate with an embedding service
- * Options: OpenAI Embeddings, Cohere, or Sentence Transformers
+ * Convert text to embedding vector using Gemini
  * @param {string} text - Text to embed
- * @param {string} apiKey - API key for embedding service
+ * @param {string} geminiApiKey - Gemini API key
  * @returns {Promise<number[]>} - Embedding vector
  */
-const textToEmbedding = async (text, apiKey) => {
-  // TODO: Integrate with embedding service
-  // For now, return a dummy vector (replace with actual embedding)
-  // Example with OpenAI:
-  // const response = await fetch('https://api.openai.com/v1/embeddings', {
-  //   method: 'POST',
-  //   headers: {
-  //     'Authorization': `Bearer ${openAiKey}`,
-  //     'Content-Type': 'application/json',
-  //   },
-  //   body: JSON.stringify({
-  //     input: text,
-  //     model: 'text-embedding-ada-002',
-  //   }),
-  // });
-  // return response.data[0].embedding;
+const textToEmbedding = async (text, geminiApiKey) => {
+  try {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/embedding-001:embedContent?key=${geminiApiKey}`;
 
-  // Placeholder: Return empty vector for now
-  // This will cause Pinecone to return no matches, which is fine for initial setup
-  return [];
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        content: {
+          parts: [{
+            text: text.substring(0, 10000), // Limit to 10k characters per embedding
+          }],
+        },
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      console.error('Gemini embedding error:', error);
+      throw new Error(`Gemini embedding failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.embedding?.values || [];
+  } catch (error) {
+    console.error('Text to embedding error:', error);
+    throw error;
+  }
 };
 
 /**
