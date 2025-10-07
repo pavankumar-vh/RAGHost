@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RAGhost Chat - Glass</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    #raghost-widget {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 9999;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    #raghost-chat-button {
+      width: 60px;
+      height: 60px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      cursor: pointer;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+    }
+
+    #raghost-chat-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    #raghost-chat-button svg {
+      width: 26px;
+      height: 26px;
+      fill: rgba(0, 0, 0, 0.7);
+    }
+
+    #raghost-chat-window {
+      position: fixed;
+      bottom: 100px;
+      right: 24px;
+      width: 380px;
+      height: 620px;
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(30px);
+      border-radius: 24px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+
+    #raghost-chat-window.open {
+      display: flex;
+      animation: fadeInScale 0.3s ease;
+    }
+
+    @keyframes fadeInScale {
+      from {
+        opacity: 0;
+        transform: scale(0.9);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .raghost-header {
+      background: rgba(255, 255, 255, 0.5);
+      backdrop-filter: blur(20px);
+      color: rgba(0, 0, 0, 0.85);
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .raghost-header-content {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .raghost-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.5);
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .raghost-bot-info h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 2px;
+      color: rgba(0, 0, 0, 0.9);
+    }
+
+    .raghost-bot-info p {
+      font-size: 12px;
+      color: rgba(0, 0, 0, 0.5);
+    }
+
+    .raghost-close {
+      background: rgba(0, 0, 0, 0.05);
+      border: none;
+      color: rgba(0, 0, 0, 0.6);
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 10px;
+      transition: all 0.2s;
+    }
+
+    .raghost-close:hover {
+      background: rgba(0, 0, 0, 0.1);
+      color: rgba(0, 0, 0, 0.9);
+    }
+
+    .raghost-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      background: transparent;
+    }
+
+    .raghost-message {
+      margin-bottom: 16px;
+      display: flex;
+      gap: 10px;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-10px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .raghost-message.user {
+      flex-direction: row-reverse;
+    }
+
+    .raghost-message.user .raghost-message-bubble {
+      animation: slideInRight 0.3s ease;
+    }
+
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(10px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .raghost-message-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: rgba(100, 100, 255, 0.15);
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(100, 100, 255, 0.8);
+      font-size: 14px;
+      flex-shrink: 0;
+      border: 1px solid rgba(100, 100, 255, 0.2);
+    }
+
+    .raghost-message.user .raghost-message-avatar {
+      background: rgba(100, 200, 100, 0.15);
+      color: rgba(50, 150, 50, 0.8);
+      border-color: rgba(100, 200, 100, 0.2);
+    }
+
+    .raghost-message-content {
+      max-width: 75%;
+    }
+
+    .raghost-message-bubble {
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(20px);
+      padding: 12px 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      word-wrap: break-word;
+      color: rgba(0, 0, 0, 0.85);
+      font-size: 14px;
+      line-height: 1.5;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .raghost-message.user .raghost-message-bubble {
+      background: rgba(100, 100, 255, 0.15);
+      border-color: rgba(100, 100, 255, 0.2);
+      color: rgba(0, 0, 0, 0.9);
+    }
+
+    .raghost-message-time {
+      font-size: 11px;
+      color: rgba(0, 0, 0, 0.4);
+      margin-top: 4px;
+      padding: 0 4px;
+    }
+
+    .raghost-typing {
+      display: flex;
+      gap: 4px;
+      padding: 12px 16px;
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(20px);
+      border-radius: 16px;
+      width: fit-content;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .raghost-typing span {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: rgba(100, 100, 255, 0.5);
+      animation: typingGlass 1.4s infinite;
+    }
+
+    .raghost-typing span:nth-child(2) { animation-delay: 0.2s; }
+    .raghost-typing span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typingGlass {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.3; }
+      30% { transform: translateY(-6px); opacity: 1; }
+    }
+
+    .raghost-input-area {
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.5);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(0, 0, 0, 0.05);
+      display: flex;
+      gap: 10px;
+    }
+
+    .raghost-input {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      border-radius: 14px;
+      padding: 12px 16px;
+      font-size: 14px;
+      color: rgba(0, 0, 0, 0.85);
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .raghost-input:focus {
+      border-color: rgba(100, 100, 255, 0.4);
+      background: rgba(255, 255, 255, 0.8);
+    }
+
+    .raghost-input::placeholder {
+      color: rgba(0, 0, 0, 0.4);
+    }
+
+    .raghost-send-button {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      background: rgba(100, 100, 255, 0.15);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(100, 100, 255, 0.2);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .raghost-send-button:hover {
+      background: rgba(100, 100, 255, 0.25);
+      transform: scale(1.05);
+    }
+
+    .raghost-send-button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .raghost-send-button svg {
+      width: 18px;
+      height: 18px;
+      fill: rgba(100, 100, 255, 0.8);
+    }
+
+    .raghost-powered {
+      text-align: center;
+      padding: 10px;
+      font-size: 11px;
+      color: rgba(0, 0, 0, 0.4);
+      background: rgba(255, 255, 255, 0.5);
+      backdrop-filter: blur(20px);
+    }
+
+    .raghost-powered a {
+      color: rgba(100, 100, 255, 0.8);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    @media (max-width: 480px) {
+      #raghost-chat-window {
+        width: 100%;
+        height: 100%;
+        bottom: 0;
+        right: 0;
+        border-radius: 0;
+      }
+    }
+
+    .raghost-messages::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    .raghost-messages::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .raghost-messages::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.15);
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body>
+  <div id="raghost-widget">
+    <button id="raghost-chat-button">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
+      </svg>
+    </button>
+
+    <div id="raghost-chat-window">
+      <div class="raghost-header">
+        <div class="raghost-header-content">
+          <div class="raghost-avatar">💬</div>
+          <div class="raghost-bot-info">
+            <h3 id="raghost-bot-name">AI Assistant</h3>
+            <p>Online</p>
+          </div>
+        </div>
+        <button class="raghost-close" id="raghost-close-btn">
+          <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="raghost-messages" id="raghost-messages">
+        <div class="raghost-message">
+          <div class="raghost-message-avatar">🤖</div>
+          <div class="raghost-message-content">
+            <div class="raghost-message-bubble">
+              Hello! How can I assist you today?
+            </div>
+            <div class="raghost-message-time">Now</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="raghost-input-area">
+        <input 
+          type="text" 
+          class="raghost-input" 
+          id="raghost-input"
+          placeholder="Type a message..."
+        />
+        <button class="raghost-send-button" id="raghost-send-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="raghost-powered">
+        Powered by <a href="https://raghost.ai" target="_blank">RAGhost</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="../widget.js"></script>
+</body>
+</html>
