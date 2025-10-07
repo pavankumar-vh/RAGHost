@@ -1,9 +1,9 @@
 /**
- * Gemini Service - Generate AI responses
+ * Gemini Service - Generate AI responses using Gemini 2.5 Flash model
  */
 
 /**
- * Generate response using Gemini
+ * Generate response using Gemini 2.5 Flash
  * @param {Object} config - Configuration
  * @param {string} config.apiKey - Gemini API key
  * @param {string} config.message - User message
@@ -26,7 +26,7 @@ export const generateResponse = async ({
   maxTokens = 1024
 }) => {
   try {
-    console.log('🎯 Generating response with Gemini Pro...');
+    console.log('🎯 Generating response with Gemini 2.5 Flash...');
     
     // Build prompt with custom or default system prompt
     const finalSystemPrompt = systemPrompt || buildSystemPrompt(botName, botType);
@@ -51,8 +51,8 @@ Response:`;
     console.log('🎲 Temperature:', temperature);
     console.log('📊 Max tokens:', maxTokens);
 
-    // Gemini API endpoint
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
+    // Gemini API endpoint - using gemini-2.5-flash model
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
     const response = await fetch(url, {
       method: 'POST',
