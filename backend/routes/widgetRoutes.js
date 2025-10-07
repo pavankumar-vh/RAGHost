@@ -61,15 +61,18 @@ function generateEmbedCode(botId, template, baseUrl, customization) {
 </script>
 <iframe 
   src="${templateUrl}?botId=${botId}" 
-  style="position: fixed; ${position.includes('right') ? 'right: 24px;' : 'left: 24px;'} ${position.includes('bottom') ? 'bottom: 24px;' : 'top: 24px;'} border: none; z-index: 9999; width: 80px; height: 80px; border-radius: 50%;"
+  style="position: fixed; ${position.includes('right') ? 'right: 0;' : 'left: 0;'} ${position.includes('bottom') ? 'bottom: 0;' : 'top: 0;'} border: none; z-index: 999999; width: 100%; height: 100%; pointer-events: none; background: transparent;"
   id="raghost-widget-iframe"
   allow="clipboard-write"
   frameborder="0"
+  scrolling="no"
+  allowtransparency="true"
 ></iframe>
 <script>
   // Initialize widget in iframe
   const iframe = document.getElementById('raghost-widget-iframe');
   iframe.onload = function() {
+    iframe.style.pointerEvents = 'auto';
     try {
       iframe.contentWindow.postMessage({
         type: 'init',

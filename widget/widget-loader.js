@@ -28,10 +28,12 @@
     width: 100%;
     height: 100%;
     pointer-events: none;
+    background: transparent;
   `;
   iframe.setAttribute('allow', 'clipboard-write');
   iframe.setAttribute('frameborder', '0');
   iframe.setAttribute('scrolling', 'no');
+  iframe.setAttribute('allowtransparency', 'true');
 
   // Append to body when DOM is ready
   function injectWidget() {
