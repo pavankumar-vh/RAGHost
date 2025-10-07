@@ -18,6 +18,7 @@ import botsRoutes from './routes/bots.js';
 import chatRoutes from './routes/chat.js';
 import knowledgeRoutes from './routes/knowledge.js';
 import widgetRoutes from './routes/widgetRoutes.js';
+import analyticsRoutes from './routes/analytics.js';
 import { errorHandler, notFound } from './middleware/errorHandler.js';
 import { authenticate } from './middleware/auth.js';
 
@@ -88,6 +89,7 @@ app.get('/health', (req, res) => {
 app.use('/api/keys', authenticate, keysRoutes);
 app.use('/api/bots', authenticate, botsRoutes);
 app.use('/api/knowledge', authenticate, knowledgeRoutes);
+app.use('/api/analytics', authenticate, analyticsRoutes);
 app.use('/api/chat', chatRoutes); // Public chat API (no auth required)
 app.use('/api/widget', widgetRoutes); // Widget embed code generation
 
