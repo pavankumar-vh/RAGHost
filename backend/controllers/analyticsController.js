@@ -106,12 +106,21 @@ export const getDailyAnalytics = async (req, res) => {
     const { days = 7 } = req.query;
 
     const bots = await Bot.find({ userId });
+    
+    console.log('📊 Daily Analytics Request:', {
+      userId,
+      days,
+      botsFound: bots.length,
+      botsWithDailyStats: bots.filter(b => b.dailyStats && b.dailyStats.length > 0).length,
+    });
 
     // Aggregate daily stats from all bots
     const aggregatedStats = {};
 
     bots.forEach(bot => {
       if (!bot.dailyStats) return;
+      
+      console.log(`  Bot ${bot.name}: ${bot.dailyStats.length} daily stats entries`);
 
       bot.dailyStats.forEach(stat => {
         const dateKey = new Date(stat.date).toISOString().split('T')[0];
@@ -145,6 +154,11 @@ export const getDailyAnalytics = async (req, res) => {
       }))
       .sort((a, b) => new Date(a.date) - new Date(b.date))
       .slice(-parseInt(days));
+    
+    console.log('📊 Returning daily data:', {
+      entriesReturned: dailyData.length,
+      data: dailyData,
+    });
 
     res.json({
       success: true,

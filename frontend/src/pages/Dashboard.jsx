@@ -80,8 +80,10 @@ const Dashboard = () => {
           analyticsService.getOverview(),
           analyticsService.getDailyAnalytics(7)
         ]);
+        console.log('📊 Fetched analytics:', { overviewData, dailyData });
         setAnalytics(overviewData.data);
         setDailyStats(dailyData.data || []);
+        console.log('📊 Set dailyStats:', dailyData.data);
       }
     } catch (error) {
       console.error('Error fetching analytics:', error);
@@ -565,6 +567,8 @@ const StatCard = ({ title, value, icon: Icon, color, change }) => {
 
 // Activity Chart Component
 const ActivityChart = ({ dailyStats }) => {
+  console.log('📊 ActivityChart dailyStats:', dailyStats);
+  
   // Process daily stats for the chart
   const processedData = dailyStats && dailyStats.length > 0 
     ? dailyStats.slice(-7).map(stat => ({
@@ -572,26 +576,22 @@ const ActivityChart = ({ dailyStats }) => {
         day: new Date(stat.date).toLocaleDateString('en-US', { weekday: 'short' }),
         date: stat.date
       }))
-    : [
-        { value: 0, day: 'Mon' },
-        { value: 0, day: 'Tue' },
-        { value: 0, day: 'Wed' },
-        { value: 0, day: 'Thu' },
-        { value: 0, day: 'Fri' },
-        { value: 0, day: 'Sat' },
-        { value: 0, day: 'Sun' }
-      ];
+    : [];
 
-  const maxValue = Math.max(...processedData.map(d => d.value), 1); // Minimum 1 to avoid divide by zero
+  // Check if we have any actual data
+  const hasData = processedData.length > 0 && processedData.some(d => d.value > 0);
+  const maxValue = hasData ? Math.max(...processedData.map(d => d.value)) : 1;
+
+  console.log('📊 ActivityChart processed:', { processedData, hasData, maxValue });
 
   return (
     <div className="h-56">
-      {processedData.length === 0 || maxValue === 0 ? (
+      {!hasData ? (
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
             <Activity size={48} className="mx-auto mb-3 opacity-20" />
             <p className="text-sm opacity-70">No activity data yet</p>
-            <p className="text-xs opacity-50 mt-1">Start chatting with your bots</p>
+            <p className="text-xs opacity-50 mt-1">Start chatting with your bots to see activity</p>
           </div>
         </div>
       ) : (

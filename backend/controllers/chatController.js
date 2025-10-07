@@ -175,6 +175,13 @@ export const sendMessage = async (req, res) => {
     }
     
     await bot.save();
+    
+    console.log('📊 Updated bot daily stats:', {
+      botId: bot._id,
+      totalQueries: bot.totalQueries,
+      dailyStatsCount: bot.dailyStats.length,
+      todayStats: todayStat,
+    });
 
     res.json({
       success: true,
