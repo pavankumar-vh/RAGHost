@@ -14,6 +14,8 @@ export const sendMessage = async (req, res) => {
   try {
     const { botId } = req.params;
     const { message, sessionId } = req.body;
+    
+    console.log('💬 Chat request received:', { botId, message: message?.substring(0, 50), sessionId });
 
     if (!message || !message.trim()) {
       return res.status(400).json({
@@ -24,6 +26,7 @@ export const sendMessage = async (req, res) => {
 
     // Validate botId format
     if (!mongoose.Types.ObjectId.isValid(botId)) {
+      console.log('❌ Invalid botId format:', botId);
       return res.status(400).json({
         success: false,
         error: 'Invalid bot ID format. Please provide a valid bot ID.',
@@ -33,11 +36,14 @@ export const sendMessage = async (req, res) => {
     // Find bot
     const bot = await Bot.findById(botId);
     if (!bot) {
+      console.log('❌ Bot not found:', botId);
       return res.status(404).json({
         success: false,
         error: 'Bot not found',
       });
     }
+    
+    console.log('✅ Bot found:', { botId: bot._id, name: bot.name, totalQueries: bot.totalQueries });
 
     if (bot.status !== 'active') {
       return res.status(403).json({
@@ -135,9 +141,11 @@ export const sendMessage = async (req, res) => {
         ? responseTime
         : (bot.avgResponseTime + responseTime) / 2;
     
-    // Update daily stats
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // Update daily stats - use ISO date string for comparison
+    const now = new Date();
+    const todayStr = now.toISOString().split('T')[0]; // "YYYY-MM-DD"
+    
+    console.log('📅 Updating daily stats for date:', todayStr);
     
     if (!bot.dailyStats) {
       bot.dailyStats = [];
@@ -145,19 +153,22 @@ export const sendMessage = async (req, res) => {
     
     // Find or create today's stat entry
     let todayStat = bot.dailyStats.find(stat => {
-      const statDate = new Date(stat.date);
-      statDate.setHours(0, 0, 0, 0);
-      return statDate.getTime() === today.getTime();
+      const statDateStr = new Date(stat.date).toISOString().split('T')[0];
+      console.log('  Checking stat date:', statDateStr, 'vs today:', todayStr);
+      return statDateStr === todayStr;
     });
     
     if (!todayStat) {
+      console.log('  Creating new stat entry for:', todayStr);
       todayStat = {
-        date: today,
+        date: new Date(todayStr), // Store as date object
         queries: 0,
         tokens: 0,
         avgResponseTime: 0,
       };
       bot.dailyStats.push(todayStat);
+    } else {
+      console.log('  Found existing stat entry');
     }
     
     // Update today's stats
