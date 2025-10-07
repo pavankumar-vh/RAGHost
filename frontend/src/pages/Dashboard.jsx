@@ -220,6 +220,7 @@ const Dashboard = () => {
             <ApiKeysView 
               bots={bots} 
               loading={loading}
+              fetchBots={fetchBots}
               onEdit={(bot) => {
                 setSelectedBot(bot);
                 setShowEditModal(true);
@@ -831,7 +832,7 @@ const MyBotsView = ({ bots, setShowBotModal, setSelectedBot, setShowKnowledgeMod
 };
 
 // API Keys View
-const ApiKeysView = ({ bots, loading, onEdit }) => {
+const ApiKeysView = ({ bots, loading, onEdit, fetchBots }) => {
   const { getIdToken } = useAuth();
   const [testingBotId, setTestingBotId] = useState(null);
   const [testResults, setTestResults] = useState({});
