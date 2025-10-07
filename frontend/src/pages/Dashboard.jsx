@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { botsService, setAuthToken } from '../services/api';
+import { botsService, analyticsService, setAuthToken } from '../services/api';
 import BotConfigModal from '../components/BotConfigModal';
 import EditBotModal from '../components/EditBotModal';
 import EmbedCodeModal from '../components/EmbedCodeModal';
 import KnowledgeBaseModal from '../components/KnowledgeBaseModal';
+import AnalyticsView from '../components/AnalyticsView';
 import { 
   LogOut, 
   Bot, 
@@ -26,7 +27,10 @@ import {
   Loader2,
   Trash2,
   Edit,
-  Code
+  Code,
+  DollarSign,
+  Clock,
+  Target
 } from 'lucide-react';
 
 const Dashboard = () => {
@@ -41,10 +45,13 @@ const Dashboard = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [bots, setBots] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [analytics, setAnalytics] = useState(null);
+  const [dailyStats, setDailyStats] = useState([]);
 
-  // Fetch bots on component mount
+  // Fetch bots and analytics on component mount
   useEffect(() => {
     fetchBots();
+    fetchAnalytics();
   }, []);
 
   const fetchBots = async () => {
@@ -61,6 +68,23 @@ const Dashboard = () => {
       setBots([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchAnalytics = async () => {
+    try {
+      const token = await getIdToken();
+      if (token) {
+        setAuthToken(token);
+        const [overviewData, dailyData] = await Promise.all([
+          analyticsService.getOverview(),
+          analyticsService.getDailyAnalytics(7)
+        ]);
+        setAnalytics(overviewData.data);
+        setDailyStats(dailyData.data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching analytics:', error);
     }
   };
 
@@ -194,6 +218,8 @@ const Dashboard = () => {
               bots={bots} 
               setShowBotModal={setShowBotModal}
               loading={loading}
+              analytics={analytics}
+              dailyStats={dailyStats}
             />
           )}
           
@@ -366,7 +392,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
 };
 
 // Dashboard View
-const DashboardView = ({ stats, bots, setShowBotModal, loading }) => {
+const DashboardView = ({ stats, bots, setShowBotModal, loading, analytics, dailyStats }) => {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -441,7 +467,7 @@ const DashboardView = ({ stats, bots, setShowBotModal, loading }) => {
             </div>
             <Activity size={24} />
           </div>
-          <ActivityChart />
+          <ActivityChart dailyStats={dailyStats} />
         </div>
 
         {/* Quick Actions */}
@@ -538,23 +564,71 @@ const StatCard = ({ title, value, icon: Icon, color, change }) => {
 };
 
 // Activity Chart Component
-const ActivityChart = () => {
-  const data = [30, 50, 40, 60, 45, 70, 55];
-  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  const maxValue = Math.max(...data);
+const ActivityChart = ({ dailyStats }) => {
+  // Process daily stats for the chart
+  const processedData = dailyStats && dailyStats.length > 0 
+    ? dailyStats.slice(-7).map(stat => ({
+        value: stat.queries || 0,
+        day: new Date(stat.date).toLocaleDateString('en-US', { weekday: 'short' }),
+        date: stat.date
+      }))
+    : [
+        { value: 0, day: 'Mon' },
+        { value: 0, day: 'Tue' },
+        { value: 0, day: 'Wed' },
+        { value: 0, day: 'Thu' },
+        { value: 0, day: 'Fri' },
+        { value: 0, day: 'Sat' },
+        { value: 0, day: 'Sun' }
+      ];
+
+  const maxValue = Math.max(...processedData.map(d => d.value), 1); // Minimum 1 to avoid divide by zero
 
   return (
-    <div className="h-48">
-      <div className="flex items-end justify-between h-full gap-2">
-        {data.map((value, index) => (
-          <div key={index} className="flex-1 flex flex-col items-center gap-2">
-            <div className="w-full bg-black/20 rounded-t-lg relative" style={{ height: `${(value / maxValue) * 100}%` }}>
-              <div className="absolute inset-0 bg-black/40 rounded-t-lg"></div>
-            </div>
-            <span className="text-xs font-medium">{days[index]}</span>
+    <div className="h-56">
+      {processedData.length === 0 || maxValue === 0 ? (
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center">
+            <Activity size={48} className="mx-auto mb-3 opacity-20" />
+            <p className="text-sm opacity-70">No activity data yet</p>
+            <p className="text-xs opacity-50 mt-1">Start chatting with your bots</p>
           </div>
-        ))}
-      </div>
+        </div>
+      ) : (
+        <>
+          <div className="flex items-end justify-between h-48 gap-3">
+            {processedData.map((item, index) => {
+              const heightPercentage = (item.value / maxValue) * 100;
+              return (
+                <div key={index} className="flex-1 flex flex-col items-center gap-2 group">
+                  <div className="relative w-full" style={{ height: '192px' }}>
+                    <div 
+                      className="absolute bottom-0 w-full bg-black/30 rounded-t-xl transition-all duration-300 group-hover:bg-black/40 overflow-hidden" 
+                      style={{ height: `${heightPercentage}%` }}
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+                      {/* Value tooltip on hover */}
+                      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black text-white px-2 py-1 rounded text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                        {item.value} {item.value === 1 ? 'query' : 'queries'}
+                      </div>
+                    </div>
+                  </div>
+                  <span className="text-xs font-semibold">{item.day}</span>
+                </div>
+              );
+            })}
+          </div>
+          {/* Stats summary */}
+          <div className="mt-4 flex items-center justify-between text-sm">
+            <span className="opacity-70">
+              Total: <span className="font-bold">{processedData.reduce((sum, item) => sum + item.value, 0)}</span> queries
+            </span>
+            <span className="opacity-70">
+              Peak: <span className="font-bold">{maxValue}</span>
+            </span>
+          </div>
+        </>
+      )}
     </div>
   );
 };
@@ -1097,59 +1171,6 @@ const ApiKeysView = ({ bots, loading, onEdit, fetchBots }) => {
               </div>
             );
           })}
-        </div>
-      )}
-    </div>
-  );
-};
-
-// Analytics View
-const AnalyticsView = ({ bots, loading }) => {
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 size={48} className="animate-spin text-accent-blue" />
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold">Analytics</h2>
-        <p className="text-gray-500 mt-1">Track your bot performance</p>
-      </div>
-
-      {bots.length === 0 ? (
-        <div className="bg-[#0A0A0A] border border-gray-800 rounded-2xl p-12 text-center">
-          <BarChart3 size={48} className="text-gray-600 mx-auto mb-4" />
-          <h3 className="text-xl font-bold mb-2">No Analytics Data</h3>
-          <p className="text-gray-500">Create bots to see analytics</p>
-        </div>
-      ) : (
-        <div className="bg-[#0A0A0A] border border-gray-800 rounded-2xl p-6">
-          <h3 className="text-xl font-bold mb-4">Bot Performance</h3>
-          <div className="space-y-4">
-            {bots.map((bot) => (
-              <div key={bot.id} className="flex items-center gap-4 transition-all duration-300 hover:scale-102">
-                <div className={`w-10 h-10 rounded-lg bg-accent-${bot.color}/20 flex items-center justify-center`}>
-                  <Bot size={20} className={`text-accent-${bot.color}`} />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-semibold">{bot.name}</span>
-                    <span className="text-sm text-gray-500">{bot.accuracy || 0}%</span>
-                  </div>
-                  <div className="h-2 bg-gray-900 rounded-full overflow-hidden">
-                    <div 
-                      className={`h-full bg-accent-${bot.color} transition-all duration-500`}
-                      style={{ width: `${bot.accuracy || 0}%` }}
-                    ></div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
       )}
     </div>
