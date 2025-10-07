@@ -1044,7 +1044,7 @@ const ApiKeysView = ({ bots, loading, onEdit }) => {
                       )}
                     </div>
                     <div className="space-y-1 text-xs text-gray-400">
-                      <p><span className="text-gray-500">Model:</span> <span className="font-mono text-gray-300">gemini-pro</span></p>
+                      <p><span className="text-gray-500">Model:</span> <span className="font-mono text-gray-300">gemini-embedding-001</span></p>
                       {!bot.geminiVerified && (
                         <div className="mt-3 p-3 bg-red-500/10 rounded-lg border border-red-500/20">
                           <p className="text-red-400 font-medium mb-1">⚠️ Connection Failed</p>
