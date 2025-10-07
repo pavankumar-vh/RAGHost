@@ -35,11 +35,13 @@ function generateEmbedCode(botId, template, baseUrl, customization) {
     avatar = '🤖'
   } = customization;
 
+  const backendUrl = process.env.BACKEND_URL || 'http://localhost:5001';
+  
   const templateUrls = {
-    'default': `${baseUrl}/widget/templates/default.html`,
-    'minimal': `${baseUrl}/widget/templates/minimal.html`,
-    'modern-dark': `${baseUrl}/widget/templates/modern-dark.html`,
-    'glass': `${baseUrl}/widget/templates/glass.html`
+    'default': `${backendUrl}/widget/templates/default.html`,
+    'minimal': `${backendUrl}/widget/templates/minimal.html`,
+    'modern-dark': `${backendUrl}/widget/templates/modern-dark.html`,
+    'glass': `${backendUrl}/widget/templates/glass.html`
   };
 
   const templateUrl = templateUrls[template] || templateUrls['default'];
@@ -49,7 +51,7 @@ function generateEmbedCode(botId, template, baseUrl, customization) {
   window.RAGhostConfig = {
     botId: '${botId}',
     botName: '${botName}',
-    apiUrl: '${baseUrl}/api',
+    apiUrl: '${backendUrl}/api',
     avatar: '${avatar}',
     theme: {
       primaryColor: '${primaryColor}',
@@ -58,16 +60,24 @@ function generateEmbedCode(botId, template, baseUrl, customization) {
   };
 </script>
 <iframe 
-  src="${templateUrl}" 
-  style="position: fixed; ${position.includes('right') ? 'right: 24px;' : 'left: 24px;'} ${position.includes('bottom') ? 'bottom: 24px;' : 'top: 24px;'} border: none; z-index: 9999; width: 400px; height: 650px; pointer-events: none;"
+  src="${templateUrl}?botId=${botId}" 
+  style="position: fixed; ${position.includes('right') ? 'right: 24px;' : 'left: 24px;'} ${position.includes('bottom') ? 'bottom: 24px;' : 'top: 24px;'} border: none; z-index: 9999; width: 80px; height: 80px; border-radius: 50%;"
   id="raghost-widget-iframe"
   allow="clipboard-write"
+  frameborder="0"
 ></iframe>
 <script>
-  // Allow pointer events on widget
+  // Initialize widget in iframe
   const iframe = document.getElementById('raghost-widget-iframe');
   iframe.onload = function() {
-    iframe.style.pointerEvents = 'all';
+    try {
+      iframe.contentWindow.postMessage({
+        type: 'init',
+        config: window.RAGhostConfig
+      }, '*');
+    } catch (e) {
+      console.log('Widget initialized');
+    }
   };
 </script>
 <!-- End RAGhost Chat Widget -->`;
