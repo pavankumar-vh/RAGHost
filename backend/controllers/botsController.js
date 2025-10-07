@@ -24,6 +24,95 @@ export const createBot = async (req, res) => {
     const encryptedPineconeKey = encrypt(pineconeKey);
     const encryptedGeminiKey = encrypt(geminiKey);
 
+    // Verify API keys before creating bot
+    let pineconeVerified = false;
+    let geminiVerified = false;
+    const verificationErrors = [];
+
+    // Test Pinecone connection
+    try {
+      console.log('🔍 Verifying Pinecone connection...');
+      console.log(`   Index: ${pineconeIndexName}, Environment: ${pineconeEnvironment}`);
+      
+      // Try modern Pinecone URL format first (projects-based)
+      // Format: https://INDEX_NAME-PROJECT_ID.svc.ENVIRONMENT.pinecone.io
+      let pineconeUrl = `https://${pineconeIndexName}-${pineconeEnvironment}.svc.pinecone.io/describe_index_stats`;
+      
+      // If environment looks like a region (e.g., us-east-1-aws), try alternate format
+      if (pineconeEnvironment.includes('-')) {
+        // Legacy format: https://INDEX_NAME.svc.ENVIRONMENT.pinecone.io
+        pineconeUrl = `https://${pineconeIndexName}.svc.${pineconeEnvironment}.pinecone.io/describe_index_stats`;
+      }
+      
+      console.log(`   Testing URL: ${pineconeUrl}`);
+      
+      const pineconeResponse = await fetch(pineconeUrl, {
+        method: 'GET',
+        headers: {
+          'Api-Key': pineconeKey,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      console.log(`   Response status: ${pineconeResponse.status}`);
+      
+      if (pineconeResponse.ok) {
+        const data = await pineconeResponse.json();
+        pineconeVerified = true;
+        console.log('✅ Pinecone verified - Dimension:', data.dimension, 'Vectors:', data.totalVectorCount);
+      } else {
+        const errorText = await pineconeResponse.text();
+        verificationErrors.push(`Pinecone verification failed: ${pineconeResponse.status} - ${errorText.substring(0, 100)}`);
+        console.log('❌ Pinecone verification failed:', pineconeResponse.status, errorText.substring(0, 200));
+      }
+    } catch (error) {
+      verificationErrors.push(`Pinecone error: ${error.message}`);
+      console.log('❌ Pinecone error:', error.message);
+    }
+
+    // Test Gemini connection
+    try {
+      console.log('🔍 Verifying Gemini connection...');
+      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${geminiKey}`;
+      const geminiResponse = await fetch(geminiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{ text: 'Hi' }]
+          }]
+        }),
+      });
+      
+      console.log(`   Response status: ${geminiResponse.status}`);
+      
+      if (geminiResponse.ok) {
+        geminiVerified = true;
+        console.log('✅ Gemini verified');
+      } else {
+        const errorData = await geminiResponse.json().catch(() => ({}));
+        const errorMsg = errorData.error?.message || geminiResponse.statusText;
+        verificationErrors.push(`Gemini verification failed: ${errorMsg}`);
+        console.log('❌ Gemini verification failed:', geminiResponse.status, errorMsg);
+      }
+    } catch (error) {
+      verificationErrors.push(`Gemini error: ${error.message}`);
+      console.log('❌ Gemini error:', error.message);
+    }
+
+    // Determine bot status based on verification
+    const status = (pineconeVerified && geminiVerified) ? 'active' : 'inactive';
+
+    // Construct and store pineconeHost for easier access
+    let pineconeHost;
+    if (pineconeEnvironment.includes('-')) {
+      pineconeHost = `https://${pineconeIndexName}.svc.${pineconeEnvironment}.pinecone.io`;
+    } else {
+      pineconeHost = `https://${pineconeIndexName}-${pineconeEnvironment}.svc.pinecone.io`;
+    }
+
     // Create bot
     const bot = new Bot({
       userId,
@@ -34,11 +123,17 @@ export const createBot = async (req, res) => {
       pineconeKey: encryptedPineconeKey,
       pineconeEnvironment,
       pineconeIndexName,
+      pineconeHost,
       geminiKey: encryptedGeminiKey,
-      status: 'inactive', // Will be activated after verification
+      pineconeVerified,
+      geminiVerified,
+      status,
+      lastVerified: new Date(),
     });
 
     await bot.save();
+
+    console.log(`🤖 Bot created: ${bot.name} (Status: ${status})`);
 
     // Return bot without sensitive data
     const botResponse = {
@@ -50,6 +145,8 @@ export const createBot = async (req, res) => {
       color: bot.color,
       pineconeEnvironment: bot.pineconeEnvironment,
       pineconeIndexName: bot.pineconeIndexName,
+      pineconeVerified: bot.pineconeVerified,
+      geminiVerified: bot.geminiVerified,
       totalQueries: bot.totalQueries,
       avgResponseTime: bot.avgResponseTime,
       accuracy: bot.accuracy,
@@ -59,6 +156,11 @@ export const createBot = async (req, res) => {
     res.status(201).json({
       message: 'Bot created successfully',
       bot: botResponse,
+      verificationStatus: {
+        pinecone: pineconeVerified ? 'verified' : 'failed',
+        gemini: geminiVerified ? 'verified' : 'failed',
+        errors: verificationErrors.length > 0 ? verificationErrors : undefined,
+      },
     });
   } catch (error) {
     console.error('Error creating bot:', error);
@@ -164,6 +266,17 @@ export const updateBot = async (req, res) => {
     }
     if (pineconeEnvironment) bot.pineconeEnvironment = pineconeEnvironment;
     if (pineconeIndexName) bot.pineconeIndexName = pineconeIndexName;
+    
+    // Update pineconeHost if environment or index changed
+    if (pineconeEnvironment || pineconeIndexName) {
+      const env = pineconeEnvironment || bot.pineconeEnvironment;
+      const idx = pineconeIndexName || bot.pineconeIndexName;
+      if (env.includes('-')) {
+        bot.pineconeHost = `https://${idx}.svc.${env}.pinecone.io`;
+      } else {
+        bot.pineconeHost = `https://${idx}-${env}.svc.pinecone.io`;
+      }
+    }
 
     // Update Gemini key if provided
     if (geminiKey) {
@@ -236,11 +349,134 @@ export const testBotConnection = async (req, res) => {
     const pineconeKey = bot.pineconeKey ? decrypt(bot.pineconeKey) : null;
     const geminiKey = bot.geminiKey ? decrypt(bot.geminiKey) : null;
 
-    // TODO: Implement actual Pinecone and Gemini connection testing
-    // For now, just mark as verified if keys exist
-    bot.pineconeVerified = !!pineconeKey;
-    bot.geminiVerified = !!geminiKey || bot.useGlobalGeminiKey;
+    let pineconeVerified = false;
+    let geminiVerified = false;
+    const testResults = {
+      pinecone: { verified: false, message: '' },
+      gemini: { verified: false, message: '' },
+    };
+
+    // Test Pinecone connection
+    if (pineconeKey) {
+      try {
+        console.log('🔍 Testing Pinecone connection...');
+        console.log(`   Index: ${bot.pineconeIndexName}, Environment: ${bot.pineconeEnvironment}`);
+        
+        // Use same smart URL detection as createBot
+        let pineconeUrl = `https://${bot.pineconeIndexName}-${bot.pineconeEnvironment}.svc.pinecone.io/describe_index_stats`;
+        
+        // If environment looks like a region (e.g., us-east-1-aws), use legacy format
+        if (bot.pineconeEnvironment.includes('-')) {
+          // Legacy format: https://INDEX_NAME.svc.ENVIRONMENT.pinecone.io
+          pineconeUrl = `https://${bot.pineconeIndexName}.svc.${bot.pineconeEnvironment}.pinecone.io/describe_index_stats`;
+        }
+        
+        console.log(`   Testing URL: ${pineconeUrl}`);
+        
+        const pineconeResponse = await fetch(pineconeUrl, {
+          method: 'GET',
+          headers: {
+            'Api-Key': pineconeKey,
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        console.log(`   Response status: ${pineconeResponse.status}`);
+        
+        if (pineconeResponse.ok) {
+          const data = await pineconeResponse.json();
+          pineconeVerified = true;
+          testResults.pinecone = {
+            verified: true,
+            message: 'Pinecone connection successful',
+            dimension: data.dimension,
+            totalVectorCount: data.totalVectorCount,
+          };
+          console.log('✅ Pinecone connection successful - Dimension:', data.dimension, 'Vectors:', data.totalVectorCount);
+        } else {
+          const errorText = await pineconeResponse.text();
+          testResults.pinecone = {
+            verified: false,
+            message: `Pinecone connection failed: ${pineconeResponse.status} - ${errorText.substring(0, 100)}`,
+          };
+          console.log('❌ Pinecone connection failed:', pineconeResponse.status, errorText.substring(0, 200));
+        }
+      } catch (error) {
+        testResults.pinecone = {
+          verified: false,
+          message: `Pinecone error: ${error.message}`,
+        };
+        console.log('❌ Pinecone error:', error.message);
+      }
+    } else {
+      testResults.pinecone = {
+        verified: false,
+        message: 'No Pinecone API key configured',
+      };
+    }
+
+    // Test Gemini connection
+    if (geminiKey) {
+      try {
+        console.log('🔍 Testing Gemini connection...');
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${geminiKey}`;
+        console.log(`   Testing URL: ${geminiUrl.replace(geminiKey, 'API_KEY_HIDDEN')}`);
+        
+        const geminiResponse = await fetch(geminiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            contents: [{
+              parts: [{ text: 'Test connection' }]
+            }]
+          }),
+        });
+        
+        console.log(`   Response status: ${geminiResponse.status}`);
+        
+        if (geminiResponse.ok) {
+          geminiVerified = true;
+          testResults.gemini = {
+            verified: true,
+            message: 'Gemini connection successful',
+          };
+          console.log('✅ Gemini connection successful');
+        } else {
+          const errorData = await geminiResponse.json().catch(() => ({}));
+          const errorMsg = errorData.error?.message || geminiResponse.statusText;
+          testResults.gemini = {
+            verified: false,
+            message: `Gemini connection failed: ${geminiResponse.status} - ${errorMsg}`,
+          };
+          console.log('❌ Gemini connection failed:', geminiResponse.status, errorMsg);
+        }
+      } catch (error) {
+        testResults.gemini = {
+          verified: false,
+          message: `Gemini error: ${error.message}`,
+        };
+        console.log('❌ Gemini error:', error.message);
+      }
+    } else {
+      testResults.gemini = {
+        verified: false,
+        message: 'No Gemini API key configured',
+      };
+    }
+
+    // Update bot verification status
+    bot.pineconeVerified = pineconeVerified;
+    bot.geminiVerified = geminiVerified;
     bot.lastVerified = new Date();
+    
+    // Update status based on verification
+    if (pineconeVerified && geminiVerified) {
+      bot.status = 'active';
+    } else {
+      bot.status = 'inactive';
+    }
 
     await bot.save();
 
@@ -248,6 +484,8 @@ export const testBotConnection = async (req, res) => {
       message: 'Bot connections tested',
       pineconeVerified: bot.pineconeVerified,
       geminiVerified: bot.geminiVerified,
+      status: bot.status,
+      testResults,
     });
   } catch (error) {
     console.error('Error testing bot connection:', error);

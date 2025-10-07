@@ -11,7 +11,9 @@ import initializeFirebase from './config/firebase.js';
 import keysRoutes from './routes/keys.js';
 import botsRoutes from './routes/bots.js';
 import chatRoutes from './routes/chat.js';
+import knowledgeRoutes from './routes/knowledge.js';
 import { errorHandler, notFound } from './middleware/errorHandler.js';
+import { authenticate } from './middleware/auth.js';
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -42,8 +44,9 @@ app.get('/health', (req, res) => {
 });
 
 // API Routes
-app.use('/api/keys', keysRoutes);
-app.use('/api/bots', botsRoutes);
+app.use('/api/keys', authenticate, keysRoutes);
+app.use('/api/bots', authenticate, botsRoutes);
+app.use('/api/knowledge', authenticate, knowledgeRoutes);
 app.use('/api/chat', chatRoutes); // Public chat API (no auth required)
 
 // Error handling

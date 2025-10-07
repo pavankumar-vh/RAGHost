@@ -1,80 +1,123 @@
 /**
  * Embedding Service - Convert text to vectors and upsert to Pinecone
- * Standard: Gemini embedding-001 model at 1536 dimensions
+ * Standard: Gemini gemini-embedding-001 model at 1536 dimensions
  */
+
+/**
+ * DEFINITIVE FIX: Aggressively sanitizes text to remove all problematic characters.
+ * This handles machine logs, special characters, and non-standard text files.
+ * @param {string} text - Text to sanitize
+ * @returns {string} - Sanitized text
+ */
+export const sanitizeTextForEmbedding = (text) => {
+  // Step 1: Replace all non-alphanumeric characters with a space
+  // This breaks up file paths, special symbols, and complex punctuation
+  const alphaNumericOnly = text.replace(/[^a-zA-Z0-9]/g, ' ');
+  
+  // Step 2: Replace multiple consecutive spaces with a single space
+  const normalizedSpaces = alphaNumericOnly.replace(/\s+/g, ' ').trim();
+  
+  return normalizedSpaces;
+};
 
 /**
  * Chunk text into smaller pieces for embedding
  * @param {string} text - Full text to chunk
- * @param {number} chunkSize - Max characters per chunk
+ * @param {number} chunkSize - Max characters per chunk (reduced from 500 to 350)
  * @param {number} overlap - Overlap between chunks
  * @returns {Array<string>} - Array of text chunks
  */
-export const chunkText = (text, chunkSize = 500, overlap = 50) => {
+export const chunkText = (text, chunkSize = 350, overlap = 40) => {
+  // Sanitize text first
+  const sanitizedText = sanitizeTextForEmbedding(text);
+  
   const chunks = [];
   let start = 0;
+  const MAX_CHUNK_SIZE = 1500; // Gemini API safety limit
 
-  while (start < text.length) {
-    const end = Math.min(start + chunkSize, text.length);
-    const chunk = text.substring(start, end).trim();
+  while (start < sanitizedText.length) {
+    const end = start + chunkSize;
+    const chunk = sanitizedText.slice(start, end).trim();
     
-    if (chunk.length > 0) {
+    // Only include non-empty chunks within size limit
+    if (chunk.length > 0 && chunk.length <= MAX_CHUNK_SIZE) {
       chunks.push(chunk);
     }
 
-    start = end - overlap;
-    if (start >= text.length) break;
+    start += chunkSize - overlap;
+    if (start >= sanitizedText.length) break;
   }
 
   return chunks;
 };
 
 /**
- * Generate embedding using Gemini embedding-001
- * Uses 1536 dimensions (standard for all our services)
- * @param {string} text - Text to embed
+ * Generate embeddings in batch using Gemini gemini-embedding-001
+ * Uses batch API endpoint for efficiency (up to 100 chunks per call)
+ * @param {Array<string>} chunks - Array of text chunks to embed
  * @param {string} geminiApiKey - Gemini API key
- * @returns {Promise<number[]>} - Embedding vector (1536 dimensions)
+ * @returns {Promise<Array<number[]>>} - Array of embedding vectors (1536 dimensions each)
  */
-export const generateEmbedding = async (text, geminiApiKey) => {
+export const generateBatchEmbeddings = async (chunks, geminiApiKey) => {
   try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/embedding-001:embedContent?key=${geminiApiKey}`;
-
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'models/embedding-001',
-        content: {
-          parts: [{
-            text: text.substring(0, 10000), // Limit to 10k chars per chunk
-          }],
+    const allEmbeddings = [];
+    const batchSize = 100; // Gemini API limit
+    
+    for (let i = 0; i < chunks.length; i += batchSize) {
+      const batchChunks = chunks.slice(i, i + batchSize);
+      console.log(`   Generating embeddings for chunks ${i + 1}-${Math.min(i + batchSize, chunks.length)}...`);
+      
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:batchEmbedContents?key=${geminiApiKey}`;
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-        outputDimensionality: 1536, // Standard dimension for all our services
-      }),
-    });
+        body: JSON.stringify({
+          requests: batchChunks.map(chunk => ({
+            model: 'models/gemini-embedding-001',
+            content: {
+              parts: [{ text: chunk }]
+            }
+          }))
+        }),
+      });
 
-    if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`Gemini embedding failed: ${response.status} - ${error}`);
-    }
+      if (!response.ok) {
+        let errorText = '';
+        try {
+          const errJson = await response.json();
+          errorText = errJson.error?.message || JSON.stringify(errJson);
+        } catch (e) {
+          errorText = await response.text();
+        }
+        throw new Error(`Gemini API Error: ${errorText}`);
+      }
 
-    const data = await response.json();
-    const embedding = data.embedding?.values || [];
-    
-    if (embedding.length === 0) {
-      throw new Error('No embedding values returned from Gemini');
+      const data = await response.json();
+      if (!data.embeddings || !Array.isArray(data.embeddings)) {
+        throw new Error('Gemini API Error: Invalid embeddings response');
+      }
+      
+      // Extract and validate embeddings (1536 dimensions required by Pinecone)
+      const batchEmbeddings = data.embeddings.map(e => e.values.slice(0, 1536));
+      
+      if (batchEmbeddings.length > 0 && batchEmbeddings[0].length !== 1536) {
+        throw new Error(`Embedding dimension mismatch: expected 1536, got ${batchEmbeddings[0].length}`);
+      }
+      
+      allEmbeddings.push(...batchEmbeddings);
+      
+      // Small delay to avoid rate limiting
+      if (i + batchSize < chunks.length) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
     }
     
-    if (embedding.length !== 1536) {
-      console.warn(`Expected 1536 dimensions, got ${embedding.length}`);
-    }
-    
-    return embedding;
+    return allEmbeddings;
   } catch (error) {
-    console.error('Generate embedding error:', error);
+    console.error('Generate batch embeddings error:', error);
     throw error;
   }
 };
@@ -88,9 +131,25 @@ export const generateEmbedding = async (text, geminiApiKey) => {
  * @param {Array} config.vectors - Array of {id, values, metadata}
  * @returns {Promise<Object>} - Upsert result
  */
-export const upsertToPinecone = async ({ pineconeKey, environment, indexName, vectors }) => {
+export const upsertToPinecone = async ({ pineconeKey, environment, indexName, vectors, pineconeHost }) => {
   try {
-    const url = `https://${indexName}-${environment}.pinecone.io/vectors/upsert`;
+    // Use direct host URL if provided (from bot config), otherwise construct it
+    let url;
+    if (pineconeHost) {
+      url = `${pineconeHost}/vectors/upsert`;
+    } else {
+      // Smart URL detection based on environment format
+      if (environment.includes('-')) {
+        // Legacy format: https://INDEX.svc.ENVIRONMENT.pinecone.io
+        url = `https://${indexName}.svc.${environment}.pinecone.io/vectors/upsert`;
+      } else {
+        // Modern format: https://INDEX-PROJECT.svc.pinecone.io
+        url = `https://${indexName}-${environment}.svc.pinecone.io/vectors/upsert`;
+      }
+    }
+
+    console.log(`   📤 Upserting ${vectors.length} vectors to Pinecone...`);
+    console.log(`   URL: ${url}`);
 
     const response = await fetch(url, {
       method: 'POST',
@@ -106,10 +165,13 @@ export const upsertToPinecone = async ({ pineconeKey, environment, indexName, ve
 
     if (!response.ok) {
       const error = await response.text();
+      console.error(`   ❌ Pinecone upsert failed: ${response.status}`);
+      console.error(`   Error response: ${error.substring(0, 200)}`);
       throw new Error(`Pinecone upsert failed: ${response.status} - ${error}`);
     }
 
     const data = await response.json();
+    console.log(`   ✅ Pinecone upsert successful: ${data.upsertedCount || vectors.length} vectors`);
 
     return {
       success: true,
@@ -141,64 +203,62 @@ export const processAndUploadDocument = async ({
   geminiKey,
   environment,
   indexName,
+  pineconeHost,
 }) => {
   try {
-    // Step 1: Chunk the text
-    const chunks = chunkText(text, 500, 50);
-    console.log(`Processing ${chunks.length} chunks from ${filename}`);
-
-    // Step 2: Generate embeddings for each chunk
-    const vectors = [];
+    console.log(`\n📄 Processing document: ${filename}`);
+    console.log(`   Text length: ${text.length} characters`);
     
-    for (let i = 0; i < chunks.length; i++) {
-      const chunk = chunks[i];
-      
-      try {
-        const embedding = await generateEmbedding(chunk, geminiKey);
-        
-        vectors.push({
-          id: `${documentId}_chunk_${i}`,
-          values: embedding,
-          metadata: {
-            text: chunk,
-            documentId,
-            filename,
-            chunkIndex: i,
-            totalChunks: chunks.length,
-          },
-        });
+    // Step 1: Chunk and sanitize the text (350 chars, 40 overlap)
+    const chunks = chunkText(text);
+    console.log(`   ✅ Step 1/3: Created ${chunks.length} chunks from document`);
 
-        // Add small delay to avoid rate limiting
-        if (i < chunks.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 100));
-        }
-      } catch (embeddingError) {
-        console.error(`Error embedding chunk ${i}:`, embeddingError);
-        // Continue with other chunks even if one fails
-      }
+    if (chunks.length === 0) {
+      throw new Error('Could not extract any valid text chunks from the file after sanitization');
     }
 
-    // Step 3: Upsert to Pinecone
-    if (vectors.length > 0) {
-      const result = await upsertToPinecone({
-        pineconeKey,
-        environment,
-        indexName,
-        vectors,
-      });
-
-      console.log(`✅ Uploaded ${result.upsertedCount} vectors to Pinecone`);
-
-      return {
-        success: true,
-        chunksProcessed: chunks.length,
-        vectorsUploaded: result.upsertedCount,
-      };
-    } else {
-      throw new Error('No vectors generated from document');
+    // Step 2: Generate embeddings in batches
+    console.log(`   🧠 Step 2/3: Generating ${chunks.length} embeddings in batches...`);
+    const embeddings = await generateBatchEmbeddings(chunks, geminiKey);
+    console.log(`   ✅ Step 2/3: Generated ${embeddings.length} embeddings successfully`);
+    
+    if (embeddings.length !== chunks.length) {
+      throw new Error('Mismatch between number of chunks and generated embeddings');
     }
+
+    // Step 3: Prepare vectors for Pinecone
+    console.log(`   📦 Step 3/3: Preparing vectors for Pinecone upsert...`);
+    const vectors = chunks.map((chunk, i) => ({
+      id: `${filename}-${documentId}-${i}`,
+      values: embeddings[i],
+      metadata: {
+        fileName: filename,
+        text: chunk,
+        documentId,
+        chunkIndex: i,
+        totalChunks: chunks.length,
+      },
+    }));
+    console.log(`   ✅ Prepared ${vectors.length} vectors with metadata`);
+
+    // Step 4: Upsert to Pinecone
+    const result = await upsertToPinecone({
+      pineconeKey,
+      environment,
+      indexName,
+      vectors,
+      pineconeHost,
+    });
+
+    console.log(`   ✅ Step 3/3: Successfully uploaded ${result.upsertedCount} vectors to Pinecone`);
+
+    return {
+      success: true,
+      chunksProcessed: chunks.length,
+      vectorsUploaded: result.upsertedCount,
+    };
   } catch (error) {
-    console.error('Process and upload document error:', error);
+    console.error('❌ Process and upload document error:', error);
     throw error;
   }
 };
@@ -212,9 +272,20 @@ export const processAndUploadDocument = async ({
  * @param {string} config.indexName - Index name
  * @returns {Promise<Object>} - Delete result
  */
-export const deleteDocumentFromPinecone = async ({ documentId, pineconeKey, environment, indexName }) => {
+export const deleteDocumentFromPinecone = async ({ documentId, pineconeKey, environment, indexName, pineconeHost }) => {
   try {
-    const url = `https://${indexName}-${environment}.pinecone.io/vectors/delete`;
+    // Use direct host URL if provided, otherwise construct it
+    let url;
+    if (pineconeHost) {
+      url = `${pineconeHost}/vectors/delete`;
+    } else {
+      // Smart URL detection
+      if (environment.includes('-')) {
+        url = `https://${indexName}.svc.${environment}.pinecone.io/vectors/delete`;
+      } else {
+        url = `https://${indexName}-${environment}.svc.pinecone.io/vectors/delete`;
+      }
+    }
 
     // Delete all vectors with this documentId prefix
     const response = await fetch(url, {

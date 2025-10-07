@@ -23,6 +23,8 @@ const BotConfigModal = ({ setShowModal, onSave }) => {
     e.preventDefault();
     setError('');
     
+    console.log('📝 Form submitted with data:', formData);
+    
     // Validation
     if (!formData.name.trim()) {
       setError('Bot name is required');
@@ -41,10 +43,15 @@ const BotConfigModal = ({ setShowModal, onSave }) => {
 
     setLoading(true);
     try {
+      console.log('⏳ Calling onSave...');
       await onSave(formData);
+      console.log('✨ Bot created, closing modal');
       setShowModal(false);
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to create bot');
+      console.error('❌ Error in modal:', err);
+      const errorMessage = err.response?.data?.error || err.message || 'Failed to create bot. Please try again.';
+      console.log('Error message to display:', errorMessage);
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

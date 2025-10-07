@@ -13,13 +13,25 @@
  * @param {number} config.topK - Number of results to return
  * @returns {Promise<Object>} - Query results
  */
-export const queryPinecone = async ({ apiKey, environment, indexName, query, geminiKey, topK = 3 }) => {
+export const queryPinecone = async ({ apiKey, environment, indexName, query, geminiKey, topK = 3, pineconeHost }) => {
   try {
     // Convert text to embeddings using Gemini embedding-001
     const queryVector = await textToEmbedding(query, geminiKey);
 
-    // Pinecone query endpoint
-    const url = `https://${indexName}-${environment}.pinecone.io/query`;
+    // Use direct host URL if provided, otherwise construct it
+    let url;
+    if (pineconeHost) {
+      url = `${pineconeHost}/query`;
+    } else {
+      // Smart URL detection based on environment format
+      if (environment.includes('-')) {
+        // Legacy format: https://INDEX.svc.ENVIRONMENT.pinecone.io
+        url = `https://${indexName}.svc.${environment}.pinecone.io/query`;
+      } else {
+        // Modern format: https://INDEX-PROJECT.svc.pinecone.io
+        url = `https://${indexName}-${environment}.svc.pinecone.io/query`;
+      }
+    }
 
     const response = await fetch(url, {
       method: 'POST',
@@ -62,14 +74,14 @@ export const queryPinecone = async ({ apiKey, environment, indexName, query, gem
 
 /**
  * Convert text to embedding vector using Gemini Embedding API
- * Uses embedding-001 model with 1536 dimensions (default for all services)
+ * Uses gemini-embedding-001 model with 1536 dimensions (default for all services)
  * @param {string} text - Text to embed
  * @param {string} geminiApiKey - Gemini API key
  * @returns {Promise<number[]>} - Embedding vector (1536 dimensions)
  */
 const textToEmbedding = async (text, geminiApiKey) => {
   try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/embedding-001:embedContent?key=${geminiApiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent?key=${geminiApiKey}`;
 
     const response = await fetch(url, {
       method: 'POST',
@@ -77,7 +89,7 @@ const textToEmbedding = async (text, geminiApiKey) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'models/embedding-001',
+        model: 'models/gemini-embedding-001',
         content: {
           parts: [
             {

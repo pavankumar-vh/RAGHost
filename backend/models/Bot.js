@@ -45,6 +45,10 @@ const botSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    pineconeHost: {
+      type: String,
+      required: false, // Optional - if not provided, will construct from environment and index
+    },
     pineconeVerified: {
       type: Boolean,
       default: false,

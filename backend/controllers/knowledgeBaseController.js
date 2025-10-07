@@ -113,7 +113,24 @@ export const uploadDocument = async (req, res) => {
     const pineconeKey = decrypt(bot.pineconeKey);
     const geminiKey = decrypt(bot.geminiKey);
 
+    // Construct Pinecone host URL (if available in bot config)
+    let pineconeHost = bot.pineconeHost || null;
+    if (!pineconeHost) {
+      // Construct based on environment format
+      if (bot.pineconeEnvironment.includes('-')) {
+        pineconeHost = `https://${bot.pineconeIndexName}.svc.${bot.pineconeEnvironment}.pinecone.io`;
+      } else {
+        pineconeHost = `https://${bot.pineconeIndexName}-${bot.pineconeEnvironment}.svc.pinecone.io`;
+      }
+    }
+
     // Upload to Pinecone in background
+    console.log(`🚀 Starting Pinecone upload for: ${file.originalname}`);
+    console.log(`   Document ID: ${documentId.toString()}`);
+    console.log(`   Pinecone Host: ${pineconeHost}`);
+    console.log(`   Index: ${bot.pineconeIndexName}`);
+    console.log(`   Environment: ${bot.pineconeEnvironment}`);
+    
     processAndUploadDocument({
       text: content,
       documentId: documentId.toString(),
@@ -122,9 +139,14 @@ export const uploadDocument = async (req, res) => {
       geminiKey,
       environment: bot.pineconeEnvironment,
       indexName: bot.pineconeIndexName,
+      pineconeHost,
     })
       .then(result => {
-        console.log(`✅ Document uploaded to Pinecone: ${file.originalname}`, result);
+        console.log(`\n✅ SUCCESS: Document uploaded to Pinecone!`);
+        console.log(`   File: ${file.originalname}`);
+        console.log(`   Chunks Processed: ${result.chunksProcessed}`);
+        console.log(`   Vectors Uploaded: ${result.vectorsUploaded}`);
+        console.log(`   Status: Document is now searchable in chatbot\n`);
         // Update chunk count with actual uploaded count
         KnowledgeBase.findOne({ botId, userId }).then(kb => {
           if (kb) {
@@ -134,7 +156,10 @@ export const uploadDocument = async (req, res) => {
         });
       })
       .catch(error => {
-        console.error(`❌ Failed to upload to Pinecone: ${file.originalname}`, error);
+        console.error(`\n❌ FAILED: Could not upload to Pinecone`);
+        console.error(`   File: ${file.originalname}`);
+        console.error(`   Error: ${error.message}`);
+        console.error(`   Stack: ${error.stack}\n`);
       });
 
     res.json({
@@ -267,11 +292,23 @@ export const deleteDocument = async (req, res) => {
     // Delete from Pinecone in background
     if (document) {
       const pineconeKey = decrypt(bot.pineconeKey);
+      
+      // Construct Pinecone host URL
+      let pineconeHost = bot.pineconeHost || null;
+      if (!pineconeHost) {
+        if (bot.pineconeEnvironment.includes('-')) {
+          pineconeHost = `https://${bot.pineconeIndexName}.svc.${bot.pineconeEnvironment}.pinecone.io`;
+        } else {
+          pineconeHost = `https://${bot.pineconeIndexName}-${bot.pineconeEnvironment}.svc.pinecone.io`;
+        }
+      }
+      
       deleteDocumentFromPinecone({
         documentId: documentId,
         pineconeKey,
         environment: bot.pineconeEnvironment,
         indexName: bot.pineconeIndexName,
+        pineconeHost,
       })
         .then(() => console.log(`✅ Document vectors deleted from Pinecone: ${documentId}`))
         .catch(error => console.error(`❌ Failed to delete from Pinecone:`, error));
