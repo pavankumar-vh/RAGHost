@@ -598,45 +598,51 @@ const ActivityChart = ({ dailyStats }) => {
         xAxis={[{ 
           scaleType: 'point', 
           data: processedData.map(d => d.day),
+          disableLine: true,
+          disableTicks: true,
+        }]}
+        yAxis={[{
+          disableLine: true,
+          disableTicks: true,
         }]}
         series={[{
           data: processedData.map(d => d.value),
-          label: 'Queries',
           color: '#3b82f6',
           area: true,
-          showMark: true,
-          curve: 'natural',
+          showMark: false,
+          curve: 'monotoneX',
         }]}
         height={240}
-        margin={{ top: 10, bottom: 30, left: 40, right: 10 }}
+        margin={{ top: 20, bottom: 30, left: 50, right: 20 }}
+        grid={{ horizontal: true }}
         sx={{
           '& .MuiChartsAxis-line': {
-            stroke: 'rgba(255, 255, 255, 0.1)',
+            display: 'none',
           },
           '& .MuiChartsAxis-tick': {
-            stroke: 'rgba(255, 255, 255, 0.1)',
+            display: 'none',
           },
           '& .MuiChartsAxis-tickLabel': {
-            fill: 'rgba(255, 255, 255, 0.5)',
-            fontSize: '12px',
+            fill: 'rgba(255, 255, 255, 0.4)',
+            fontSize: '11px',
           },
-          '& .MuiChartsLegend-label': {
-            fill: 'rgba(255, 255, 255, 0.7)',
+          '& .MuiChartsGrid-line': {
+            stroke: 'rgba(255, 255, 255, 0.03)',
+            strokeDasharray: '3 3',
+          },
+          '& .MuiChartsLegend-root': {
+            display: 'none',
           },
           '& .MuiLineElement-root': {
-            strokeWidth: 2.5,
+            strokeWidth: 3,
+            filter: 'drop-shadow(0 2px 8px rgba(59, 130, 246, 0.4))',
           },
           '& .MuiAreaElement-root': {
-            fillOpacity: 0.4,
-          },
-          '& .MuiMarkElement-root': {
-            scale: '0.8',
-            fill: '#3b82f6',
-            strokeWidth: 2,
+            fillOpacity: 0.2,
           },
         }}
-        tooltip={{
-          trigger: 'item',
+        slotProps={{
+          legend: { hidden: true }
         }}
       />
       <div className="mt-2 flex items-center justify-between text-xs px-2">
