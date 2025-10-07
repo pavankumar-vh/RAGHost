@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { analyticsService, setAuthToken } from '../services/api';
+import { LineChart } from '@mui/x-charts/LineChart';
+import { BarChart } from '@mui/x-charts/BarChart';
 import {
   BarChart3,
   Bot,
@@ -280,69 +282,80 @@ const AdvancedActivityChart = ({ dailyStats, metric }) => {
     fullDate: stat.date
   }));
 
-  const maxValue = Math.max(...data.map(d => d.value), 1);
   const avgValue = data.reduce((sum, d) => sum + d.value, 0) / data.length;
+  const maxValue = Math.max(...data.map(d => d.value), 1);
+  const totalValue = data.reduce((sum, item) => sum + item.value, 0);
+
+  const chartColor = metric === 'queries' ? '#3b82f6' : '#ec4899';
 
   return (
     <div className="space-y-4">
-      <div className="h-64 relative">
-        {/* Y-axis labels */}
-        <div className="absolute left-0 top-0 h-full flex flex-col justify-between text-xs text-gray-500 pr-2">
-          <span>{maxValue.toLocaleString()}</span>
-          <span>{Math.round(maxValue / 2).toLocaleString()}</span>
-          <span>0</span>
-        </div>
-        
-        {/* Chart area */}
-        <div className="ml-12 h-full flex items-end gap-1">
-          {data.map((item, index) => {
-            const heightPercentage = (item.value / maxValue) * 100;
-            const isAboveAvg = item.value > avgValue;
-            
-            return (
-              <div key={index} className="flex-1 flex flex-col gap-1 group relative">
-                <div className="relative h-56">
-                  <div
-                    className={`absolute bottom-0 w-full rounded-t-lg transition-all duration-300 group-hover:opacity-100 ${
-                      isAboveAvg
-                        ? 'bg-gradient-to-t from-accent-blue to-accent-blue/50 opacity-80'
-                        : 'bg-gradient-to-t from-gray-700 to-gray-600 opacity-60'
-                    }`}
-                    style={{ height: `${heightPercentage}%` }}
-                  >
-                    {/* Tooltip */}
-                    <div className="absolute -top-16 left-1/2 transform -translate-x-1/2 bg-black/90 text-white px-3 py-2 rounded-lg text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 pointer-events-none">
-                      <div className="text-accent-blue">{item.value.toLocaleString()}</div>
-                      <div className="text-gray-400 text-[10px]">{item.date}</div>
-                    </div>
-                  </div>
-                </div>
-                {index % 3 === 0 && (
-                  <span className="text-[10px] text-gray-500 text-center">{item.date}</span>
-                )}
-              </div>
-            );
-          })}
-        </div>
+      <div className="h-72 w-full">
+        <LineChart
+          xAxis={[{
+            scaleType: 'point',
+            data: data.map(d => d.date),
+          }]}
+          series={[
+            {
+              data: data.map(d => d.value),
+              label: metric === 'queries' ? 'Queries' : 'Tokens',
+              color: chartColor,
+              area: true,
+              showMark: true,
+            },
+          ]}
+          height={280}
+          margin={{ top: 20, bottom: 40, left: 60, right: 20 }}
+          grid={{ vertical: true, horizontal: true }}
+          sx={{
+            '& .MuiChartsAxis-line': {
+              stroke: 'rgba(255, 255, 255, 0.1)',
+            },
+            '& .MuiChartsAxis-tick': {
+              stroke: 'rgba(255, 255, 255, 0.1)',
+            },
+            '& .MuiChartsAxis-tickLabel': {
+              fill: 'rgba(255, 255, 255, 0.5)',
+              fontSize: '11px',
+            },
+            '& .MuiChartsGrid-line': {
+              stroke: 'rgba(255, 255, 255, 0.05)',
+            },
+            '& .MuiChartsLegend-label': {
+              fill: 'rgba(255, 255, 255, 0.7)',
+              fontSize: '12px',
+            },
+            '& .MuiLineElement-root': {
+              strokeWidth: 2,
+            },
+            '& .MuiAreaElement-root': {
+              fillOpacity: 0.3,
+            },
+          }}
+          slotProps={{
+            legend: { hidden: false, position: { vertical: 'top', horizontal: 'right' } }
+          }}
+        />
       </div>
 
       {/* Stats Summary */}
       <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-800">
-        <div className="text-center">
-          <p className="text-sm text-gray-500">Total</p>
-          <p className="text-xl font-bold text-accent-blue">
-            {data.reduce((sum, item) => sum + item.value, 0).toLocaleString()}
+        <div className="text-center bg-gradient-to-br from-blue-500/10 to-blue-500/5 border border-blue-500/20 rounded-xl p-4">
+          <p className="text-sm text-gray-400 mb-1">Total</p>
+          <p className="text-2xl font-bold text-blue-400">
+            {totalValue.toLocaleString()}
           </p>
         </div>
-        <div className="text-center">
-          <p className="text-sm text-gray-500">Average</p>
-          <p className="text-xl font-bold text-accent-pink">
+        <div className="text-center bg-gradient-to-br from-pink-500/10 to-pink-500/5 border border-pink-500/20 rounded-xl p-4">
+          <p className="text-sm text-gray-400 mb-1">Average</p>
+          <p className="text-2xl font-bold text-pink-400">
             {Math.round(avgValue).toLocaleString()}
           </p>
         </div>
-        <div className="text-center">
-          <p className="text-sm text-gray-500">Peak</p>
-          <p className="text-xl font-bold text-accent-yellow">
+        <div className="text-center bg-gradient-to-br from-yellow-500/10 to-yellow-500/5 border border-yellow-500/20 rounded-xl p-4">
+          <p className="text-sm text-gray-400 mb-1">Peak</p>
+          <p className="text-2xl font-bold text-yellow-400">
             {maxValue.toLocaleString()}
           </p>
         </div>

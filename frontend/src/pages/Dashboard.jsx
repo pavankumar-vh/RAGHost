@@ -7,6 +7,8 @@ import EditBotModal from '../components/EditBotModal';
 import EmbedCodeModal from '../components/EmbedCodeModal';
 import KnowledgeBaseModal from '../components/KnowledgeBaseModal';
 import AnalyticsView from '../components/AnalyticsView';
+import { BarChart } from '@mui/x-charts/BarChart';
+import { LineChart } from '@mui/x-charts/LineChart';
 import { 
   LogOut, 
   Bot, 
@@ -567,61 +569,75 @@ const ActivityChart = ({ dailyStats }) => {
     ? dailyStats.slice(-7).map(stat => ({
         value: stat.queries || 0,
         day: new Date(stat.date).toLocaleDateString('en-US', { weekday: 'short' }),
-        date: stat.date
+        date: stat.date,
+        tokens: stat.tokens || 0,
+        avgResponseTime: stat.avgResponseTime || 0
       }))
     : [];
 
   // Check if we have any actual data
   const hasData = processedData.length > 0 && processedData.some(d => d.value > 0);
-  const maxValue = hasData ? Math.max(...processedData.map(d => d.value)) : 1;
 
-  console.log('📊 ActivityChart processed:', { processedData, hasData, maxValue });
+  console.log('📊 ActivityChart processed:', { processedData, hasData });
+
+  if (!hasData) {
+    return (
+      <div className="h-56 flex items-center justify-center">
+        <div className="text-center">
+          <Activity size={48} className="mx-auto mb-3 opacity-20" />
+          <p className="text-sm opacity-70">No activity data yet</p>
+          <p className="text-xs opacity-50 mt-1">Start chatting with your bots to see activity</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="h-56">
-      {!hasData ? (
-        <div className="flex items-center justify-center h-full">
-          <div className="text-center">
-            <Activity size={48} className="mx-auto mb-3 opacity-20" />
-            <p className="text-sm opacity-70">No activity data yet</p>
-            <p className="text-xs opacity-50 mt-1">Start chatting with your bots to see activity</p>
-          </div>
-        </div>
-      ) : (
-        <>
-          <div className="flex items-end justify-between h-48 gap-3">
-            {processedData.map((item, index) => {
-              const heightPercentage = (item.value / maxValue) * 100;
-              return (
-                <div key={index} className="flex-1 flex flex-col items-center gap-2 group">
-                  <div className="relative w-full" style={{ height: '192px' }}>
-                    <div 
-                      className="absolute bottom-0 w-full bg-black/30 rounded-t-xl transition-all duration-300 group-hover:bg-black/40 overflow-hidden" 
-                      style={{ height: `${heightPercentage}%` }}
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
-                      {/* Value tooltip on hover */}
-                      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black text-white px-2 py-1 rounded text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                        {item.value} {item.value === 1 ? 'query' : 'queries'}
-                      </div>
-                    </div>
-                  </div>
-                  <span className="text-xs font-semibold">{item.day}</span>
-                </div>
-              );
-            })}
-          </div>
-          {/* Stats summary */}
-          <div className="mt-4 flex items-center justify-between text-sm">
-            <span className="opacity-70">
-              Total: <span className="font-bold">{processedData.reduce((sum, item) => sum + item.value, 0)}</span> queries
-            </span>
-            <span className="opacity-70">
-              Peak: <span className="font-bold">{maxValue}</span>
-            </span>
-          </div>
-        </>
-      )}
+    <div className="h-64 w-full">
+      <BarChart
+        xAxis={[{ 
+          scaleType: 'band', 
+          data: processedData.map(d => d.day),
+          categoryGapRatio: 0.3,
+          barGapRatio: 0.1
+        }]}
+        series={[{
+          data: processedData.map(d => d.value),
+          label: 'Queries',
+          color: '#3b82f6',
+        }]}
+        height={240}
+        margin={{ top: 10, bottom: 30, left: 40, right: 10 }}
+        sx={{
+          '& .MuiChartsAxis-line': {
+            stroke: 'rgba(255, 255, 255, 0.1)',
+          },
+          '& .MuiChartsAxis-tick': {
+            stroke: 'rgba(255, 255, 255, 0.1)',
+          },
+          '& .MuiChartsAxis-tickLabel': {
+            fill: 'rgba(255, 255, 255, 0.5)',
+            fontSize: '12px',
+          },
+          '& .MuiChartsLegend-label': {
+            fill: 'rgba(255, 255, 255, 0.7)',
+          },
+          '& .MuiBarElement-root': {
+            rx: 4,
+          },
+        }}
+        tooltip={{
+          trigger: 'item',
+        }}
+      />
+      <div className="mt-2 flex items-center justify-between text-xs px-2">
+        <span className="opacity-70">
+          Total: <span className="font-bold">{processedData.reduce((sum, item) => sum + item.value, 0)}</span> queries
+        </span>
+        <span className="opacity-70">
+          Peak: <span className="font-bold">{Math.max(...processedData.map(d => d.value))}</span>
+        </span>
+      </div>
     </div>
   );
 };
