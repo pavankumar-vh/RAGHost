@@ -416,14 +416,26 @@
 
   <script>
     (function() {
+      // Get parameters from URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const botIdFromUrl = urlParams.get('botId');
+      const apiUrlFromUrl = urlParams.get('apiUrl');
+      
       // Configuration (will be replaced by actual bot config)
       const config = {
-        botId: window.raghostConfig?.botId || 'demo',
-        apiUrl: window.raghostConfig?.apiUrl || 'http://localhost:5001',
-        botName: window.raghostConfig?.botName || 'AI Assistant',
-        theme: window.raghostConfig?.theme || 'default',
-        position: window.raghostConfig?.position || 'bottom-right',
+        botId: botIdFromUrl || window.RAGhostConfig?.botId || 'demo',
+        apiUrl: apiUrlFromUrl || window.RAGhostConfig?.apiUrl || 'http://localhost:5001',
+        botName: window.RAGhostConfig?.botName || 'AI Assistant',
+        theme: window.RAGhostConfig?.theme || 'default',
+        position: window.RAGhostConfig?.position || 'bottom-right',
       };
+      
+      // Debug logging
+      console.log('🔧 Widget Config:', config);
+      console.log('📍 API URL:', config.apiUrl);
+      console.log('🤖 Bot ID:', config.botId);
+      console.log('🌐 Bot ID from URL:', botIdFromUrl);
+      console.log('🌐 API URL from URL:', apiUrlFromUrl);
 
       // Elements
       const chatButton = document.getElementById('raghost-chat-button');
@@ -458,6 +470,9 @@
         const message = input.value.trim();
         if (!message) return;
 
+        console.log('📤 Sending message:', message);
+        console.log('🎯 Target URL:', `${config.apiUrl}/api/chat/${config.botId}/message`);
+
         // Add user message
         addMessage(message, 'user');
         input.value = '';
@@ -476,19 +491,31 @@
             sessionId,
           }),
         })
-          .then(res => res.json())
+          .then(res => {
+            console.log('📥 Response status:', res.status);
+            console.log('📥 Response ok:', res.ok);
+            if (!res.ok) {
+              throw new Error(`HTTP error! status: ${res.status}`);
+            }
+            return res.json();
+          })
           .then(data => {
+            console.log('📦 Response data:', data);
             typingEl.remove();
-            if (data.success && data.response) {
-              addMessage(data.response, 'bot');
+            if (data.success && data.data && data.data.response) {
+              addMessage(data.data.response, 'bot');
+            } else if (data.error) {
+              addMessage(`Error: ${data.error}`, 'bot');
             } else {
               addMessage('Sorry, I encountered an error. Please try again.', 'bot');
             }
           })
           .catch(error => {
             typingEl.remove();
-            console.error('Error:', error);
-            addMessage('Sorry, I could not connect to the server.', 'bot');
+            console.error('❌ Error:', error);
+            console.error('❌ Error message:', error.message);
+            console.error('❌ Error stack:', error.stack);
+            addMessage('Sorry, I could not connect to the server. Please try again later.', 'bot');
           });
       }
 

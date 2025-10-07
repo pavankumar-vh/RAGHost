@@ -8,13 +8,13 @@
 
   // Configuration
   const config = {
-    botId: window.raghostConfig?.botId || 'demo',
-    apiUrl: window.raghostConfig?.apiUrl || 'http://localhost:5001',
-    botName: window.raghostConfig?.botName || 'AI Assistant',
-    botType: window.raghostConfig?.botType || 'Support',
-    color: window.raghostConfig?.color || 'blue',
-    position: window.raghostConfig?.position || 'bottom-right',
-    welcomeMessage: window.raghostConfig?.welcomeMessage || 'Hi! How can I help you today?',
+    botId: window.RAGhostConfig?.botId || 'demo',
+    apiUrl: window.RAGhostConfig?.apiUrl || 'http://localhost:5001',
+    botName: window.RAGhostConfig?.botName || 'AI Assistant',
+    botType: window.RAGhostConfig?.botType || 'Support',
+    color: window.RAGhostConfig?.color || 'blue',
+    position: window.RAGhostConfig?.position || 'bottom-right',
+    welcomeMessage: window.RAGhostConfig?.welcomeMessage || 'Hi! How can I help you today?',
   };
 
   // Elements
@@ -107,8 +107,10 @@
         if (typingEl) typingEl.remove();
         isTyping = false;
 
-        if (response.success && response.response) {
-          addMessage(response.response, 'bot');
+        if (response.success && response.data && response.data.response) {
+          addMessage(response.data.response, 'bot');
+        } else if (response.error) {
+          addMessage(`Error: ${response.error}`, 'bot');
         } else {
           addMessage('Sorry, I encountered an error. Please try again.', 'bot');
         }

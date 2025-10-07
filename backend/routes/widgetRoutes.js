@@ -51,7 +51,7 @@ function generateEmbedCode(botId, template, baseUrl, customization) {
   window.RAGhostConfig = {
     botId: '${botId}',
     botName: '${botName}',
-    apiUrl: '${backendUrl}/api',
+    apiUrl: '${backendUrl}',
     avatar: '${avatar}',
     theme: {
       primaryColor: '${primaryColor}',
@@ -60,7 +60,7 @@ function generateEmbedCode(botId, template, baseUrl, customization) {
   };
 </script>
 <iframe 
-  src="${templateUrl}?botId=${botId}" 
+  src="${templateUrl}?botId=${botId}&apiUrl=${encodeURIComponent(backendUrl)}" 
   style="position: fixed; ${position.includes('right') ? 'right: 0;' : 'left: 0;'} ${position.includes('bottom') ? 'bottom: 0;' : 'top: 0;'} border: none; z-index: 999999; width: 100%; height: 100%; pointer-events: none; background: transparent;"
   id="raghost-widget-iframe"
   allow="clipboard-write"

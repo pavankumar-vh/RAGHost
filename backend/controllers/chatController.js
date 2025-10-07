@@ -3,6 +3,7 @@ import ChatSession from '../models/ChatSession.js';
 import { decrypt } from '../utils/encryption.js';
 import { queryPinecone } from '../services/pineconeService.js';
 import { generateResponse } from '../services/geminiService.js';
+import mongoose from 'mongoose';
 
 /**
  * @route   POST /api/chat/:botId/message
@@ -18,6 +19,14 @@ export const sendMessage = async (req, res) => {
       return res.status(400).json({
         success: false,
         error: 'Message is required',
+      });
+    }
+
+    // Validate botId format
+    if (!mongoose.Types.ObjectId.isValid(botId)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid bot ID format. Please provide a valid bot ID.',
       });
     }
 
@@ -48,6 +57,13 @@ export const sendMessage = async (req, res) => {
 
     // Step 1: Query Pinecone for relevant context using Gemini embeddings
     console.log('🔍 Querying Pinecone for relevant context...');
+    console.log('📍 Pinecone Config:', {
+      indexName: bot.pineconeIndexName,
+      host: pineconeHost,
+      hasApiKey: !!pineconeKey,
+      hasGeminiKey: !!geminiKey,
+    });
+    
     const context = await queryPinecone({
       apiKey: pineconeKey,
       environment: bot.pineconeEnvironment,
@@ -59,6 +75,12 @@ export const sendMessage = async (req, res) => {
     });
 
     console.log(`📚 Found ${context.matches?.length || 0} relevant context chunks`);
+    if (context.matches && context.matches.length > 0) {
+      console.log('🎯 Top match score:', context.matches[0].score);
+      console.log('📝 First chunk preview:', context.matches[0].metadata?.text?.substring(0, 100));
+    } else if (context.error) {
+      console.error('⚠️ Context retrieval error:', context.error);
+    }
 
     // Step 2: Generate response with Gemini using context and system prompt
     console.log('🤖 Generating AI response with Gemini...');
@@ -142,6 +164,14 @@ export const getChatHistory = async (req, res) => {
   try {
     const { botId, sessionId } = req.params;
 
+    // Validate botId format
+    if (!mongoose.Types.ObjectId.isValid(botId)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid bot ID format',
+      });
+    }
+
     const chatSession = await ChatSession.findOne({ sessionId, botId });
 
     if (!chatSession) {
@@ -177,6 +207,14 @@ export const getChatHistory = async (req, res) => {
 export const clearChatHistory = async (req, res) => {
   try {
     const { botId, sessionId } = req.params;
+
+    // Validate botId format
+    if (!mongoose.Types.ObjectId.isValid(botId)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid bot ID format',
+      });
+    }
 
     await ChatSession.findOneAndDelete({ sessionId, botId });
 

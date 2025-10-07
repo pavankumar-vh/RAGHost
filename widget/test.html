@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RAGhost Widget Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+    }
+    h1 {
+      color: #333;
+    }
+    .info {
+      background: #f0f0f0;
+      padding: 20px;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+    .warning {
+      background: #fff3cd;
+      border: 1px solid #ffc107;
+      padding: 15px;
+      border-radius: 5px;
+      margin: 20px 0;
+    }
+    code {
+      background: #e9ecef;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <h1>RAGhost Widget Test Page</h1>
+  
+  <div class="warning">
+    <strong>⚠️ Important:</strong> Replace <code>YOUR_BOT_ID_HERE</code> with your actual Bot ID from the dashboard.
+  </div>
+  
+  <div class="info">
+    <h3>Test Instructions:</h3>
+    <ol>
+      <li>Create a bot in the dashboard (http://localhost:5173)</li>
+      <li>Copy the Bot ID from the dashboard</li>
+      <li>Replace <code>YOUR_BOT_ID_HERE</code> below with your actual Bot ID</li>
+      <li>Make sure both backend and frontend servers are running</li>
+      <li>Open browser console (F12) to see any errors</li>
+    </ol>
+  </div>
+
+  <h2>This is a test page for the chat widget</h2>
+  <p>The widget should appear in the bottom-right corner. Click it to start chatting!</p>
+
+  <!-- RAGhost Chat Widget -->
+  <script>
+    window.RAGhostConfig = {
+      botId: 'YOUR_BOT_ID_HERE', // ⚠️ REPLACE WITH YOUR ACTUAL BOT ID
+      botName: 'AI Assistant',
+      apiUrl: 'http://localhost:5001',
+      avatar: '🤖',
+      theme: {
+        primaryColor: '#3b82f6',
+        position: 'bottom-right'
+      }
+    };
+  </script>
+  <iframe 
+    src="http://localhost:5001/widget/templates/default.html?botId=YOUR_BOT_ID_HERE&apiUrl=http%3A%2F%2Flocalhost%3A5001" 
+    style="position: fixed; right: 0; bottom: 0; border: none; z-index: 999999; width: 100%; height: 100%; pointer-events: none; background: transparent;"
+    id="raghost-widget-iframe"
+    allow="clipboard-write"
+    frameborder="0"
+    scrolling="no"
+    allowtransparency="true"
+  ></iframe>
+  <script>
+    // Initialize widget in iframe
+    const iframe = document.getElementById('raghost-widget-iframe');
+    iframe.onload = function() {
+      iframe.style.pointerEvents = 'auto';
+      try {
+        iframe.contentWindow.postMessage({
+          type: 'init',
+          config: window.RAGhostConfig
+        }, '*');
+        console.log('✅ Widget initialized with config:', window.RAGhostConfig);
+      } catch (e) {
+        console.error('❌ Failed to initialize widget:', e);
+      }
+    };
+  </script>
+</body>
+</html>

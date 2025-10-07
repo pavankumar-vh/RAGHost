@@ -15,11 +15,17 @@
  */
 export const queryPinecone = async ({ apiKey, environment, indexName, query, geminiKey, topK = 3, pineconeHost }) => {
   try {
+    console.log('🔧 Starting Pinecone query...');
+    console.log('📊 Query text:', query.substring(0, 100));
+    
     // Convert text to embeddings using Gemini embedding-001
+    console.log('🧮 Generating embedding vector...');
     const queryVector = await textToEmbedding(query, geminiKey);
+    console.log('✅ Embedding generated, dimensions:', queryVector.length);
 
     // Use pineconeHost directly
     const url = `${pineconeHost}/query`;
+    console.log('🌐 Pinecone URL:', url);
 
     const response = await fetch(url, {
       method: 'POST',
@@ -37,10 +43,13 @@ export const queryPinecone = async ({ apiKey, environment, indexName, query, gem
 
     if (!response.ok) {
       const error = await response.text();
+      console.error('❌ Pinecone response error:', response.status, error);
       throw new Error(`Pinecone query failed: ${response.status} - ${error}`);
     }
 
     const data = await response.json();
+    console.log('✅ Pinecone query successful');
+    console.log('📦 Results count:', data.matches?.length || 0);
 
     return {
       success: true,
@@ -48,7 +57,8 @@ export const queryPinecone = async ({ apiKey, environment, indexName, query, gem
       count: data.matches?.length || 0,
     };
   } catch (error) {
-    console.error('Pinecone query error:', error);
+    console.error('❌ Pinecone query error:', error.message);
+    console.error('📍 Error stack:', error.stack);
     
     // Return empty context on error (fallback gracefully)
     return {
@@ -69,6 +79,7 @@ export const queryPinecone = async ({ apiKey, environment, indexName, query, gem
  */
 const textToEmbedding = async (text, geminiApiKey) => {
   try {
+    console.log('🔑 Using Gemini embedding-001 model');
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent?key=${geminiApiKey}`;
 
     const response = await fetch(url, {
@@ -91,6 +102,7 @@ const textToEmbedding = async (text, geminiApiKey) => {
 
     if (!response.ok) {
       const error = await response.json();
+      console.error('❌ Gemini embedding error:', error);
       throw new Error(
         error.error?.message || `Gemini Embedding API error: ${response.status}`
       );
@@ -103,9 +115,10 @@ const textToEmbedding = async (text, geminiApiKey) => {
       throw new Error('No embedding values returned from Gemini');
     }
 
+    console.log('✅ Embedding created successfully, dimensions:', embedding.length);
     return embedding;
   } catch (error) {
-    console.error('Text to embedding error:', error);
+    console.error('❌ Text to embedding error:', error.message);
     throw error;
   }
 };
