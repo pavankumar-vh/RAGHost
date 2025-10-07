@@ -856,8 +856,8 @@ const ApiKeysView = ({ bots, loading, onEdit }) => {
         [botId]: response
       }));
       
-      // Reload bots to get updated verification status
-      window.location.reload();
+      // Reload bots to get updated verification status (without page reload)
+      await fetchBots();
     } catch (error) {
       console.error('❌ Test failed:', error);
       setTestResults(prev => ({

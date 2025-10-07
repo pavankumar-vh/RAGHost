@@ -133,20 +133,8 @@ export const generateBatchEmbeddings = async (chunks, geminiApiKey) => {
  */
 export const upsertToPinecone = async ({ pineconeKey, environment, indexName, vectors, pineconeHost }) => {
   try {
-    // Use direct host URL if provided (from bot config), otherwise construct it
-    let url;
-    if (pineconeHost) {
-      url = `${pineconeHost}/vectors/upsert`;
-    } else {
-      // Smart URL detection based on environment format
-      if (environment.includes('-')) {
-        // Legacy format: https://INDEX.svc.ENVIRONMENT.pinecone.io
-        url = `https://${indexName}.svc.${environment}.pinecone.io/vectors/upsert`;
-      } else {
-        // Modern format: https://INDEX-PROJECT.svc.pinecone.io
-        url = `https://${indexName}-${environment}.svc.pinecone.io/vectors/upsert`;
-      }
-    }
+    // Use pineconeHost directly (users now provide full URL)
+    const url = `${pineconeHost}/vectors/upsert`;
 
     console.log(`   📤 Upserting ${vectors.length} vectors to Pinecone...`);
     console.log(`   URL: ${url}`);
@@ -274,18 +262,8 @@ export const processAndUploadDocument = async ({
  */
 export const deleteDocumentFromPinecone = async ({ documentId, pineconeKey, environment, indexName, pineconeHost }) => {
   try {
-    // Use direct host URL if provided, otherwise construct it
-    let url;
-    if (pineconeHost) {
-      url = `${pineconeHost}/vectors/delete`;
-    } else {
-      // Smart URL detection
-      if (environment.includes('-')) {
-        url = `https://${indexName}.svc.${environment}.pinecone.io/vectors/delete`;
-      } else {
-        url = `https://${indexName}-${environment}.svc.pinecone.io/vectors/delete`;
-      }
-    }
+    // Use pineconeHost directly
+    const url = `${pineconeHost}/vectors/delete`;
 
     // Delete all vectors with this documentId prefix
     const response = await fetch(url, {

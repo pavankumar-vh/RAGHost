@@ -18,20 +18,8 @@ export const queryPinecone = async ({ apiKey, environment, indexName, query, gem
     // Convert text to embeddings using Gemini embedding-001
     const queryVector = await textToEmbedding(query, geminiKey);
 
-    // Use direct host URL if provided, otherwise construct it
-    let url;
-    if (pineconeHost) {
-      url = `${pineconeHost}/query`;
-    } else {
-      // Smart URL detection based on environment format
-      if (environment.includes('-')) {
-        // Legacy format: https://INDEX.svc.ENVIRONMENT.pinecone.io
-        url = `https://${indexName}.svc.${environment}.pinecone.io/query`;
-      } else {
-        // Modern format: https://INDEX-PROJECT.svc.pinecone.io
-        url = `https://${indexName}-${environment}.svc.pinecone.io/query`;
-      }
-    }
+    // Use pineconeHost directly
+    const url = `${pineconeHost}/query`;
 
     const response = await fetch(url, {
       method: 'POST',

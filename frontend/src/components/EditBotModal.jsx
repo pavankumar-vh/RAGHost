@@ -232,17 +232,18 @@ const EditBotModal = ({ bot, setShowModal, onSave }) => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-300">Environment *</label>
+                  <label className="block text-sm font-medium mb-2 text-gray-300">Pinecone Host URL *</label>
                   <input
                     type="text"
                     value={formData.pineconeEnvironment}
                     onChange={(e) => setFormData({ ...formData, pineconeEnvironment: e.target.value })}
-                    placeholder="us-west-2-aws"
-                    className="w-full bg-black/50 border border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:border-accent-blue focus:ring-2 focus:ring-accent-blue/20 transition-all"
+                    placeholder="https://test-le0abl6.svc.aped-4627-b74a.pinecone.io"
+                    className="w-full bg-black/50 border border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:border-accent-blue focus:ring-2 focus:ring-accent-blue/20 transition-all font-mono text-sm"
                     required
                   />
+                  <p className="text-xs text-gray-500 mt-1">Copy the full host URL from your Pinecone dashboard</p>
                 </div>
 
                 <div>
@@ -251,10 +252,11 @@ const EditBotModal = ({ bot, setShowModal, onSave }) => {
                     type="text"
                     value={formData.pineconeIndexName}
                     onChange={(e) => setFormData({ ...formData, pineconeIndexName: e.target.value })}
-                    placeholder="my-bot-index"
+                    placeholder="test"
                     className="w-full bg-black/50 border border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:border-accent-blue focus:ring-2 focus:ring-accent-blue/20 transition-all"
                     required
                   />
+                  <p className="text-xs text-gray-500 mt-1">The name of your Pinecone index</p>
                 </div>
               </div>
             </div>

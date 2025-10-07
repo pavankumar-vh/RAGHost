@@ -113,23 +113,14 @@ export const uploadDocument = async (req, res) => {
     const pineconeKey = decrypt(bot.pineconeKey);
     const geminiKey = decrypt(bot.geminiKey);
 
-    // Construct Pinecone host URL (if available in bot config)
-    let pineconeHost = bot.pineconeHost || null;
-    if (!pineconeHost) {
-      // Construct based on environment format
-      if (bot.pineconeEnvironment.includes('-')) {
-        pineconeHost = `https://${bot.pineconeIndexName}.svc.${bot.pineconeEnvironment}.pinecone.io`;
-      } else {
-        pineconeHost = `https://${bot.pineconeIndexName}-${bot.pineconeEnvironment}.svc.pinecone.io`;
-      }
-    }
+    // Use pineconeEnvironment directly as host URL (users provide full URL now)
+    const pineconeHost = bot.pineconeEnvironment;
 
     // Upload to Pinecone in background
     console.log(`🚀 Starting Pinecone upload for: ${file.originalname}`);
     console.log(`   Document ID: ${documentId.toString()}`);
     console.log(`   Pinecone Host: ${pineconeHost}`);
     console.log(`   Index: ${bot.pineconeIndexName}`);
-    console.log(`   Environment: ${bot.pineconeEnvironment}`);
     
     processAndUploadDocument({
       text: content,
@@ -292,16 +283,7 @@ export const deleteDocument = async (req, res) => {
     // Delete from Pinecone in background
     if (document) {
       const pineconeKey = decrypt(bot.pineconeKey);
-      
-      // Construct Pinecone host URL
-      let pineconeHost = bot.pineconeHost || null;
-      if (!pineconeHost) {
-        if (bot.pineconeEnvironment.includes('-')) {
-          pineconeHost = `https://${bot.pineconeIndexName}.svc.${bot.pineconeEnvironment}.pinecone.io`;
-        } else {
-          pineconeHost = `https://${bot.pineconeIndexName}-${bot.pineconeEnvironment}.svc.pinecone.io`;
-        }
-      }
+      const pineconeHost = bot.pineconeEnvironment;
       
       deleteDocumentFromPinecone({
         documentId: documentId,

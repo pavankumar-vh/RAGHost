@@ -43,15 +43,8 @@ export const sendMessage = async (req, res) => {
 
     const startTime = Date.now();
 
-    // Construct Pinecone host URL
-    let pineconeHost = bot.pineconeHost || null;
-    if (!pineconeHost) {
-      if (bot.pineconeEnvironment.includes('-')) {
-        pineconeHost = `https://${bot.pineconeIndexName}.svc.${bot.pineconeEnvironment}.pinecone.io`;
-      } else {
-        pineconeHost = `https://${bot.pineconeIndexName}-${bot.pineconeEnvironment}.svc.pinecone.io`;
-      }
-    }
+    // Use pineconeEnvironment directly as host URL
+    const pineconeHost = bot.pineconeEnvironment;
 
     // Step 1: Query Pinecone for relevant context using Gemini embeddings
     const context = await queryPinecone({

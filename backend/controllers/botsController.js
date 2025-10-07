@@ -32,17 +32,11 @@ export const createBot = async (req, res) => {
     // Test Pinecone connection
     try {
       console.log('🔍 Verifying Pinecone connection...');
-      console.log(`   Index: ${pineconeIndexName}, Environment: ${pineconeEnvironment}`);
+      console.log(`   Host URL: ${pineconeEnvironment}`);
+      console.log(`   Index: ${pineconeIndexName}`);
       
-      // Try modern Pinecone URL format first (projects-based)
-      // Format: https://INDEX_NAME-PROJECT_ID.svc.ENVIRONMENT.pinecone.io
-      let pineconeUrl = `https://${pineconeIndexName}-${pineconeEnvironment}.svc.pinecone.io/describe_index_stats`;
-      
-      // If environment looks like a region (e.g., us-east-1-aws), try alternate format
-      if (pineconeEnvironment.includes('-')) {
-        // Legacy format: https://INDEX_NAME.svc.ENVIRONMENT.pinecone.io
-        pineconeUrl = `https://${pineconeIndexName}.svc.${pineconeEnvironment}.pinecone.io/describe_index_stats`;
-      }
+      // Use pineconeEnvironment directly as the host URL
+      const pineconeUrl = `${pineconeEnvironment}/describe_index_stats`;
       
       console.log(`   Testing URL: ${pineconeUrl}`);
       
@@ -70,19 +64,20 @@ export const createBot = async (req, res) => {
       console.log('❌ Pinecone error:', error.message);
     }
 
-    // Test Gemini connection
+    // Test Gemini connection (test embedding model since that's what we use)
     try {
-      console.log('🔍 Verifying Gemini connection...');
-      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${geminiKey}`;
+      console.log('🔍 Verifying Gemini Embedding API...');
+      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent?key=${geminiKey}`;
       const geminiResponse = await fetch(geminiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          contents: [{
-            parts: [{ text: 'Hi' }]
-          }]
+          model: 'models/gemini-embedding-001',
+          content: {
+            parts: [{ text: 'test' }]
+          }
         }),
       });
       
@@ -90,7 +85,7 @@ export const createBot = async (req, res) => {
       
       if (geminiResponse.ok) {
         geminiVerified = true;
-        console.log('✅ Gemini verified');
+        console.log('✅ Gemini Embedding API verified');
       } else {
         const errorData = await geminiResponse.json().catch(() => ({}));
         const errorMsg = errorData.error?.message || geminiResponse.statusText;
@@ -105,13 +100,8 @@ export const createBot = async (req, res) => {
     // Determine bot status based on verification
     const status = (pineconeVerified && geminiVerified) ? 'active' : 'inactive';
 
-    // Construct and store pineconeHost for easier access
-    let pineconeHost;
-    if (pineconeEnvironment.includes('-')) {
-      pineconeHost = `https://${pineconeIndexName}.svc.${pineconeEnvironment}.pinecone.io`;
-    } else {
-      pineconeHost = `https://${pineconeIndexName}-${pineconeEnvironment}.svc.pinecone.io`;
-    }
+    // Store pineconeEnvironment as the host URL (users now provide full URL)
+    const pineconeHost = pineconeEnvironment;
 
     // Create bot
     const bot = new Bot({
@@ -264,19 +254,11 @@ export const updateBot = async (req, res) => {
       bot.pineconeKey = encrypt(pineconeKey);
       bot.pineconeVerified = false; // Reset verification
     }
-    if (pineconeEnvironment) bot.pineconeEnvironment = pineconeEnvironment;
-    if (pineconeIndexName) bot.pineconeIndexName = pineconeIndexName;
-    
-    // Update pineconeHost if environment or index changed
-    if (pineconeEnvironment || pineconeIndexName) {
-      const env = pineconeEnvironment || bot.pineconeEnvironment;
-      const idx = pineconeIndexName || bot.pineconeIndexName;
-      if (env.includes('-')) {
-        bot.pineconeHost = `https://${idx}.svc.${env}.pinecone.io`;
-      } else {
-        bot.pineconeHost = `https://${idx}-${env}.svc.pinecone.io`;
-      }
+    if (pineconeEnvironment) {
+      bot.pineconeEnvironment = pineconeEnvironment;
+      bot.pineconeHost = pineconeEnvironment; // Store as host URL
     }
+    if (pineconeIndexName) bot.pineconeIndexName = pineconeIndexName;
 
     // Update Gemini key if provided
     if (geminiKey) {
@@ -360,16 +342,11 @@ export const testBotConnection = async (req, res) => {
     if (pineconeKey) {
       try {
         console.log('🔍 Testing Pinecone connection...');
-        console.log(`   Index: ${bot.pineconeIndexName}, Environment: ${bot.pineconeEnvironment}`);
+        console.log(`   Host URL: ${bot.pineconeEnvironment}`);
+        console.log(`   Index: ${bot.pineconeIndexName}`);
         
-        // Use same smart URL detection as createBot
-        let pineconeUrl = `https://${bot.pineconeIndexName}-${bot.pineconeEnvironment}.svc.pinecone.io/describe_index_stats`;
-        
-        // If environment looks like a region (e.g., us-east-1-aws), use legacy format
-        if (bot.pineconeEnvironment.includes('-')) {
-          // Legacy format: https://INDEX_NAME.svc.ENVIRONMENT.pinecone.io
-          pineconeUrl = `https://${bot.pineconeIndexName}.svc.${bot.pineconeEnvironment}.pinecone.io/describe_index_stats`;
-        }
+        // Use pineconeEnvironment directly as the host URL
+        const pineconeUrl = `${bot.pineconeEnvironment}/describe_index_stats`;
         
         console.log(`   Testing URL: ${pineconeUrl}`);
         
@@ -415,11 +392,11 @@ export const testBotConnection = async (req, res) => {
       };
     }
 
-    // Test Gemini connection
+    // Test Gemini connection (test embedding model since that's what we use)
     if (geminiKey) {
       try {
-        console.log('🔍 Testing Gemini connection...');
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${geminiKey}`;
+        console.log('🔍 Testing Gemini Embedding API...');
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent?key=${geminiKey}`;
         console.log(`   Testing URL: ${geminiUrl.replace(geminiKey, 'API_KEY_HIDDEN')}`);
         
         const geminiResponse = await fetch(geminiUrl, {
@@ -428,9 +405,10 @@ export const testBotConnection = async (req, res) => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            contents: [{
-              parts: [{ text: 'Test connection' }]
-            }]
+            model: 'models/gemini-embedding-001',
+            content: {
+              parts: [{ text: 'test' }]
+            }
           }),
         });
         
@@ -440,9 +418,9 @@ export const testBotConnection = async (req, res) => {
           geminiVerified = true;
           testResults.gemini = {
             verified: true,
-            message: 'Gemini connection successful',
+            message: 'Gemini Embedding API connection successful',
           };
-          console.log('✅ Gemini connection successful');
+          console.log('✅ Gemini Embedding API connection successful');
         } else {
           const errorData = await geminiResponse.json().catch(() => ({}));
           const errorMsg = errorData.error?.message || geminiResponse.statusText;
