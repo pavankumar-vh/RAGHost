@@ -7,9 +7,6 @@ import {
   deleteBot,
   testBotConnection,
   getEmbedCode,
-  addTeamMember,
-  removeTeamMember,
-  updateBotSettings,
 } from '../controllers/botsController.js';
 
 const router = express.Router();
@@ -36,12 +33,5 @@ router.post('/:id/test', testBotConnection);
 
 // Get embed code for bot
 router.get('/:id/embed', getEmbedCode);
-
-// Team collaboration
-router.post('/:id/team', addTeamMember);
-router.delete('/:id/team/:email', removeTeamMember);
-
-// Advanced settings
-router.put('/:id/settings', updateBotSettings);
 
 export default router;

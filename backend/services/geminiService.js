@@ -10,24 +10,12 @@
  * @param {Array} config.context - Context from Pinecone
  * @param {string} config.botName - Bot name
  * @param {string} config.botType - Bot type
- * @param {string} config.customSystemPrompt - Custom system prompt (optional)
- * @param {number} config.temperature - Temperature setting (optional)
- * @param {number} config.maxTokens - Max output tokens (optional)
  * @returns {Promise<Object>} - Generated response
  */
-export const generateResponse = async ({ 
-  apiKey, 
-  message, 
-  context, 
-  botName, 
-  botType,
-  customSystemPrompt,
-  temperature = 0.7,
-  maxTokens = 1024,
-}) => {
+export const generateResponse = async ({ apiKey, message, context, botName, botType }) => {
   try {
     // Build prompt with context
-    const systemPrompt = customSystemPrompt || buildSystemPrompt(botName, botType);
+    const systemPrompt = buildSystemPrompt(botName, botType);
     const contextText = buildContextText(context);
     const fullPrompt = `${systemPrompt}\n\n${contextText}\n\nUser: ${message}\n\nAssistant:`;
 
@@ -50,10 +38,10 @@ export const generateResponse = async ({
           },
         ],
         generationConfig: {
-          temperature: temperature,
+          temperature: 0.7,
           topK: 40,
           topP: 0.95,
-          maxOutputTokens: maxTokens,
+          maxOutputTokens: 1024,
         },
         safetySettings: [
           {

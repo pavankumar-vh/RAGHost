@@ -9,23 +9,14 @@
  * @param {string} config.environment - Pinecone environment
  * @param {string} config.indexName - Index name
  * @param {string} config.query - User query text
- * @param {string} config.geminiApiKey - Gemini API key for embeddings
+ * @param {string} config.geminiKey - Gemini API key for embeddings
  * @param {number} config.topK - Number of results to return
  * @returns {Promise<Object>} - Query results
  */
-export const queryPinecone = async ({ apiKey, environment, indexName, query, geminiApiKey, topK = 3 }) => {
+export const queryPinecone = async ({ apiKey, environment, indexName, query, geminiKey, topK = 3 }) => {
   try {
-    // Convert text to embeddings using Gemini
-    const queryVector = await textToEmbedding(query, geminiApiKey);
-
-    if (!queryVector || queryVector.length === 0) {
-      console.warn('Empty embedding vector, skipping Pinecone query');
-      return {
-        success: true,
-        matches: [],
-        count: 0,
-      };
-    }
+    // Convert text to embeddings using Gemini embedding-001
+    const queryVector = await textToEmbedding(query, geminiKey);
 
     // Pinecone query endpoint
     const url = `https://${indexName}-${environment}.pinecone.io/query`;
@@ -70,10 +61,11 @@ export const queryPinecone = async ({ apiKey, environment, indexName, query, gem
 };
 
 /**
- * Convert text to embedding vector using Gemini
+ * Convert text to embedding vector using Gemini Embedding API
+ * Uses embedding-001 model with 1536 dimensions (default for all services)
  * @param {string} text - Text to embed
  * @param {string} geminiApiKey - Gemini API key
- * @returns {Promise<number[]>} - Embedding vector
+ * @returns {Promise<number[]>} - Embedding vector (1536 dimensions)
  */
 const textToEmbedding = async (text, geminiApiKey) => {
   try {
@@ -85,22 +77,33 @@ const textToEmbedding = async (text, geminiApiKey) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
+        model: 'models/embedding-001',
         content: {
-          parts: [{
-            text: text.substring(0, 10000), // Limit to 10k characters per embedding
-          }],
+          parts: [
+            {
+              text: text,
+            },
+          ],
         },
+        outputDimensionality: 1536, // Standard dimension for all our services
       }),
     });
 
     if (!response.ok) {
-      const error = await response.text();
-      console.error('Gemini embedding error:', error);
-      throw new Error(`Gemini embedding failed: ${response.status}`);
+      const error = await response.json();
+      throw new Error(
+        error.error?.message || `Gemini Embedding API error: ${response.status}`
+      );
     }
 
     const data = await response.json();
-    return data.embedding?.values || [];
+    const embedding = data.embedding?.values || [];
+
+    if (embedding.length === 0) {
+      throw new Error('No embedding values returned from Gemini');
+    }
+
+    return embedding;
   } catch (error) {
     console.error('Text to embedding error:', error);
     throw error;
@@ -110,7 +113,10 @@ const textToEmbedding = async (text, geminiApiKey) => {
 /**
  * Upsert vectors to Pinecone (for knowledge base upload)
  * @param {Object} config - Pinecone configuration
- * @param {Array} vectors - Array of {id, values, metadata}
+ * @param {string} config.apiKey - Pinecone API key
+ * @param {string} config.environment - Pinecone environment
+ * @param {string} config.indexName - Index name
+ * @param {Array} config.vectors - Array of {id, values, metadata}
  * @returns {Promise<Object>} - Upsert result
  */
 export const upsertVectors = async ({ apiKey, environment, indexName, vectors }) => {

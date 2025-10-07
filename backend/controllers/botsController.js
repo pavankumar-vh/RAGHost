@@ -51,8 +51,6 @@ export const createBot = async (req, res) => {
       pineconeEnvironment: bot.pineconeEnvironment,
       pineconeIndexName: bot.pineconeIndexName,
       totalQueries: bot.totalQueries,
-      totalTokensUsed: bot.totalTokensUsed || 0,
-      estimatedCost: bot.estimatedCost || 0,
       avgResponseTime: bot.avgResponseTime,
       accuracy: bot.accuracy,
       createdAt: bot.createdAt,
@@ -88,8 +86,6 @@ export const getBots = async (req, res) => {
       pineconeVerified: bot.pineconeVerified,
       geminiVerified: bot.geminiVerified,
       totalQueries: bot.totalQueries,
-      totalTokensUsed: bot.totalTokensUsed || 0,
-      estimatedCost: bot.estimatedCost || 0,
       avgResponseTime: bot.avgResponseTime,
       accuracy: bot.accuracy,
       createdAt: bot.createdAt,
@@ -311,118 +307,5 @@ export const getEmbedCode = async (req, res) => {
   } catch (error) {
     console.error('Error generating embed code:', error);
     res.status(500).json({ error: 'Failed to generate embed code' });
-  }
-};
-
-// Add team member to bot
-export const addTeamMember = async (req, res) => {
-  try {
-    const userId = req.user.uid;
-    const { id } = req.params;
-    const { email, role = 'viewer' } = req.body;
-
-    if (!email) {
-      return res.status(400).json({ error: 'Email is required' });
-    }
-
-    const bot = await Bot.findOne({ _id: id, userId });
-
-    if (!bot) {
-      return res.status(404).json({ error: 'Bot not found' });
-    }
-
-    // Check if member already exists
-    const existingMember = bot.teamMembers.find(m => m.email === email);
-    if (existingMember) {
-      return res.status(400).json({ error: 'Team member already exists' });
-    }
-
-    // Add team member
-    bot.teamMembers.push({
-      email,
-      role,
-      addedAt: new Date(),
-    });
-
-    await bot.save();
-
-    res.json({
-      success: true,
-      message: 'Team member added successfully',
-      data: {
-        teamMembers: bot.teamMembers,
-      },
-    });
-  } catch (error) {
-    console.error('Error adding team member:', error);
-    res.status(500).json({ error: 'Failed to add team member' });
-  }
-};
-
-// Remove team member from bot
-export const removeTeamMember = async (req, res) => {
-  try {
-    const userId = req.user.uid;
-    const { id, email } = req.params;
-
-    const bot = await Bot.findOne({ _id: id, userId });
-
-    if (!bot) {
-      return res.status(404).json({ error: 'Bot not found' });
-    }
-
-    bot.teamMembers = bot.teamMembers.filter(m => m.email !== email);
-    await bot.save();
-
-    res.json({
-      success: true,
-      message: 'Team member removed successfully',
-      data: {
-        teamMembers: bot.teamMembers,
-      },
-    });
-  } catch (error) {
-    console.error('Error removing team member:', error);
-    res.status(500).json({ error: 'Failed to remove team member' });
-  }
-};
-
-// Update bot advanced settings
-export const updateBotSettings = async (req, res) => {
-  try {
-    const userId = req.user.uid;
-    const { id } = req.params;
-    const { temperature, maxTokens, systemPrompt } = req.body;
-
-    const bot = await Bot.findOne({ _id: id, userId });
-
-    if (!bot) {
-      return res.status(404).json({ error: 'Bot not found' });
-    }
-
-    if (temperature !== undefined) {
-      bot.temperature = Math.max(0, Math.min(2, temperature));
-    }
-    if (maxTokens !== undefined) {
-      bot.maxTokens = maxTokens;
-    }
-    if (systemPrompt !== undefined) {
-      bot.systemPrompt = systemPrompt;
-    }
-
-    await bot.save();
-
-    res.json({
-      success: true,
-      message: 'Bot settings updated successfully',
-      data: {
-        temperature: bot.temperature,
-        maxTokens: bot.maxTokens,
-        systemPrompt: bot.systemPrompt,
-      },
-    });
-  } catch (error) {
-    console.error('Error updating bot settings:', error);
-    res.status(500).json({ error: 'Failed to update bot settings' });
   }
 };

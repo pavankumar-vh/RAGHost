@@ -1,5 +1,6 @@
 /**
  * Embedding Service - Convert text to vectors and upsert to Pinecone
+ * Standard: Gemini embedding-001 model at 1536 dimensions
  */
 
 /**
@@ -29,10 +30,11 @@ export const chunkText = (text, chunkSize = 500, overlap = 50) => {
 };
 
 /**
- * Generate embedding using Gemini
+ * Generate embedding using Gemini embedding-001
+ * Uses 1536 dimensions (standard for all our services)
  * @param {string} text - Text to embed
  * @param {string} geminiApiKey - Gemini API key
- * @returns {Promise<number[]>} - Embedding vector
+ * @returns {Promise<number[]>} - Embedding vector (1536 dimensions)
  */
 export const generateEmbedding = async (text, geminiApiKey) => {
   try {
@@ -44,11 +46,13 @@ export const generateEmbedding = async (text, geminiApiKey) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
+        model: 'models/embedding-001',
         content: {
           parts: [{
-            text: text.substring(0, 10000),
+            text: text.substring(0, 10000), // Limit to 10k chars per chunk
           }],
         },
+        outputDimensionality: 1536, // Standard dimension for all our services
       }),
     });
 
@@ -58,7 +62,17 @@ export const generateEmbedding = async (text, geminiApiKey) => {
     }
 
     const data = await response.json();
-    return data.embedding?.values || [];
+    const embedding = data.embedding?.values || [];
+    
+    if (embedding.length === 0) {
+      throw new Error('No embedding values returned from Gemini');
+    }
+    
+    if (embedding.length !== 1536) {
+      console.warn(`Expected 1536 dimensions, got ${embedding.length}`);
+    }
+    
+    return embedding;
   } catch (error) {
     console.error('Generate embedding error:', error);
     throw error;
