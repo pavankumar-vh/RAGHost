@@ -134,6 +134,46 @@ export const sendMessage = async (req, res) => {
       bot.avgResponseTime === 0
         ? responseTime
         : (bot.avgResponseTime + responseTime) / 2;
+    
+    // Update daily stats
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (!bot.dailyStats) {
+      bot.dailyStats = [];
+    }
+    
+    // Find or create today's stat entry
+    let todayStat = bot.dailyStats.find(stat => {
+      const statDate = new Date(stat.date);
+      statDate.setHours(0, 0, 0, 0);
+      return statDate.getTime() === today.getTime();
+    });
+    
+    if (!todayStat) {
+      todayStat = {
+        date: today,
+        queries: 0,
+        tokens: 0,
+        avgResponseTime: 0,
+      };
+      bot.dailyStats.push(todayStat);
+    }
+    
+    // Update today's stats
+    todayStat.queries += 1;
+    todayStat.tokens += response.tokensUsed || 0;
+    todayStat.avgResponseTime = 
+      todayStat.avgResponseTime === 0
+        ? responseTime
+        : (todayStat.avgResponseTime + responseTime) / 2;
+    
+    // Keep only last 90 days of stats
+    if (bot.dailyStats.length > 90) {
+      bot.dailyStats.sort((a, b) => new Date(b.date) - new Date(a.date));
+      bot.dailyStats = bot.dailyStats.slice(0, 90);
+    }
+    
     await bot.save();
 
     res.json({
