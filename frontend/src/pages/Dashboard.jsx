@@ -594,17 +594,18 @@ const ActivityChart = ({ dailyStats }) => {
 
   return (
     <div className="h-64 w-full">
-      <BarChart
+      <LineChart
         xAxis={[{ 
-          scaleType: 'band', 
+          scaleType: 'point', 
           data: processedData.map(d => d.day),
-          categoryGapRatio: 0.3,
-          barGapRatio: 0.1
         }]}
         series={[{
           data: processedData.map(d => d.value),
           label: 'Queries',
           color: '#3b82f6',
+          area: true,
+          showMark: true,
+          curve: 'natural',
         }]}
         height={240}
         margin={{ top: 10, bottom: 30, left: 40, right: 10 }}
@@ -622,8 +623,16 @@ const ActivityChart = ({ dailyStats }) => {
           '& .MuiChartsLegend-label': {
             fill: 'rgba(255, 255, 255, 0.7)',
           },
-          '& .MuiBarElement-root': {
-            rx: 4,
+          '& .MuiLineElement-root': {
+            strokeWidth: 2.5,
+          },
+          '& .MuiAreaElement-root': {
+            fillOpacity: 0.4,
+          },
+          '& .MuiMarkElement-root': {
+            scale: '0.8',
+            fill: '#3b82f6',
+            strokeWidth: 2,
           },
         }}
         tooltip={{
