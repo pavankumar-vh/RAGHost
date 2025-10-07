@@ -1,0 +1,14 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "framework": "vite",
+  "env": {
+    "VITE_API_URL": "https://raghost-pcgw.onrender.com",
+    "VITE_FIREBASE_API_KEY": "AIzaSyC7A55onN4e4CcrdTIW0JNPTvxATuUZfcw",
+    "VITE_FIREBASE_AUTH_DOMAIN": "raghost-port.firebaseapp.com",
+    "VITE_FIREBASE_PROJECT_ID": "raghost-port",
+    "VITE_FIREBASE_STORAGE_BUCKET": "raghost-port.firebasestorage.app",
+    "VITE_FIREBASE_MESSAGING_SENDER_ID": "177697515355",
+    "VITE_FIREBASE_APP_ID": "1:177697515355:web:983468f414c979a4e41c7e"
+  }
+}
