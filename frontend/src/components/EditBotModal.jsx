@@ -11,6 +11,7 @@ const EditBotModal = ({ bot, setShowModal, onSave }) => {
     pineconeEnvironment: '',
     pineconeIndexName: '',
     geminiKey: '',
+    systemPrompt: '',
   });
   const [showKeys, setShowKeys] = useState({
     pinecone: false,
@@ -31,6 +32,7 @@ const EditBotModal = ({ bot, setShowModal, onSave }) => {
         pineconeEnvironment: bot.pineconeEnvironment || '',
         pineconeIndexName: bot.pineconeIndexName || '',
         geminiKey: '', // Don't pre-fill for security
+        systemPrompt: bot.systemPrompt || '',
       });
     }
   }, [bot]);
@@ -53,6 +55,7 @@ const EditBotModal = ({ bot, setShowModal, onSave }) => {
       type: formData.type,
       description: formData.description,
       color: formData.color,
+      systemPrompt: formData.systemPrompt,
     };
 
     // Only include API keys if they were changed (non-empty)
@@ -182,6 +185,22 @@ const EditBotModal = ({ bot, setShowModal, onSave }) => {
                   rows={3}
                   className="w-full bg-black/50 border border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:border-accent-blue focus:ring-2 focus:ring-accent-blue/20 transition-all resize-none"
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2 text-gray-300">
+                  System Prompt (Optional) 🎯
+                </label>
+                <textarea
+                  value={formData.systemPrompt}
+                  onChange={(e) => setFormData({ ...formData, systemPrompt: e.target.value })}
+                  placeholder="Define how your bot should behave and respond. Example: You are a friendly customer support agent who helps users with technical issues. Always be polite and provide step-by-step solutions."
+                  rows={4}
+                  className="w-full bg-black/50 border border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:border-accent-blue focus:ring-2 focus:ring-accent-blue/20 transition-all resize-none"
+                />
+                <p className="text-xs text-gray-400 mt-2">
+                  💡 This controls how your bot responds. Leave empty to use default behavior based on bot type.
+                </p>
               </div>
             </div>
 

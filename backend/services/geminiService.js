@@ -10,14 +10,46 @@
  * @param {Array} config.context - Context from Pinecone
  * @param {string} config.botName - Bot name
  * @param {string} config.botType - Bot type
+ * @param {string} config.systemPrompt - Custom system prompt (optional)
+ * @param {number} config.temperature - Temperature setting (optional)
+ * @param {number} config.maxTokens - Max output tokens (optional)
  * @returns {Promise<Object>} - Generated response
  */
-export const generateResponse = async ({ apiKey, message, context, botName, botType }) => {
+export const generateResponse = async ({ 
+  apiKey, 
+  message, 
+  context, 
+  botName, 
+  botType,
+  systemPrompt = '',
+  temperature = 0.7,
+  maxTokens = 1024
+}) => {
   try {
-    // Build prompt with context
-    const systemPrompt = buildSystemPrompt(botName, botType);
+    console.log('🎯 Generating response with Gemini Pro...');
+    
+    // Build prompt with custom or default system prompt
+    const finalSystemPrompt = systemPrompt || buildSystemPrompt(botName, botType);
     const contextText = buildContextText(context);
-    const fullPrompt = `${systemPrompt}\n\n${contextText}\n\nUser: ${message}\n\nAssistant:`;
+    
+    // Create a more structured prompt
+    const fullPrompt = `${finalSystemPrompt}
+
+${contextText}
+
+User Question: ${message}
+
+Instructions:
+1. Use the context from the knowledge base to answer the question accurately
+2. If the context doesn't contain the answer, use your general knowledge but mention that
+3. Be concise, helpful, and friendly
+4. If you're unsure, say so honestly
+
+Response:`;
+
+    console.log('📝 Prompt length:', fullPrompt.length, 'characters');
+    console.log('🎲 Temperature:', temperature);
+    console.log('📊 Max tokens:', maxTokens);
 
     // Gemini API endpoint
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
@@ -38,10 +70,10 @@ export const generateResponse = async ({ apiKey, message, context, botName, botT
           },
         ],
         generationConfig: {
-          temperature: 0.7,
+          temperature: temperature,
           topK: 40,
           topP: 0.95,
-          maxOutputTokens: 1024,
+          maxOutputTokens: maxTokens,
         },
         safetySettings: [
           {
@@ -66,6 +98,7 @@ export const generateResponse = async ({ apiKey, message, context, botName, botT
 
     if (!response.ok) {
       const error = await response.json();
+      console.error('❌ Gemini API error:', error);
       throw new Error(
         error.error?.message || `Gemini API error: ${response.status}`
       );
@@ -78,13 +111,16 @@ export const generateResponse = async ({ apiKey, message, context, botName, botT
       data.candidates?.[0]?.content?.parts?.[0]?.text ||
       'Sorry, I could not generate a response.';
 
+    console.log('✅ Response generated:', generatedText.substring(0, 100) + '...');
+
     return {
       success: true,
       text: generatedText,
       finishReason: data.candidates?.[0]?.finishReason || 'STOP',
+      tokensUsed: data.usageMetadata?.totalTokenCount || 0,
     };
   } catch (error) {
-    console.error('Gemini generation error:', error);
+    console.error('❌ Gemini generation error:', error);
     
     // Fallback response
     return {
@@ -120,16 +156,21 @@ const buildSystemPrompt = (botName, botType) => {
  */
 const buildContextText = (context) => {
   if (!context || context.length === 0) {
-    return 'Context: No specific context available. Answer based on general knowledge.';
+    return 'Knowledge Base Context: No specific context found in the knowledge base. You may answer based on general knowledge, but please mention that this information is not from the knowledge base.';
   }
+
+  console.log(`📚 Building context from ${context.length} matches`);
 
   const contextParts = context
     .map((match, index) => {
       const text = match.metadata?.text || '';
-      const score = match.score ? `(relevance: ${(match.score * 100).toFixed(1)}%)` : '';
-      return `[${index + 1}] ${text} ${score}`;
+      const score = match.score ? ` [Relevance: ${(match.score * 100).toFixed(0)}%]` : '';
+      const source = match.metadata?.source || 'Knowledge Base';
+      return `[Source ${index + 1}${score}]
+${text}`;
     })
     .join('\n\n');
 
-  return `Context from knowledge base:\n${contextParts}`;
+  return `Knowledge Base Context (Retrieved from uploaded documents):
+${contextParts}`;
 };

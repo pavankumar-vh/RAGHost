@@ -47,25 +47,33 @@ export const sendMessage = async (req, res) => {
     const pineconeHost = bot.pineconeEnvironment;
 
     // Step 1: Query Pinecone for relevant context using Gemini embeddings
+    console.log('🔍 Querying Pinecone for relevant context...');
     const context = await queryPinecone({
       apiKey: pineconeKey,
       environment: bot.pineconeEnvironment,
       indexName: bot.pineconeIndexName,
       query: message,
       geminiKey: geminiKey, // Use Gemini for embeddings
-      topK: 3,
+      topK: 5, // Get top 5 most relevant chunks
       pineconeHost,
     });
 
-    // Step 2: Generate response with Gemini
+    console.log(`📚 Found ${context.matches?.length || 0} relevant context chunks`);
+
+    // Step 2: Generate response with Gemini using context and system prompt
+    console.log('🤖 Generating AI response with Gemini...');
     const response = await generateResponse({
       apiKey: geminiKey,
       message,
       context: context.matches || [],
       botName: bot.name,
       botType: bot.type,
+      systemPrompt: bot.systemPrompt || '', // Use custom system prompt
+      temperature: bot.temperature || 0.7,
+      maxTokens: bot.maxTokens || 1024,
     });
 
+    console.log('✅ Response generated successfully');
     const responseTime = Date.now() - startTime;
 
     // Step 3: Save chat history
