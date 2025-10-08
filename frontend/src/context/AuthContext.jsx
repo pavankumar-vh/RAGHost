@@ -7,6 +7,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   updateProfile,
+  sendPasswordResetEmail,
 } from 'firebase/auth';
 import { auth } from '../config/firebase';
 
@@ -80,6 +81,20 @@ export const AuthProvider = ({ children }) => {
     return signOut(auth);
   };
 
+  // Forgot Password - Send reset email
+  const resetPassword = async (email) => {
+    try {
+      if (!auth) {
+        throw new Error('Firebase is not properly configured. Please check your .env file.');
+      }
+      await sendPasswordResetEmail(auth, email);
+      return { success: true, message: 'Password reset email sent! Check your inbox.' };
+    } catch (error) {
+      console.error('Password reset error:', error);
+      throw error;
+    }
+  };
+
   // Get ID Token
   const getIdToken = async () => {
     if (currentUser) {
@@ -116,6 +131,7 @@ export const AuthProvider = ({ children }) => {
     login,
     logout,
     signInWithGoogle,
+    resetPassword,
     getIdToken,
     loading,
     error,

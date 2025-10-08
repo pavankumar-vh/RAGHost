@@ -6,20 +6,47 @@ import { Mail, Lock, AlertCircle } from 'lucide-react';
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const { login, signup } = useAuth();
+  const { login, signup, resetPassword } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
     setLoading(true);
+
+    // Handle forgot password
+    if (showForgotPassword) {
+      try {
+        await resetPassword(email);
+        setSuccess('Password reset email sent! Check your inbox.');
+        setTimeout(() => {
+          setShowForgotPassword(false);
+          setSuccess('');
+        }, 3000);
+      } catch (err) {
+        console.error('Reset password error:', err);
+        setError(
+          err.code === 'auth/user-not-found'
+            ? 'No account found with this email'
+            : err.code === 'auth/invalid-email'
+            ? 'Invalid email address'
+            : err.message || 'Failed to send reset email. Please try again.'
+        );
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
 
     // Validation for signup
     if (!isLogin) {
@@ -106,12 +133,22 @@ const AuthPage = () => {
           {/* Header */}
           <div className="text-left mb-8">
             <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
-              {isLogin ? 'Sign In' : 'Create Account'}
+              {showForgotPassword ? 'Reset Password' : isLogin ? 'Sign In' : 'Create Account'}
             </h1>
             <p className="text-gray-400 mt-2 text-sm sm:text-base">
-              {isLogin ? 'to continue to RAGhost.' : 'Get started with RAGhost.'}
+              {showForgotPassword 
+                ? 'Enter your email to receive a password reset link.' 
+                : isLogin ? 'to continue to RAGhost.' : 'Get started with RAGhost.'}
             </p>
           </div>
+
+          {/* Success Message */}
+          {success && (
+            <div className="mb-6 p-4 bg-green-500/10 border border-green-500/50 rounded-lg flex items-center gap-3 text-green-400">
+              <AlertCircle size={20} className="flex-shrink-0" />
+              <span className="text-sm">{success}</span>
+            </div>
+          )}
 
           {/* Error Message */}
           {error && (
@@ -124,7 +161,7 @@ const AuthPage = () => {
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Name Input (Only for Sign Up) */}
-            {!isLogin && (
+            {!isLogin && !showForgotPassword && (
               <div>
                 <label htmlFor="displayName" className="block text-sm font-medium text-gray-300 mb-2">
                   Full Name
@@ -166,43 +203,53 @@ const AuthPage = () => {
             </div>
 
             {/* Password Input */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <label htmlFor="password" className="block text-sm font-medium text-gray-300">
-                  Password
-                </label>
-                {isLogin && (
-                  <a href="#" className="text-sm font-medium text-accent-pink hover:underline">
-                    Forgot?
-                  </a>
+            {!showForgotPassword && (
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label htmlFor="password" className="block text-sm font-medium text-gray-300">
+                    Password
+                  </label>
+                  {isLogin && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowForgotPassword(true);
+                        setError('');
+                        setSuccess('');
+                      }}
+                      className="text-sm font-medium text-accent-pink hover:underline bg-transparent border-none cursor-pointer"
+                    >
+                      Forgot?
+                    </button>
+                  )}
+                </div>
+                <div className="relative">
+                  <Lock
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                    size={20}
+                  />
+                  <input
+                    type="password"
+                    id="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    disabled={loading}
+                    minLength={6}
+                    className="w-full pl-11 pr-4 py-3 bg-dark-bg border border-gray-600 rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:border-accent-blue focus:ring-2 focus:ring-accent-blue/50 transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    placeholder="••••••••"
+                  />
+                </div>
+                {!isLogin && (
+                  <p className="mt-1.5 text-xs text-gray-500">
+                    Must be at least 6 characters
+                  </p>
                 )}
               </div>
-              <div className="relative">
-                <Lock
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
-                  size={20}
-                />
-                <input
-                  type="password"
-                  id="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  disabled={loading}
-                  minLength={6}
-                  className="w-full pl-11 pr-4 py-3 bg-dark-bg border border-gray-600 rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:border-accent-blue focus:ring-2 focus:ring-accent-blue/50 transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                  placeholder="••••••••"
-                />
-              </div>
-              {!isLogin && (
-                <p className="mt-1.5 text-xs text-gray-500">
-                  Must be at least 6 characters
-                </p>
-              )}
-            </div>
+            )}
 
             {/* Confirm Password Input (Only for Sign Up) */}
-            {!isLogin && (
+            {!isLogin && !showForgotPassword && (
               <div>
                 <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300 mb-2">
                   Confirm Password
@@ -233,28 +280,50 @@ const AuthPage = () => {
               disabled={loading}
               className="w-full py-3.5 px-4 bg-accent-blue text-white text-base sm:text-lg font-semibold rounded-lg shadow-md hover:bg-accent-blue/90 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-dark-card focus:ring-accent-blue transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed mt-2"
             >
-              {loading ? 'Please wait...' : isLogin ? 'Sign In' : 'Create Account'}
+              {loading 
+                ? 'Please wait...' 
+                : showForgotPassword 
+                ? 'Send Reset Email' 
+                : isLogin ? 'Sign In' : 'Create Account'}
             </button>
-          </form>
 
-          {/* Toggle Sign In/Sign Up */}
-          <div className="mt-8 text-center">
-            <p className="text-sm text-gray-400">
-              {isLogin ? 'No account?' : 'Already have an account?'}{' '}
+            {/* Back to Sign In (if in forgot password mode) */}
+            {showForgotPassword && (
               <button
                 type="button"
                 onClick={() => {
-                  setIsLogin(!isLogin);
+                  setShowForgotPassword(false);
                   setError('');
-                  setDisplayName('');
-                  setConfirmPassword('');
+                  setSuccess('');
                 }}
-                className="font-medium text-accent-yellow hover:underline bg-transparent border-none cursor-pointer"
+                className="w-full py-2 text-sm text-gray-400 hover:text-white transition-colors"
               >
-                {isLogin ? 'Create one' : 'Sign In'}
+                ← Back to Sign In
               </button>
-            </p>
-          </div>
+            )}
+          </form>
+
+          {/* Toggle Sign In/Sign Up */}
+          {!showForgotPassword && (
+            <div className="mt-8 text-center">
+              <p className="text-sm text-gray-400">
+                {isLogin ? 'No account?' : 'Already have an account?'}{' '}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsLogin(!isLogin);
+                    setError('');
+                    setSuccess('');
+                    setDisplayName('');
+                    setConfirmPassword('');
+                  }}
+                  className="font-medium text-accent-yellow hover:underline bg-transparent border-none cursor-pointer"
+                >
+                  {isLogin ? 'Create one' : 'Sign In'}
+                </button>
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </main>

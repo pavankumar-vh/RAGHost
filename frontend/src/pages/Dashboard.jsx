@@ -10,11 +10,12 @@ import AnalyticsView from '../components/AnalyticsView';
 import { BarChart } from '@mui/x-charts/BarChart';
 import { LineChart } from '@mui/x-charts/LineChart';
 import { 
-  LogOut, 
   Bot, 
-  Key, 
-  BarChart3, 
-  Home, 
+  Key,
+  BarChart3,
+  Home,
+  LogOut, 
+  BookOpen,
   Plus, 
   Search, 
   TrendingUp, 
@@ -300,6 +301,8 @@ const Dashboard = () => {
 
 // Sidebar Component
 const Sidebar = ({ activePage, setActivePage, handleLogout, currentUser }) => {
+  const navigate = useNavigate();
+  
   const menuItems = [
     { name: 'Dashboard', icon: Home },
     { name: 'My Bots', icon: Bot },
@@ -346,6 +349,15 @@ const Sidebar = ({ activePage, setActivePage, handleLogout, currentUser }) => {
             <span>{item.name}</span>
           </button>
         ))}
+        
+        {/* Documentation Link */}
+        <button
+          onClick={() => navigate('/docs')}
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-gray-900 hover:text-white hover:scale-102 transition-all duration-200 border border-gray-700/50 hover:border-accent-yellow/50"
+        >
+          <BookOpen size={20} />
+          <span>Documentation</span>
+        </button>
       </nav>
 
       {/* Logout Button */}
