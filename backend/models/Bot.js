@@ -129,9 +129,13 @@ const botSchema = new mongoose.Schema(
   }
 );
 
-// Index for efficient queries
-botSchema.index({ userId: 1, status: 1 });
-botSchema.index({ userId: 1, createdAt: -1 });
+// Indexes for efficient queries and high performance
+botSchema.index({ userId: 1, status: 1 }); // User's active bots
+botSchema.index({ userId: 1, createdAt: -1 }); // User's bots by date
+botSchema.index({ status: 1 }); // Active/inactive bots
+botSchema.index({ 'dailyStats.date': -1 }); // Analytics queries
+botSchema.index({ totalQueries: -1 }); // Popular bots
+botSchema.index({ userId: 1, name: 1 }); // Search by name
 
 const Bot = mongoose.model('Bot', botSchema);
 
