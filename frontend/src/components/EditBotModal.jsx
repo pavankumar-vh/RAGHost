@@ -169,11 +169,20 @@ const EditBotModal = ({ bot, setShowModal, onSave }) => {
                     onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                     className="w-full bg-black/50 border border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:border-accent-blue focus:ring-2 focus:ring-accent-blue/20 transition-all cursor-pointer"
                   >
-                    <option value="Support">Support</option>
-                    <option value="Sales">Sales</option>
-                    <option value="Docs">Documentation</option>
-                    <option value="General">General</option>
-                    <option value="Custom">Custom</option>
+                    <option value="Support">🎧 Customer Support</option>
+                    <option value="Sales">💼 Sales Assistant</option>
+                    <option value="Docs">📚 Documentation</option>
+                    <option value="HR">👥 HR Assistant</option>
+                    <option value="Ecommerce">🛒 E-commerce Shopping</option>
+                    <option value="Education">🎓 Educational Tutor</option>
+                    <option value="Healthcare">🏥 Healthcare Info</option>
+                    <option value="Finance">💰 Financial Advisory</option>
+                    <option value="Travel">✈️ Travel Planning</option>
+                    <option value="Restaurant">🍽️ Restaurant Booking</option>
+                    <option value="Legal">⚖️ Legal Information</option>
+                    <option value="RealEstate">🏠 Real Estate</option>
+                    <option value="General">🤖 General Purpose</option>
+                    <option value="Custom">⚙️ Custom Bot</option>
                   </select>
                 </div>
 
