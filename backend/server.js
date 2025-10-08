@@ -15,7 +15,7 @@ dotenv.config();
 
 import connectDB from './config/database.js';
 import './config/firebase.js'; // Initialize Firebase (will warn if not configured)
-import { initializeRedis, isRedisCacheAvailable } from './config/redis.js';
+import { initializeRedis, isRedisCacheAvailable, getRedisClient } from './config/redis.js';
 import { initializeQueues, areQueuesAvailable, getQueueStats, closeQueues } from './config/queue.js';
 import { setupCluster, getClusterInfo } from './config/cluster.js';
 import keysRoutes from './routes/keys.js';
@@ -87,20 +87,24 @@ app.use(cors({
 }));
 
 // Enhanced rate limiting for different endpoints
-const createRateLimiter = (windowMs, max, message) => rateLimit({
-  windowMs,
-  max,
-  message: { success: false, error: message },
-  standardHeaders: true,
-  legacyHeaders: false,
-  // Use Redis for distributed rate limiting if available
-  ...(process.env.REDIS_URL && {
-    store: require('rate-limit-redis')({
-      client: require('./config/redis.js').getRedisClient(),
-      prefix: 'rl:',
-    }),
-  }),
-});
+// ===================================
+// RATE LIMITING (DDoS Protection)
+// ===================================
+const createRateLimiter = (windowMs, max, message) => {
+  const limiterConfig = {
+    windowMs,
+    max,
+    message: { success: false, error: message },
+    standardHeaders: true,
+    legacyHeaders: false,
+  };
+  
+  // Note: Redis-backed rate limiting would require dynamic import
+  // For now, using in-memory rate limiting (works fine for single instance)
+  // If you need distributed rate limiting, consider using rate-limit-redis
+  
+  return rateLimit(limiterConfig);
+};
 
 // Different rate limits for different endpoints
 const generalLimiter = createRateLimiter(

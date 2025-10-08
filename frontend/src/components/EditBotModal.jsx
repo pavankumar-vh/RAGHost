@@ -19,6 +19,14 @@ const EditBotModal = ({ bot, setShowModal, onSave }) => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isClosing, setIsClosing] = useState(false);
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setShowModal(false);
+    }, 300); // Match animation duration
+  };
 
   // Initialize form data from bot prop
   useEffect(() => {
@@ -77,7 +85,7 @@ const EditBotModal = ({ bot, setShowModal, onSave }) => {
       console.log('⏳ Calling onSave with bot ID:', bot.id);
       await onSave(bot.id, updateData);
       console.log('✨ Bot updated, closing modal');
-      setShowModal(false);
+      handleClose();
     } catch (err) {
       console.error('❌ Error in modal:', err);
       const errorMessage = err.response?.data?.error || err.message || 'Failed to update bot. Please try again.';
@@ -90,20 +98,24 @@ const EditBotModal = ({ bot, setShowModal, onSave }) => {
 
   return (
     <div 
-      className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-50 p-4 overflow-y-auto animate-fadeIn"
+      className={`fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-end z-50 transition-all duration-300 ${
+        isClosing ? 'opacity-0' : 'opacity-100'
+      }`}
       onClick={(e) => {
         // Close modal when clicking outside
         if (e.target === e.currentTarget) {
-          setShowModal(false);
+          handleClose();
         }
       }}
     >
-      <div className="relative bg-gradient-to-br from-gray-900 to-black border border-gray-700 rounded-3xl p-8 w-full max-w-3xl my-8 shadow-2xl">
+      <div className={`relative bg-gradient-to-br from-gray-900 via-gray-900 to-black border-l border-gray-700 h-full w-full max-w-2xl shadow-2xl overflow-y-auto transition-transform duration-300 ease-out ${
+        isClosing ? 'translate-x-full' : 'translate-x-0'
+      }`}>
         {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-accent-blue/5 via-transparent to-accent-pink/5 rounded-3xl pointer-events-none"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-accent-blue/5 via-transparent to-accent-pink/5 pointer-events-none"></div>
         
-        <div className="relative z-10">
-          <div className="flex items-center justify-between mb-8">
+        <div className="relative z-10 p-8">
+          <div className="flex items-center justify-between mb-8 sticky top-0 bg-gray-900/95 backdrop-blur-lg -mx-8 px-8 py-4 border-b border-gray-800">
             <div>
               <h2 className="text-3xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
                 Edit Bot
@@ -112,12 +124,9 @@ const EditBotModal = ({ bot, setShowModal, onSave }) => {
             </div>
             <button 
               type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowModal(false);
-              }}
-              className="text-gray-500 hover:text-white hover:bg-gray-800 p-2 rounded-lg transition-all z-50"
-              aria-label="Close modal"
+              onClick={handleClose}
+              className="text-gray-400 hover:text-white hover:bg-gray-800 p-3 rounded-xl transition-all duration-200 hover:rotate-90 group"
+              aria-label="Close panel"
             >
               <X size={24} />
             </button>
@@ -350,8 +359,8 @@ const EditBotModal = ({ bot, setShowModal, onSave }) => {
             <div className="flex gap-3">
               <button
                 type="button"
-                onClick={() => setShowModal(false)}
-                className="flex-1 bg-gray-800 hover:bg-gray-700 text-white font-semibold py-4 rounded-xl transition-all"
+                onClick={handleClose}
+                className="flex-1 bg-gray-800 hover:bg-gray-700 text-white font-semibold py-4 rounded-xl transition-all duration-200 hover:scale-[1.02]"
               >
                 Cancel
               </button>
