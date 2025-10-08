@@ -5,7 +5,8 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "start": "node server.js",
+    "start": "node --max-old-space-size=400 --optimize-for-size --gc-interval=100 server.js",
+    "start:normal": "node server.js",
     "dev": "nodemon server.js",
     "setup": "node scripts/check-setup.js",
     "generate-key": "node scripts/generate-encryption-key.js"

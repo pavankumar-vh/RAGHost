@@ -2,13 +2,23 @@ import mongoose from 'mongoose';
 
 /**
  * Connect to MongoDB Atlas with optimized connection pooling for high concurrency
+ * Memory-optimized for 512MB environments (Render free tier)
  */
 const connectDB = async () => {
   try {
+    // Detect if running on low-memory environment (Render free tier)
+    const isLowMemory = process.env.NODE_ENV === 'production' && 
+                        !process.env.ENABLE_HIGH_MEMORY;
+    
+    const poolConfig = isLowMemory 
+      ? { maxPoolSize: 5, minPoolSize: 2 }   // Low memory: 5 max, 2 min
+      : { maxPoolSize: 50, minPoolSize: 10 }; // High memory: 50 max, 10 min
+    
+    console.log(`🔧 Database Pool Config: ${isLowMemory ? 'Low Memory Mode' : 'Standard Mode'}`);
+    
     const conn = await mongoose.connect(process.env.MONGODB_URI, {
-      // Connection Pool Configuration for High Load
-      maxPoolSize: 50, // Maximum 50 connections in pool (default is 100)
-      minPoolSize: 10, // Maintain at least 10 connections
+      // Connection Pool Configuration (Memory-Optimized)
+      ...poolConfig,
       socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
       serverSelectionTimeoutMS: 10000, // Timeout after 10s if can't connect to server
       heartbeatFrequencyMS: 10000, // Check server health every 10s
@@ -29,7 +39,8 @@ const connectDB = async () => {
     });
 
     console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
-    console.log(`📊 Connection Pool: Min=${conn.connection.client.options.minPoolSize}, Max=${conn.connection.client.options.maxPoolSize}`);
+    console.log(`📊 Connection Pool: Min=${poolConfig.minPoolSize}, Max=${poolConfig.maxPoolSize}`);
+    console.log(`💾 Memory Mode: ${isLowMemory ? '512MB Optimized' : 'Standard'}`);
     
     // Handle connection events
     mongoose.connection.on('error', (err) => {

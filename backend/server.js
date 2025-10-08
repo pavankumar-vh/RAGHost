@@ -33,7 +33,9 @@ const PORT = process.env.PORT || 5001;
 // Trust proxy - important for rate limiting behind reverse proxies (Render, Heroku, etc.)
 app.set('trust proxy', 1);
 
-// Compression middleware - compress all responses
+// Memory-optimized compression for 512MB environments
+const isLowMemory = process.env.NODE_ENV === 'production' && !process.env.ENABLE_HIGH_MEMORY;
+
 app.use(compression({
   filter: (req, res) => {
     if (req.headers['x-no-compression']) {
@@ -41,8 +43,9 @@ app.use(compression({
     }
     return compression.filter(req, res);
   },
-  level: 6, // Balance between speed and compression ratio
-  threshold: 1024, // Only compress responses larger than 1KB
+  level: isLowMemory ? 4 : 6, // Lower compression level for less CPU/memory usage
+  threshold: isLowMemory ? 2048 : 1024, // Compress only larger responses in low memory
+  memLevel: isLowMemory ? 7 : 8, // Reduce memory usage for compression
 }));
 
 // Middleware setup
@@ -138,8 +141,10 @@ app.use('/api/analytics', authenticate, generalLimiter);
 app.use('/api/chat', chatLimiter); // Stricter for public chat endpoint
 app.use('/api/knowledge', authenticate, knowledgeLimiter);
 
-app.use(express.json({ limit: '10mb' })); // Limit request body size
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+// Memory-optimized body parsing
+const bodyLimit = isLowMemory ? '5mb' : '10mb';
+app.use(express.json({ limit: bodyLimit }));
+app.use(express.urlencoded({ extended: true, limit: bodyLimit }));
 
 // Serve widget static files with proper headers
 app.use('/widget', (req, res, next) => {
@@ -203,17 +208,28 @@ app.use(errorHandler);
 
 /**
  * Start the server with all optimizations
+ * Memory-optimized for 512MB environments
  */
 const startServer = async () => {
   try {
+    console.log(`💾 Memory Mode: ${isLowMemory ? '512MB Optimized' : 'Standard'}`);
+    
     // Initialize database connection
     await connectDB();
 
-    // Initialize Redis cache (optional - improves performance)
-    await initializeRedis();
+    // Initialize Redis cache only if not in low memory mode or explicitly enabled
+    if (!isLowMemory || process.env.ENABLE_CACHING === 'true') {
+      await initializeRedis();
+    } else {
+      console.log('⚠️  Redis cache disabled (low memory mode)');
+    }
 
-    // Initialize Bull queues for background jobs (optional - requires Redis)
-    await initializeQueues();
+    // Initialize Bull queues only if Redis is available and not in low memory mode
+    if (!isLowMemory && isRedisCacheAvailable()) {
+      await initializeQueues();
+    } else {
+      console.log('⚠️  Background job queues disabled (low memory mode)');
+    }
 
     // Start Express server
     const server = app.listen(PORT, () => {
