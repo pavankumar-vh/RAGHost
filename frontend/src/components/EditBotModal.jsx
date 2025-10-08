@@ -180,20 +180,42 @@ const EditBotModal = ({ bot, setShowModal, onSave }) => {
                 <div>
                   <label className="block text-sm font-medium mb-2 text-gray-300">Color Theme</label>
                   <div className="flex gap-3">
-                    {['pink', 'yellow', 'blue'].map((color) => (
-                      <button
-                        key={color}
-                        type="button"
-                        onClick={() => setFormData({ ...formData, color })}
-                        className={`relative w-12 h-12 rounded-xl bg-accent-${color} transition-all duration-300 hover:scale-110 ${
-                          formData.color === color ? 'ring-4 ring-white/30 scale-110 shadow-lg shadow-accent-${color}/50' : 'opacity-70'
-                        }`}
-                      >
-                        {formData.color === color && (
-                          <div className="absolute inset-0 rounded-xl bg-white/20"></div>
-                        )}
-                      </button>
-                    ))}
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, color: 'pink' })}
+                      className={`relative w-12 h-12 rounded-xl transition-all duration-300 hover:scale-110 ${
+                        formData.color === 'pink' ? 'ring-4 ring-white/30 scale-110 shadow-xl' : 'opacity-70 hover:opacity-100'
+                      }`}
+                      style={{ backgroundColor: '#FF6B9D' }}
+                    >
+                      {formData.color === 'pink' && (
+                        <div className="absolute inset-0 rounded-xl bg-white/20"></div>
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, color: 'yellow' })}
+                      className={`relative w-12 h-12 rounded-xl transition-all duration-300 hover:scale-110 ${
+                        formData.color === 'yellow' ? 'ring-4 ring-white/30 scale-110 shadow-xl' : 'opacity-70 hover:opacity-100'
+                      }`}
+                      style={{ backgroundColor: '#FEC84B' }}
+                    >
+                      {formData.color === 'yellow' && (
+                        <div className="absolute inset-0 rounded-xl bg-white/20"></div>
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, color: 'blue' })}
+                      className={`relative w-12 h-12 rounded-xl transition-all duration-300 hover:scale-110 ${
+                        formData.color === 'blue' ? 'ring-4 ring-white/30 scale-110 shadow-xl' : 'opacity-70 hover:opacity-100'
+                      }`}
+                      style={{ backgroundColor: '#7DD3FC' }}
+                    >
+                      {formData.color === 'blue' && (
+                        <div className="absolute inset-0 rounded-xl bg-white/20"></div>
+                      )}
+                    </button>
                   </div>
                 </div>
               </div>
