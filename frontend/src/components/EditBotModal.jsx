@@ -89,7 +89,15 @@ const EditBotModal = ({ bot, setShowModal, onSave }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-50 p-4 overflow-y-auto animate-fadeIn">
+    <div 
+      className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-50 p-4 overflow-y-auto animate-fadeIn"
+      onClick={(e) => {
+        // Close modal when clicking outside
+        if (e.target === e.currentTarget) {
+          setShowModal(false);
+        }
+      }}
+    >
       <div className="relative bg-gradient-to-br from-gray-900 to-black border border-gray-700 rounded-3xl p-8 w-full max-w-3xl my-8 shadow-2xl">
         {/* Gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-accent-blue/5 via-transparent to-accent-pink/5 rounded-3xl pointer-events-none"></div>
@@ -103,8 +111,13 @@ const EditBotModal = ({ bot, setShowModal, onSave }) => {
               <p className="text-gray-400 text-sm mt-1">Update your AI assistant configuration</p>
             </div>
             <button 
-              onClick={() => setShowModal(false)}
-              className="text-gray-500 hover:text-white hover:bg-gray-800 p-2 rounded-lg transition-all"
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowModal(false);
+              }}
+              className="text-gray-500 hover:text-white hover:bg-gray-800 p-2 rounded-lg transition-all z-50"
+              aria-label="Close modal"
             >
               <X size={24} />
             </button>

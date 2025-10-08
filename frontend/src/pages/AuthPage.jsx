@@ -103,21 +103,11 @@ const AuthPage = () => {
   };
 
   return (
-    <main className="relative overflow-hidden min-h-screen flex flex-col lg:flex-row items-center justify-between px-4 py-8 md:px-12 lg:px-24 lg:py-0">
+    <main className="relative overflow-hidden min-h-screen flex items-center justify-center lg:justify-between px-4 py-8 md:px-12 lg:px-24">
       <DecorativeShapes />
 
-      {/* Mobile Branding (shown on small screens) */}
-      <div className="lg:hidden text-center mb-8 relative z-10 w-full">
-        <h1 className="text-4xl sm:text-5xl font-bold tracking-tighter text-accent-blue">
-          RAGhost
-        </h1>
-        <p className="text-lg sm:text-xl text-gray-300 mt-2">
-          Bot Hosting. Simplified.
-        </p>
-      </div>
-
       {/* Left Side - Branding (desktop only) */}
-      <div className="hidden lg:flex flex-col justify-center items-start relative z-10 flex-1">
+      <div className="hidden lg:flex flex-col justify-center items-start relative z-10 flex-1 max-w-xl">
         <h1 className="text-6xl xl:text-7xl font-bold tracking-tighter text-accent-blue">
           RAGhost
         </h1>
@@ -128,8 +118,18 @@ const AuthPage = () => {
       </div>
 
       {/* Right Side - Auth Form */}
-      <div className="w-full lg:w-auto flex items-center justify-center relative z-10">
-        <div className="bg-dark-card w-full max-w-xl lg:max-w-lg xl:max-w-xl p-8 sm:p-10 xl:p-12 rounded-2xl shadow-2xl border border-gray-700/50">
+      <div className="w-full lg:w-auto flex items-center justify-center relative z-10 lg:flex-1 lg:max-w-2xl">
+        <div className="bg-dark-card w-full max-w-md lg:max-w-lg p-8 sm:p-10 rounded-2xl shadow-2xl border border-gray-700/50">
+          {/* Mobile Branding (shown on small screens) */}
+          <div className="lg:hidden text-center mb-6">
+            <h1 className="text-4xl font-bold tracking-tighter text-accent-blue">
+              RAGhost
+            </h1>
+            <p className="text-base text-gray-300 mt-2">
+              Bot Hosting. Simplified.
+            </p>
+          </div>
+
           {/* Header */}
           <div className="text-left mb-8">
             <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
