@@ -200,6 +200,16 @@ app.get('/health', async (req, res) => {
 });
 
 // API Routes
+// Public bot route (must come before authenticated routes)
+app.get('/api/bots/public/:id', async (req, res, next) => {
+  try {
+    const { getBotById } = await import('./controllers/botsController.js');
+    return getBotById(req, res, next);
+  } catch (error) {
+    next(error);
+  }
+});
+
 app.use('/api/keys', authenticate, keysRoutes);
 app.use('/api/bots', authenticate, botsRoutes);
 app.use('/api/knowledge', authenticate, knowledgeRoutes);

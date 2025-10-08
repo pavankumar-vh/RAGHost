@@ -14,24 +14,12 @@ const WidgetTemplates = ({ bot }) => {
       description: 'Traditional chat bubble in bottom-right corner',
       preview: 'Bottom-right floating bubble',
       code: `<!-- RAGhost Chat Widget - Classic Bubble -->
-<div id="raghost-widget"></div>
-<script>
-  (function() {
-    window.raghostConfig = {
-      botId: '${bot?.id}',
-      apiUrl: '${apiUrl}',
-      botName: '${bot?.name}',
-      botType: '${bot?.type}',
-      color: '${bot?.color}',
-      position: 'bottom-right',
-      theme: 'classic'
-    };
-    var script = document.createElement('script');
-    script.src = '${widgetUrl}/widget.js';
-    script.async = true;
-    document.body.appendChild(script);
-  })();
-</script>`,
+<iframe 
+  id="raghost-widget-${bot?.id}"
+  src="${widgetUrl}/embed/${bot?.id}?theme=classic"
+  style="position: fixed; bottom: 20px; right: 20px; width: 400px; height: 600px; border: none; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); z-index: 9999;"
+  allow="clipboard-write"
+></iframe>`,
       style: {
         position: 'bottom-right',
         size: 'medium',
@@ -46,25 +34,12 @@ const WidgetTemplates = ({ bot }) => {
       description: 'Slide-in sidebar from right edge',
       preview: 'Full-height sidebar panel',
       code: `<!-- RAGhost Chat Widget - Sidebar -->
-<div id="raghost-widget"></div>
-<script>
-  (function() {
-    window.raghostConfig = {
-      botId: '${bot?.id}',
-      apiUrl: '${apiUrl}',
-      botName: '${bot?.name}',
-      botType: '${bot?.type}',
-      color: '${bot?.color}',
-      position: 'sidebar-right',
-      width: '400px',
-      theme: 'sidebar'
-    };
-    var script = document.createElement('script');
-    script.src = '${widgetUrl}/widget.js';
-    script.async = true;
-    document.body.appendChild(script);
-  })();
-</script>`,
+<iframe 
+  id="raghost-widget-${bot?.id}"
+  src="${widgetUrl}/embed/${bot?.id}?theme=sidebar"
+  style="position: fixed; top: 0; right: 0; width: 400px; height: 100vh; border: none; box-shadow: -4px 0 20px rgba(0,0,0,0.3); z-index: 9999;"
+  allow="clipboard-write"
+></iframe>`,
       style: {
         position: 'right',
         size: 'large',
@@ -79,27 +54,12 @@ const WidgetTemplates = ({ bot }) => {
       description: 'Small, elegant popup window',
       preview: 'Compact chat window',
       code: `<!-- RAGhost Chat Widget - Minimal -->
-<div id="raghost-widget"></div>
-<script>
-  (function() {
-    window.raghostConfig = {
-      botId: '${bot?.id}',
-      apiUrl: '${apiUrl}',
-      botName: '${bot?.name}',
-      botType: '${bot?.type}',
-      color: '${bot?.color}',
-      position: 'bottom-right',
-      width: '350px',
-      height: '500px',
-      theme: 'minimal',
-      showAvatar: false
-    };
-    var script = document.createElement('script');
-    script.src = '${widgetUrl}/widget.js';
-    script.async = true;
-    document.body.appendChild(script);
-  })();
-</script>`,
+<iframe 
+  id="raghost-widget-${bot?.id}"
+  src="${widgetUrl}/embed/${bot?.id}?theme=minimal"
+  style="position: fixed; bottom: 20px; right: 20px; width: 350px; height: 500px; border: none; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.25); z-index: 9999;"
+  allow="clipboard-write"
+></iframe>`,
       style: {
         position: 'bottom-right',
         size: 'small',
@@ -114,26 +74,12 @@ const WidgetTemplates = ({ bot }) => {
       description: 'Embedded directly in page content',
       preview: 'Inline chat interface',
       code: `<!-- RAGhost Chat Widget - Inline -->
-<div id="raghost-widget-inline" style="width: 100%; max-width: 600px; height: 600px; margin: 0 auto;"></div>
-<script>
-  (function() {
-    window.raghostConfig = {
-      botId: '${bot?.id}',
-      apiUrl: '${apiUrl}',
-      botName: '${bot?.name}',
-      botType: '${bot?.type}',
-      color: '${bot?.color}',
-      position: 'inline',
-      containerId: 'raghost-widget-inline',
-      theme: 'inline',
-      showCloseButton: false
-    };
-    var script = document.createElement('script');
-    script.src = '${widgetUrl}/widget.js';
-    script.async = true;
-    document.body.appendChild(script);
-  })();
-</script>`,
+<iframe 
+  id="raghost-widget-${bot?.id}"
+  src="${widgetUrl}/embed/${bot?.id}?theme=inline"
+  style="width: 100%; max-width: 800px; height: 600px; border: 1px solid #e5e7eb; border-radius: 12px; margin: 20px auto; display: block;"
+  allow="clipboard-write"
+></iframe>`,
       style: {
         position: 'inline',
         size: 'flexible',
@@ -148,26 +94,12 @@ const WidgetTemplates = ({ bot }) => {
       description: 'Full-width bar at bottom of page',
       preview: 'Fixed bottom bar',
       code: `<!-- RAGhost Chat Widget - Bottom Bar -->
-<div id="raghost-widget"></div>
-<script>
-  (function() {
-    window.raghostConfig = {
-      botId: '${bot?.id}',
-      apiUrl: '${apiUrl}',
-      botName: '${bot?.name}',
-      botType: '${bot?.type}',
-      color: '${bot?.color}',
-      position: 'bottom',
-      theme: 'bar',
-      height: '80px',
-      expandable: true
-    };
-    var script = document.createElement('script');
-    script.src = '${widgetUrl}/widget.js';
-    script.async = true;
-    document.body.appendChild(script);
-  })();
-</script>`,
+<iframe 
+  id="raghost-widget-${bot?.id}"
+  src="${widgetUrl}/embed/${bot?.id}?theme=bottombar"
+  style="position: fixed; bottom: 0; left: 0; width: 100%; height: 80px; border: none; border-top: 1px solid #e5e7eb; box-shadow: 0 -4px 20px rgba(0,0,0,0.1); z-index: 9999;"
+  allow="clipboard-write"
+></iframe>`,
       style: {
         position: 'bottom',
         size: 'full-width',
@@ -182,34 +114,12 @@ const WidgetTemplates = ({ bot }) => {
       description: 'Fully customizable with CSS variables',
       preview: 'Your brand colors',
       code: `<!-- RAGhost Chat Widget - Custom Styled -->
-<div id="raghost-widget"></div>
-<style>
-  :root {
-    --raghost-primary-color: ${bot?.color === 'pink' ? '#FF95DD' : bot?.color === 'yellow' ? '#F6FF7F' : '#B7BEFE'};
-    --raghost-bg-color: #1F1F1F;
-    --raghost-text-color: #FFFFFF;
-    --raghost-border-radius: 16px;
-    --raghost-shadow: 0 10px 40px rgba(0,0,0,0.3);
-  }
-</style>
-<script>
-  (function() {
-    window.raghostConfig = {
-      botId: '${bot?.id}',
-      apiUrl: '${apiUrl}',
-      botName: '${bot?.name}',
-      botType: '${bot?.type}',
-      color: '${bot?.color}',
-      position: 'bottom-right',
-      theme: 'custom',
-      customStyles: true
-    };
-    var script = document.createElement('script');
-    script.src = '${widgetUrl}/widget.js';
-    script.async = true;
-    document.body.appendChild(script);
-  })();
-</script>`,
+<iframe 
+  id="raghost-widget-${bot?.id}"
+  src="${widgetUrl}/embed/${bot?.id}?color=${bot?.color}"
+  style="position: fixed; bottom: 20px; right: 20px; width: 400px; height: 600px; border: none; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); z-index: 9999;"
+  allow="clipboard-write"
+></iframe>`,
       style: {
         position: 'bottom-right',
         size: 'medium',
@@ -224,26 +134,12 @@ const WidgetTemplates = ({ bot }) => {
       description: 'Responsive design for mobile devices',
       preview: 'Mobile-first layout',
       code: `<!-- RAGhost Chat Widget - Mobile Optimized -->
-<div id="raghost-widget"></div>
-<script>
-  (function() {
-    window.raghostConfig = {
-      botId: '${bot?.id}',
-      apiUrl: '${apiUrl}',
-      botName: '${bot?.name}',
-      botType: '${bot?.type}',
-      color: '${bot?.color}',
-      position: 'fullscreen-mobile',
-      theme: 'mobile',
-      responsive: true,
-      breakpoint: 768
-    };
-    var script = document.createElement('script');
-    script.src = '${widgetUrl}/widget.js';
-    script.async = true;
-    document.body.appendChild(script);
-  })();
-</script>`,
+<iframe 
+  id="raghost-widget-${bot?.id}"
+  src="${widgetUrl}/embed/${bot?.id}?mobile=true"
+  style="position: fixed; bottom: 20px; right: 20px; width: min(400px, calc(100vw - 40px)); height: min(600px, calc(100vh - 100px)); border: none; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); z-index: 9999;"
+  allow="clipboard-write"
+></iframe>`,
       style: {
         position: 'adaptive',
         size: 'responsive',
@@ -258,27 +154,12 @@ const WidgetTemplates = ({ bot }) => {
       description: 'Material Design floating action button',
       preview: 'Round FAB with ripple',
       code: `<!-- RAGhost Chat Widget - FAB Style -->
-<div id="raghost-widget"></div>
-<script>
-  (function() {
-    window.raghostConfig = {
-      botId: '${bot?.id}',
-      apiUrl: '${apiUrl}',
-      botName: '${bot?.name}',
-      botType: '${bot?.type}',
-      color: '${bot?.color}',
-      position: 'bottom-right',
-      theme: 'fab',
-      size: 'large',
-      showLabel: true,
-      rippleEffect: true
-    };
-    var script = document.createElement('script');
-    script.src = '${widgetUrl}/widget.js';
-    script.async = true;
-    document.body.appendChild(script);
-  })();
-</script>`,
+<iframe 
+  id="raghost-widget-${bot?.id}"
+  src="${widgetUrl}/embed/${bot?.id}?theme=fab"
+  style="position: fixed; bottom: 20px; right: 20px; width: 400px; height: 600px; border: none; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); z-index: 9999;"
+  allow="clipboard-write"
+></iframe>`,
       style: {
         position: 'bottom-right',
         size: 'large',
