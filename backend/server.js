@@ -204,6 +204,36 @@ app.get('/health', async (req, res) => {
 });
 
 // API Routes
+// Public widget bot endpoint (MUST be before /api/bots to avoid auth middleware)
+app.get('/api/widget/bot/:id', async (req, res) => {
+  try {
+    const { Bot } = await import('./models/Bot.js');
+    const { id } = req.params;
+    
+    const bot = await Bot.findOne({ _id: id });
+    
+    if (!bot) {
+      return res.status(404).json({ error: 'Bot not found' });
+    }
+    
+    // Return only public information (no API keys)
+    const botResponse = {
+      id: bot._id,
+      name: bot.name,
+      type: bot.type,
+      description: bot.description,
+      color: bot.color,
+      status: bot.status,
+      createdAt: bot.createdAt,
+    };
+    
+    res.json(botResponse);
+  } catch (error) {
+    console.error('Error fetching widget bot:', error);
+    res.status(500).json({ error: 'Failed to fetch bot' });
+  }
+});
+
 app.use('/api/keys', authenticate, keysRoutes);
 app.use('/api/bots', botsRoutes); // Authentication is applied per-route in bots.js
 app.use('/api/knowledge', authenticate, knowledgeRoutes);
