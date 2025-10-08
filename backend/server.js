@@ -60,6 +60,10 @@ app.use(cors({
     return callback(null, true); // Allow all for widget embedding
   },
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range'],
+  maxAge: 86400, // 24 hours
 }));
 
 const limiter = rateLimit({
@@ -85,6 +89,7 @@ app.get('/health', (req, res) => {
     success: true,
     message: 'Server is running',
     timestamp: new Date().toISOString(),
+    firebase: process.env.FIREBASE_PROJECT_ID ? 'configured' : 'not configured',
   });
 });
 
