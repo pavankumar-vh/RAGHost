@@ -3,7 +3,6 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import AuthPage from './pages/AuthPage';
 import Dashboard from './pages/Dashboard';
 import ChatPage from './pages/ChatPage';
-import DocsPage from './pages/DocsPage';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
 // Protected Route Component
@@ -57,15 +56,6 @@ function App() {
             element={
               <ProtectedRoute>
                 <Dashboard />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/docs"
-            element={
-              <ProtectedRoute>
-                <DocsPage />
               </ProtectedRoute>
             }
           />
