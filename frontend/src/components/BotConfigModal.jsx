@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Eye, EyeOff, Loader2, Database, Zap, XCircle } from 'lucide-react';
 
 const BotConfigModal = ({ setShowModal, onSave }) => {
+  const [isClosing, setIsClosing] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     type: 'Support',
@@ -19,6 +20,11 @@ const BotConfigModal = ({ setShowModal, onSave }) => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => setShowModal(false), 300);
+  };
 
   // Bot type templates with pre-configured system prompts
   const botTemplates = {
@@ -152,7 +158,7 @@ const BotConfigModal = ({ setShowModal, onSave }) => {
       console.log('⏳ Calling onSave...');
       await onSave(formData);
       console.log('✨ Bot created, closing modal');
-      setShowModal(false);
+      handleClose();
     } catch (err) {
       console.error('❌ Error in modal:', err);
       const errorMessage = err.response?.data?.error || err.message || 'Failed to create bot. Please try again.';
@@ -164,25 +170,36 @@ const BotConfigModal = ({ setShowModal, onSave }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-50 p-4 overflow-y-auto animate-fadeIn">
-      <div className="relative bg-gradient-to-br from-gray-900 to-black border border-gray-700 rounded-3xl p-8 w-full max-w-3xl my-8 shadow-2xl">
+    <div 
+      className="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-end animate-fadeIn"
+      onClick={handleClose}
+    >
+      <div 
+        className={`relative bg-gradient-to-br from-gray-900 to-black border-l border-gray-700 w-full max-w-2xl h-full overflow-y-auto shadow-2xl transition-transform duration-300 ease-out ${
+          isClosing ? 'translate-x-full' : 'translate-x-0'
+        }`}
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-accent-blue/5 via-transparent to-accent-pink/5 rounded-3xl pointer-events-none"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-accent-blue/5 via-transparent to-accent-pink/5 pointer-events-none"></div>
         
-        <div className="relative z-10">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h2 className="text-3xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
-                Create New Bot
-              </h2>
-              <p className="text-gray-400 text-sm mt-1">Configure your AI assistant</p>
+        <div className="relative z-10 p-8">
+          {/* Sticky Header */}
+          <div className="sticky top-0 -mx-8 px-8 py-4 bg-gray-900/95 backdrop-blur-lg border-b border-gray-800/50 mb-6 z-20">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-3xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+                  Create New Bot
+                </h2>
+                <p className="text-gray-400 text-sm mt-1">Configure your AI assistant</p>
+              </div>
+              <button 
+                onClick={handleClose}
+                className="text-gray-500 hover:text-white hover:bg-gray-800 p-2 rounded-lg transition-all hover:rotate-90 duration-300"
+              >
+                <X size={24} />
+              </button>
             </div>
-            <button 
-              onClick={() => setShowModal(false)}
-              className="text-gray-500 hover:text-white hover:bg-gray-800 p-2 rounded-lg transition-all"
-            >
-              <X size={24} />
-            </button>
           </div>
 
           {error && (
