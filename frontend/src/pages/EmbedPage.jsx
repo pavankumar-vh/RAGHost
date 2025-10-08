@@ -25,10 +25,12 @@ const EmbedPage = () => {
     try {
       setLoading(true);
       const response = await axios.get(`${apiUrl}/api/bots/public/${botId}`);
-      setBot(response.data);
+      console.log('Bot response:', response.data);
+      setBot(response.data); // Response is already the bot object
       setError(null);
     } catch (error) {
       console.error('Error fetching bot details:', error);
+      console.error('Error response:', error.response?.data);
       setError('Failed to load bot. Please check if the bot ID is correct.');
     } finally {
       setLoading(false);
