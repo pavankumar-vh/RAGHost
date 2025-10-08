@@ -107,10 +107,17 @@ const EditBotModal = ({ bot, setShowModal, onSave }) => {
           handleClose();
         }
       }}
+      style={{ willChange: isClosing ? 'auto' : 'opacity' }}
     >
-      <div className={`relative bg-gradient-to-br from-gray-900 via-gray-900 to-black border-l border-gray-700 h-full w-full max-w-2xl shadow-2xl overflow-y-auto transition-transform duration-300 ease-out ${
-        isClosing ? 'translate-x-full' : 'translate-x-0'
-      }`}>
+      <div 
+        className={`relative bg-gradient-to-br from-gray-900 via-gray-900 to-black border-l border-gray-700 h-full w-full max-w-2xl shadow-2xl overflow-y-auto transition-transform duration-300 ${
+          isClosing ? 'translate-x-full' : 'translate-x-0'
+        }`}
+        style={{ 
+          willChange: isClosing ? 'auto' : 'transform',
+          transform: isClosing ? 'translate3d(100%, 0, 0)' : 'translate3d(0, 0, 0)'
+        }}
+      >
         {/* Gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-accent-blue/5 via-transparent to-accent-pink/5 pointer-events-none"></div>
         

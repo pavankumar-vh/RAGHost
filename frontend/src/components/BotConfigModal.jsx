@@ -173,12 +173,17 @@ const BotConfigModal = ({ setShowModal, onSave }) => {
     <div 
       className="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-end animate-fadeIn"
       onClick={handleClose}
+      style={{ willChange: 'opacity' }}
     >
       <div 
-        className={`relative bg-gradient-to-br from-gray-900 to-black border-l border-gray-700 w-full max-w-2xl h-full overflow-y-auto shadow-2xl transition-transform duration-300 ease-out ${
+        className={`relative bg-gradient-to-br from-gray-900 to-black border-l border-gray-700 w-full max-w-2xl h-full overflow-y-auto shadow-2xl transition-transform duration-300 ${
           isClosing ? 'translate-x-full' : 'translate-x-0'
         }`}
         onClick={(e) => e.stopPropagation()}
+        style={{ 
+          willChange: isClosing ? 'auto' : 'transform',
+          transform: isClosing ? 'translate3d(100%, 0, 0)' : 'translate3d(0, 0, 0)'
+        }}
       >
         {/* Gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-accent-blue/5 via-transparent to-accent-pink/5 pointer-events-none"></div>
