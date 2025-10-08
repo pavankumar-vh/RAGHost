@@ -203,8 +203,8 @@ app.get('/health', async (req, res) => {
 // Public bot route (must come before authenticated routes)
 app.get('/api/bots/public/:id', async (req, res, next) => {
   try {
-    const { getBotById } = await import('./controllers/botsController.js');
-    return getBotById(req, res, next);
+    const { getBotByIdPublic } = await import('./controllers/botsController.js');
+    return getBotByIdPublic(req, res, next);
   } catch (error) {
     next(error);
   }
