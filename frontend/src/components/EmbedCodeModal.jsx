@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Code, Copy, Check } from 'lucide-react';
-import WidgetEmbed from './WidgetEmbed';
+import WidgetTemplates from './WidgetTemplates';
 
 const EmbedCodeModal = ({ bot, setShowModal }) => {
   const [embedCode, setEmbedCode] = useState('');
@@ -101,7 +101,7 @@ const EmbedCodeModal = ({ bot, setShowModal }) => {
         {/* Templates Tab */}
         {activeTab === 'templates' && (
           <div>
-            <WidgetEmbed botId={bot?.id} />
+            <WidgetTemplates bot={bot} />
           </div>
         )}
 

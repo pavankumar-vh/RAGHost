@@ -49,6 +49,7 @@ Try the live demo:
 - [🎯 Running the Application](#-running-the-application)
 - [🚢 Deployment](#-deployment)
 - [📊 API Documentation](#-api-documentation)
+- [🎨 Widget Embed Templates](#-widget-embed-templates)
 - [🎨 Customization](#-customization)
 - [⚡ Performance](#-performance)
 - [🔒 Security](#-security)
@@ -98,8 +99,10 @@ Try the live demo:
 - Git pre-commit hooks for sensitive data
 
 ### 🌐 **Easy Website Integration**
+- **8 professional widget templates** (Bubble, Sidebar, Inline, FAB, etc.)
 - Copy-paste embed code generator
-- Customizable chat widget
+- Fully customizable chat widgets
+- Responsive design for all devices
 - Public API for chat interactions
 - CORS-enabled for any domain
 - Session management
@@ -669,6 +672,147 @@ const completion = await openai.chat.completions.create({
   messages: [{ role: "user", content: userMessage }],
 });
 ```
+
+---
+
+## 🎨 Widget Embed Templates
+
+RAGHost provides **8 professionally-designed widget templates** for embedding your chatbots on any website. Each template is fully functional, responsive, and customizable.
+
+### Available Templates
+
+| Template | Description | Best For |
+|----------|-------------|----------|
+| **🔵 Classic Bubble** | Traditional floating button in corner | E-commerce, Blogs, General websites |
+| **📱 Fullscreen Sidebar** | Slide-in panel from right edge | Documentation, SaaS platforms |
+| **✨ Minimal Popup** | Compact, elegant chat window | Landing pages, Portfolios |
+| **⚡ Inline Embed** | Embedded directly in page content | Help centers, Support pages |
+| **📊 Bottom Bar** | Full-width sticky footer that expands | Marketing sites, News portals |
+| **🎯 Custom Styled** | CSS variables for brand matching | Enterprise sites with strict branding |
+| **📱 Mobile Optimized** | Responsive design for mobile-first | Mobile apps, PWAs |
+| **🎨 FAB Style** | Material Design floating action button | Modern web apps |
+
+### How to Use Widget Templates
+
+1. **Navigate to your bot** in the RAGHost dashboard
+2. **Click "Get Embed Code"** button
+3. **Select "Widget Templates" tab**
+4. **Choose a template** that matches your design
+5. **Copy the generated code**
+6. **Paste before `</body>`** tag in your HTML
+
+### Template Customization Options
+
+Each template supports these configuration options:
+
+```javascript
+window.raghostConfig = {
+  botId: 'your-bot-id',              // Required: Your bot ID
+  apiUrl: 'https://api.raghost.com', // Required: API endpoint
+  botName: 'Support Bot',            // Bot display name
+  botType: 'Support',                // Bot type
+  color: 'pink',                     // Theme: pink, yellow, blue
+  
+  // Template-specific options
+  position: 'bottom-right',          // Widget position
+  width: '400px',                    // Custom width
+  height: '600px',                   // Custom height
+  theme: 'classic',                  // Template theme
+  showAvatar: true,                  // Show bot avatar
+  rippleEffect: true,                // Material ripple effect
+  responsive: true,                  // Auto-adjust for mobile
+  
+  // Advanced customization
+  customStyles: true,                // Enable CSS variables
+  showCloseButton: true,             // Show close button
+  expandable: true,                  // Allow expand/collapse
+};
+```
+
+### CSS Customization
+
+For the **Custom Styled** template, use CSS variables:
+
+```css
+:root {
+  --raghost-primary-color: #FF95DD;
+  --raghost-bg-color: #1F1F1F;
+  --raghost-text-color: #FFFFFF;
+  --raghost-border-radius: 16px;
+  --raghost-shadow: 0 10px 40px rgba(0,0,0,0.3);
+  --raghost-font-family: 'Inter', sans-serif;
+}
+```
+
+### Example: E-commerce Website
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>My Store</title>
+</head>
+<body>
+  <!-- Your website content -->
+  
+  <!-- RAGHost Widget - Classic Bubble -->
+  <script>
+    (function() {
+      window.raghostConfig = {
+        botId: 'abc123',
+        apiUrl: 'https://raghost-pcgw.onrender.com',
+        botName: 'Store Assistant',
+        botType: 'Sales',
+        color: 'pink',
+        position: 'bottom-right',
+        theme: 'classic'
+      };
+      var script = document.createElement('script');
+      script.src = 'https://rag-host.vercel.app/widget.js';
+      script.async = true;
+      document.body.appendChild(script);
+    })();
+  </script>
+</body>
+</html>
+```
+
+### Example: Documentation Site
+
+```html
+<!-- RAGHost Widget - Fullscreen Sidebar -->
+<script>
+  (function() {
+    window.raghostConfig = {
+      botId: 'xyz789',
+      apiUrl: 'https://raghost-pcgw.onrender.com',
+      botName: 'Docs Assistant',
+      botType: 'Documentation',
+      color: 'blue',
+      position: 'sidebar-right',
+      width: '400px',
+      theme: 'sidebar'
+    };
+    var script = document.createElement('script');
+    script.src = 'https://rag-host.vercel.app/widget.js';
+    script.async = true;
+    document.body.appendChild(script);
+  })();
+</script>
+```
+
+### Mobile Responsiveness
+
+All templates automatically adapt to mobile devices:
+- **Desktop**: Full-featured chat widget
+- **Tablet**: Adjusted sizing and positioning
+- **Mobile**: Fullscreen modal for better UX
+
+The **Mobile Optimized** template provides enhanced mobile experience with:
+- Touch-friendly buttons
+- Swipe gestures
+- Auto-fullscreen on small screens
+- Optimized keyboard handling
 
 ---
 
