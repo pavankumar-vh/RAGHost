@@ -13,7 +13,25 @@
 
 **RAGHost** is a production-ready, open-source platform for creating, managing, and deploying AI-powered chatbots with Retrieval-Augmented Generation (RAG). Build intelligent chatbots that leverage your custom knowledge base with state-of-the-art AI models.
 
-[Live Demo](https://rag-host.vercel.app) • [Documentation](#-documentation) • [Report Bug](https://github.com/pavankumar-vh/RAGHost/issues) • [Request Feature](https://github.com/pavankumar-vh/RAGHost/issues)
+[Live Demo](https://rag-host.vercel.app) • [API Backend](https://raghost-pcgw.onrender.com/health) • [Documentation](#-documentation) • [Report Bug](https://github.com/pavankumar-vh/RAGHost/issues) • [Request Feature](https://github.com/pavankumar-vh/RAGHost/issues)
+
+---
+
+## 🌐 Live Deployments
+
+| Service | URL | Status |
+|---------|-----|--------|
+| **Frontend** | [rag-host.vercel.app](https://rag-host.vercel.app) | ✅ Live |
+| **Backend API** | [raghost-pcgw.onrender.com](https://raghost-pcgw.onrender.com/health) | ✅ Live |
+| **Documentation** | In-app at `/docs` tab | ✅ Available |
+
+### Quick Test
+Try the live demo:
+1. Visit [rag-host.vercel.app](https://rag-host.vercel.app)
+2. Sign up or login
+3. Create your first bot
+4. Upload documents
+5. Chat with your AI assistant!
 
 </div>
 
@@ -383,6 +401,10 @@ npm run start:low-memory
 
 ## 🚢 Deployment
 
+> **🌐 Current Live Deployments:**
+> - Frontend: [rag-host.vercel.app](https://rag-host.vercel.app)
+> - Backend: [raghost-pcgw.onrender.com](https://raghost-pcgw.onrender.com/health)
+
 ### Frontend Deployment (Vercel)
 
 #### Option 1: Vercel CLI
@@ -390,6 +412,11 @@ npm run start:low-memory
 cd frontend
 npm install -g vercel
 vercel --prod
+```
+
+**Example Output:**
+```
+✅ Deployed to production: https://rag-host.vercel.app
 ```
 
 #### Option 2: Vercel Dashboard
@@ -401,6 +428,8 @@ vercel --prod
 6. Set **Output Directory**: `dist`
 7. Add environment variables from `frontend/.env`
 8. Click **"Deploy"**
+
+**Your app will be live at:** `https://your-project.vercel.app`
 
 ### Backend Deployment (Render)
 
@@ -422,6 +451,8 @@ vercel --prod
 5. Add Environment Variables (see [RENDER_DEPLOYMENT_GUIDE.md](backend/RENDER_DEPLOYMENT_GUIDE.md))
 
 6. Click **"Create Web Service"**
+
+**Your API will be live at:** `https://your-service.onrender.com`
 
 #### ⚠️ Memory Optimization for Render Free Tier
 
@@ -445,8 +476,11 @@ cd backend && npm run start:low-memory
 ### Base URL
 ```
 Development: http://localhost:5001
-Production:  https://your-backend.onrender.com
+Production:  https://raghost-pcgw.onrender.com
+Live Demo:   https://rag-host.vercel.app
 ```
+
+> **Note:** The backend may take 30-60 seconds to wake up from sleep on Render's free tier.
 
 ### Authentication
 
