@@ -4,7 +4,7 @@ import {
   getChatHistory,
   clearChatHistory,
 } from '../controllers/chatController.js';
-import { Bot } from '../models/Bot.js';
+import Bot from '../models/Bot.js';
 
 const router = express.Router();
 
