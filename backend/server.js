@@ -33,8 +33,13 @@ const PORT = process.env.PORT || 5001;
 // Trust proxy - important for rate limiting behind reverse proxies (Render, Heroku, etc.)
 app.set('trust proxy', 1);
 
-// Memory-optimized compression for 512MB environments
-const isLowMemory = process.env.NODE_ENV === 'production' && !process.env.ENABLE_HIGH_MEMORY;
+// Memory-optimized mode for 512MB environments (OPT-IN via ENABLE_LOW_MEMORY=true)
+// By default, runs in normal mode with full performance
+const isLowMemory = process.env.ENABLE_LOW_MEMORY === 'true';
+
+if (isLowMemory) {
+  console.log('⚠️  LOW MEMORY MODE ENABLED - Performance will be reduced to fit 512MB');
+}
 
 app.use(compression({
   filter: (req, res) => {
@@ -207,28 +212,32 @@ app.use(notFound);
 app.use(errorHandler);
 
 /**
- * Start the server with all optimizations
- * Memory-optimized for 512MB environments
+ * Start the server with optional memory optimizations
+ * Set ENABLE_LOW_MEMORY=true for 512MB environments (Render free tier)
+ * Default: Normal mode with full performance
  */
 const startServer = async () => {
   try {
-    console.log(`💾 Memory Mode: ${isLowMemory ? '512MB Optimized' : 'Standard'}`);
+    console.log(`\n� Starting server...`);
+    console.log(`�💾 Memory Mode: ${isLowMemory ? '512MB OPTIMIZED (Reduced Performance)' : 'NORMAL (Full Performance)'}`);
     
     // Initialize database connection
     await connectDB();
 
-    // Initialize Redis cache only if not in low memory mode or explicitly enabled
-    if (!isLowMemory || process.env.ENABLE_CACHING === 'true') {
+    // Initialize Redis cache (optional - improves performance)
+    // Can be disabled in low memory mode by not setting ENABLE_CACHING
+    if (process.env.ENABLE_CACHING !== 'false') {
       await initializeRedis();
     } else {
-      console.log('⚠️  Redis cache disabled (low memory mode)');
+      console.log('⚠️  Redis cache disabled by configuration');
     }
 
-    // Initialize Bull queues only if Redis is available and not in low memory mode
-    if (!isLowMemory && isRedisCacheAvailable()) {
+    // Initialize Bull queues (requires Redis)
+    // Automatically disabled if Redis is not available
+    if (isRedisCacheAvailable() && process.env.ENABLE_QUEUES !== 'false') {
       await initializeQueues();
     } else {
-      console.log('⚠️  Background job queues disabled (low memory mode)');
+      console.log('⚠️  Background job queues disabled (Redis not available or disabled)');
     }
 
     // Start Express server

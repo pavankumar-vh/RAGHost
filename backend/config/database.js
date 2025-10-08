@@ -1,23 +1,26 @@
 import mongoose from 'mongoose';
 
 /**
- * Connect to MongoDB Atlas with optimized connection pooling for high concurrency
- * Memory-optimized for 512MB environments (Render free tier)
+ * Connect to MongoDB Atlas with optimized connection pooling
+ * Automatically adjusts pool size based on ENABLE_LOW_MEMORY flag
  */
 const connectDB = async () => {
   try {
-    // Detect if running on low-memory environment (Render free tier)
-    const isLowMemory = process.env.NODE_ENV === 'production' && 
-                        !process.env.ENABLE_HIGH_MEMORY;
+    // Low memory mode is OPT-IN (must set ENABLE_LOW_MEMORY=true)
+    const isLowMemory = process.env.ENABLE_LOW_MEMORY === 'true';
     
     const poolConfig = isLowMemory 
-      ? { maxPoolSize: 5, minPoolSize: 2 }   // Low memory: 5 max, 2 min
-      : { maxPoolSize: 50, minPoolSize: 10 }; // High memory: 50 max, 10 min
+      ? { maxPoolSize: 5, minPoolSize: 2 }   // Low memory: 5 max, 2 min (for 512MB Render)
+      : { maxPoolSize: 50, minPoolSize: 10 }; // Normal: 50 max, 10 min (for standard deployments)
     
-    console.log(`🔧 Database Pool Config: ${isLowMemory ? 'Low Memory Mode' : 'Standard Mode'}`);
+    if (isLowMemory) {
+      console.log('⚠️  Database: LOW MEMORY MODE (Pool: 2-5 connections)');
+    } else {
+      console.log('✅ Database: NORMAL MODE (Pool: 10-50 connections)');
+    }
     
     const conn = await mongoose.connect(process.env.MONGODB_URI, {
-      // Connection Pool Configuration (Memory-Optimized)
+      // Connection Pool Configuration
       ...poolConfig,
       socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
       serverSelectionTimeoutMS: 10000, // Timeout after 10s if can't connect to server
