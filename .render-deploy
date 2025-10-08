@@ -1,0 +1,5 @@
+# This file forces a Render redeploy
+# Updated: 2025-10-08
+
+# Render should auto-deploy when this file changes
+# If not deploying, manually trigger deploy in Render dashboard
