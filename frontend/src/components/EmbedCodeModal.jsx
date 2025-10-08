@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Code, Copy, Check } from 'lucide-react';
 import WidgetTemplates from './WidgetTemplates';
 
@@ -7,6 +7,22 @@ const EmbedCodeModal = ({ bot, setShowModal }) => {
   const [iframeCode, setIframeCode] = useState('');
   const [copied, setCopied] = useState('');
   const [activeTab, setActiveTab] = useState('templates'); // 'templates' or 'custom'
+
+  // ESC key handler
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') setShowModal(false);
+    };
+    document.addEventListener('keydown', handleEsc);
+    return () => document.removeEventListener('keydown', handleEsc);
+  }, [setShowModal]);
+
+  // Backdrop click handler
+  const handleBackdropClick = (e) => {
+    if (e.target === e.currentTarget) {
+      setShowModal(false);
+    }
+  };
 
   // Generate embed code
   React.useEffect(() => {
@@ -56,7 +72,7 @@ const EmbedCodeModal = ({ bot, setShowModal }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
+    <div onClick={handleBackdropClick} className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
       <div className="bg-[#0A0A0A] border border-gray-800 rounded-2xl p-8 w-full max-w-5xl my-8 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -68,7 +84,8 @@ const EmbedCodeModal = ({ bot, setShowModal }) => {
           </div>
           <button 
             onClick={() => setShowModal(false)}
-            className="text-gray-500 hover:text-white transition-colors"
+            className="text-gray-400 hover:text-white hover:bg-gray-800 p-3 rounded-xl transition-all hover:rotate-90 duration-300"
+            aria-label="Close modal"
           >
             <X size={24} />
           </button>

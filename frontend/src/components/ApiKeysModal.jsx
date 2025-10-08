@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Eye, EyeOff, Loader2 } from 'lucide-react';
 
 const ApiKeysModal = ({ setShowModal, onSave }) => {
@@ -6,6 +6,22 @@ const ApiKeysModal = ({ setShowModal, onSave }) => {
   const [showKey, setShowKey] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // ESC key handler
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') setShowModal(false);
+    };
+    document.addEventListener('keydown', handleEsc);
+    return () => document.removeEventListener('keydown', handleEsc);
+  }, [setShowModal]);
+
+  // Backdrop click handler
+  const handleBackdropClick = (e) => {
+    if (e.target === e.currentTarget) {
+      setShowModal(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -29,13 +45,14 @@ const ApiKeysModal = ({ setShowModal, onSave }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div onClick={handleBackdropClick} className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-[#0A0A0A] border border-gray-800 rounded-2xl p-8 w-full max-w-md">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold">Configure Global Gemini API Key</h2>
           <button 
             onClick={() => setShowModal(false)}
-            className="text-gray-500 hover:text-white transition-colors"
+            className="text-gray-400 hover:text-white hover:bg-gray-800 p-3 rounded-xl transition-all hover:rotate-90 duration-300"
+            aria-label="Close modal"
           >
             <X size={24} />
           </button>

@@ -28,6 +28,22 @@ const EditBotModal = ({ bot, setShowModal, onSave }) => {
     }, 300); // Match animation duration
   };
 
+  // ESC key handler
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') handleClose();
+    };
+    document.addEventListener('keydown', handleEsc);
+    return () => document.removeEventListener('keydown', handleEsc);
+  }, []);
+
+  // Backdrop click handler
+  const handleBackdropClick = (e) => {
+    if (e.target === e.currentTarget) {
+      handleClose();
+    }
+  };
+
   // Initialize form data from bot prop
   useEffect(() => {
     if (bot) {
@@ -101,12 +117,7 @@ const EditBotModal = ({ bot, setShowModal, onSave }) => {
       className={`fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-end z-50 transition-all duration-300 ${
         isClosing ? 'opacity-0' : 'opacity-100'
       }`}
-      onClick={(e) => {
-        // Close modal when clicking outside
-        if (e.target === e.currentTarget) {
-          handleClose();
-        }
-      }}
+      onClick={handleBackdropClick}
       style={{ willChange: isClosing ? 'auto' : 'opacity' }}
     >
       <div 

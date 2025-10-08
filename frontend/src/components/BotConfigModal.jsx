@@ -26,6 +26,22 @@ const BotConfigModal = ({ setShowModal, onSave }) => {
     setTimeout(() => setShowModal(false), 300);
   };
 
+  // ESC key handler
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') handleClose();
+    };
+    document.addEventListener('keydown', handleEsc);
+    return () => document.removeEventListener('keydown', handleEsc);
+  }, []);
+
+  // Backdrop click handler
+  const handleBackdropClick = (e) => {
+    if (e.target === e.currentTarget) {
+      handleClose();
+    }
+  };
+
   // Bot type templates with pre-configured system prompts
   const botTemplates = {
     'Support': {
@@ -172,7 +188,7 @@ const BotConfigModal = ({ setShowModal, onSave }) => {
   return (
     <div 
       className="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-end animate-fadeIn"
-      onClick={handleClose}
+      onClick={handleBackdropClick}
       style={{ willChange: 'opacity' }}
     >
       <div 
