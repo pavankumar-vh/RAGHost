@@ -200,18 +200,8 @@ app.get('/health', async (req, res) => {
 });
 
 // API Routes
-// Public bot route (must come before authenticated routes)
-app.get('/api/bots/public/:id', async (req, res, next) => {
-  try {
-    const { getBotByIdPublic } = await import('./controllers/botsController.js');
-    return getBotByIdPublic(req, res, next);
-  } catch (error) {
-    next(error);
-  }
-});
-
 app.use('/api/keys', authenticate, keysRoutes);
-app.use('/api/bots', authenticate, botsRoutes);
+app.use('/api/bots', botsRoutes); // Authentication is applied per-route in bots.js
 app.use('/api/knowledge', authenticate, knowledgeRoutes);
 app.use('/api/analytics', authenticate, analyticsRoutes);
 app.use('/api/chat', chatRoutes); // Public chat API (no auth required)

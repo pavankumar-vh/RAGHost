@@ -7,11 +7,17 @@ import {
   deleteBot,
   testBotConnection,
   getEmbedCode,
+  getBotByIdPublic,
 } from '../controllers/botsController.js';
+import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// All routes require authentication (applied in server.js)
+// Public route (no authentication required) - must be first!
+router.get('/public/:id', getBotByIdPublic);
+
+// All other routes require authentication
+router.use(authenticate);
 
 // Create a new bot
 router.post('/create', createBot);
