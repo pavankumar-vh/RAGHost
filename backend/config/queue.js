@@ -10,6 +10,12 @@ let isQueueAvailable = false;
  * Requires Redis for queue management
  */
 export const initializeQueues = async () => {
+  // Check if queues are explicitly disabled (for low memory environments)
+  if (process.env.DISABLE_QUEUES === 'true') {
+    console.log('ℹ️  Queues disabled via DISABLE_QUEUES flag');
+    return null;
+  }
+
   // Queues require Redis - if not configured, tasks will run synchronously
   if (!process.env.REDIS_URL) {
     console.log('ℹ️  Redis not configured - queues disabled (tasks will run synchronously)');

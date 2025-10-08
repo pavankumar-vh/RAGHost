@@ -39,6 +39,10 @@ const isLowMemory = process.env.ENABLE_LOW_MEMORY === 'true';
 
 if (isLowMemory) {
   console.log('⚠️  LOW MEMORY MODE ENABLED - Performance will be reduced to fit 512MB');
+  // Force disable clustering and heavy features in low memory mode
+  process.env.ENABLE_CLUSTERING = 'false';
+  process.env.DISABLE_REDIS = 'true';
+  process.env.DISABLE_QUEUES = 'true';
 }
 
 app.use(compression({

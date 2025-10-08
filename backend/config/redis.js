@@ -7,6 +7,12 @@ let isRedisAvailable = false;
  * Initialize Redis client for caching (optional - improves performance)
  */
 export const initializeRedis = async () => {
+  // Check if Redis is explicitly disabled (for low memory environments)
+  if (process.env.DISABLE_REDIS === 'true') {
+    console.log('ℹ️  Redis disabled via DISABLE_REDIS flag');
+    return null;
+  }
+
   // Redis is optional - if not configured, app will work without caching
   if (!process.env.REDIS_URL) {
     console.log('ℹ️  Redis not configured - running without cache (performance may be slower)');
