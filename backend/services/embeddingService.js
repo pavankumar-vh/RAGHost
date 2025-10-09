@@ -181,6 +181,7 @@ export const upsertToPinecone = async ({ pineconeKey, environment, indexName, ve
  * @param {string} config.geminiKey - Gemini API key
  * @param {string} config.environment - Pinecone environment
  * @param {string} config.indexName - Pinecone index name
+ * @param {Function} config.onProgress - Progress callback function
  * @returns {Promise<Object>} - Processing result
  */
 export const processAndUploadDocument = async ({
@@ -192,30 +193,38 @@ export const processAndUploadDocument = async ({
   environment,
   indexName,
   pineconeHost,
+  onProgress,
 }) => {
   try {
     console.log(`\n📄 Processing document: ${filename}`);
     console.log(`   Text length: ${text.length} characters`);
     
     // Step 1: Chunk and sanitize the text (350 chars, 40 overlap)
+    if (onProgress) await onProgress('chunking', 20, `Creating text chunks...`);
     const chunks = chunkText(text);
-    console.log(`   ✅ Step 1/3: Created ${chunks.length} chunks from document`);
+    console.log(`   ✅ Step 1/4: Created ${chunks.length} chunks from document`);
 
     if (chunks.length === 0) {
       throw new Error('Could not extract any valid text chunks from the file after sanitization');
     }
 
+    if (onProgress) await onProgress('chunking', 30, `Created ${chunks.length} chunks`);
+
     // Step 2: Generate embeddings in batches
-    console.log(`   🧠 Step 2/3: Generating ${chunks.length} embeddings in batches...`);
+    if (onProgress) await onProgress('embedding', 40, `Generating embeddings for ${chunks.length} chunks...`);
+    console.log(`   🧠 Step 2/4: Generating ${chunks.length} embeddings in batches...`);
     const embeddings = await generateBatchEmbeddings(chunks, geminiKey);
-    console.log(`   ✅ Step 2/3: Generated ${embeddings.length} embeddings successfully`);
+    console.log(`   ✅ Step 2/4: Generated ${embeddings.length} embeddings successfully`);
     
     if (embeddings.length !== chunks.length) {
       throw new Error('Mismatch between number of chunks and generated embeddings');
     }
 
+    if (onProgress) await onProgress('embedding', 70, `Generated ${embeddings.length} embeddings`);
+
     // Step 3: Prepare vectors for Pinecone
-    console.log(`   📦 Step 3/3: Preparing vectors for Pinecone upsert...`);
+    if (onProgress) await onProgress('uploading', 75, `Preparing vectors for upload...`);
+    console.log(`   📦 Step 3/4: Preparing vectors for Pinecone upsert...`);
     const vectors = chunks.map((chunk, i) => ({
       id: `${filename}-${documentId}-${i}`,
       values: embeddings[i],
@@ -230,6 +239,7 @@ export const processAndUploadDocument = async ({
     console.log(`   ✅ Prepared ${vectors.length} vectors with metadata`);
 
     // Step 4: Upsert to Pinecone
+    if (onProgress) await onProgress('uploading', 80, `Uploading ${vectors.length} vectors to Pinecone...`);
     const result = await upsertToPinecone({
       pineconeKey,
       environment,
@@ -238,7 +248,9 @@ export const processAndUploadDocument = async ({
       pineconeHost,
     });
 
-    console.log(`   ✅ Step 3/3: Successfully uploaded ${result.upsertedCount} vectors to Pinecone`);
+    console.log(`   ✅ Step 4/4: Successfully uploaded ${result.upsertedCount} vectors to Pinecone`);
+
+    if (onProgress) await onProgress('completed', 100, `Successfully processed ${result.upsertedCount} vectors`);
 
     return {
       success: true,

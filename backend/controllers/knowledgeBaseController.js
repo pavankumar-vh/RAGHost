@@ -1,5 +1,6 @@
 import KnowledgeBase from '../models/KnowledgeBase.js';
 import Bot from '../models/Bot.js';
+import UploadJob from '../models/UploadJob.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -106,21 +107,69 @@ export const uploadDocument = async (req, res) => {
 
     await knowledgeBase.save();
 
+    // Create upload job for tracking
+    const uploadJob = new UploadJob({
+      userId,
+      botId,
+      documentId,
+      filename: file.originalname,
+      fileType,
+      status: 'extracting',
+      progress: {
+        current: 10,
+        total: 100,
+        percentage: 10,
+        message: 'Document uploaded, extracting text...',
+      },
+    });
+
+    await uploadJob.save();
+
     // Delete the uploaded file from disk (we've saved the content in DB)
     fs.unlinkSync(file.path);
 
-    // Step 2: Process and upload to Pinecone (async - don't block response)
+    // Send immediate response with job ID
+    res.json({
+      success: true,
+      message: 'Document uploaded successfully. Processing has started...',
+      data: {
+        documentId,
+        jobId: uploadJob._id,
+        filename: file.originalname,
+        fileType,
+        chunkCount,
+        totalDocuments: knowledgeBase.totalDocuments,
+        status: 'processing',
+      },
+    });
+
+    // Process in background with progress tracking
     const pineconeKey = decrypt(bot.pineconeKey);
     const geminiKey = decrypt(bot.geminiKey);
-
-    // Use pineconeEnvironment directly as host URL (users provide full URL now)
     const pineconeHost = bot.pineconeEnvironment;
 
-    // Upload to Pinecone in background
-    console.log(`🚀 Starting Pinecone upload for: ${file.originalname}`);
+    // Progress callback to update job status
+    const updateProgress = async (status, percentage, message) => {
+      try {
+        await UploadJob.findByIdAndUpdate(uploadJob._id, {
+          status,
+          progress: {
+            current: percentage,
+            total: 100,
+            percentage,
+            message,
+          },
+          updatedAt: new Date(),
+        });
+        console.log(`� Job ${uploadJob._id}: ${status} - ${percentage}% - ${message}`);
+      } catch (error) {
+        console.error('Failed to update job progress:', error);
+      }
+    };
+
+    console.log(`🚀 Starting background processing for: ${file.originalname}`);
+    console.log(`   Job ID: ${uploadJob._id}`);
     console.log(`   Document ID: ${documentId.toString()}`);
-    console.log(`   Pinecone Host: ${pineconeHost}`);
-    console.log(`   Index: ${bot.pineconeIndexName}`);
     
     processAndUploadDocument({
       text: content,
@@ -131,40 +180,58 @@ export const uploadDocument = async (req, res) => {
       environment: bot.pineconeEnvironment,
       indexName: bot.pineconeIndexName,
       pineconeHost,
+      onProgress: updateProgress,
     })
-      .then(result => {
+      .then(async result => {
         console.log(`\n✅ SUCCESS: Document uploaded to Pinecone!`);
         console.log(`   File: ${file.originalname}`);
         console.log(`   Chunks Processed: ${result.chunksProcessed}`);
-        console.log(`   Vectors Uploaded: ${result.vectorsUploaded}`);
-        console.log(`   Status: Document is now searchable in chatbot\n`);
-        // Update chunk count with actual uploaded count
-        KnowledgeBase.findOne({ botId, userId }).then(kb => {
-          if (kb) {
-            kb.totalChunks = kb.documents.reduce((sum, doc) => sum + doc.chunkCount, 0);
-            kb.save();
-          }
+        console.log(`   Vectors Uploaded: ${result.vectorsUploaded}\n`);
+        
+        // Update job as completed
+        await UploadJob.findByIdAndUpdate(uploadJob._id, {
+          status: 'completed',
+          progress: {
+            current: 100,
+            total: 100,
+            percentage: 100,
+            message: `Successfully processed ${result.vectorsUploaded} vectors`,
+          },
+          result: {
+            chunksProcessed: result.chunksProcessed,
+            vectorsUploaded: result.vectorsUploaded,
+          },
+          updatedAt: new Date(),
         });
+
+        // Update knowledge base chunk count
+        const kb = await KnowledgeBase.findOne({ botId, userId });
+        if (kb) {
+          kb.totalChunks = kb.documents.reduce((sum, doc) => sum + doc.chunkCount, 0);
+          await kb.save();
+        }
       })
-      .catch(error => {
+      .catch(async error => {
         console.error(`\n❌ FAILED: Could not upload to Pinecone`);
         console.error(`   File: ${file.originalname}`);
-        console.error(`   Error: ${error.message}`);
-        console.error(`   Stack: ${error.stack}\n`);
+        console.error(`   Error: ${error.message}\n`);
+        
+        // Update job as failed
+        await UploadJob.findByIdAndUpdate(uploadJob._id, {
+          status: 'failed',
+          progress: {
+            current: 0,
+            total: 100,
+            percentage: 0,
+            message: `Failed: ${error.message}`,
+          },
+          result: {
+            error: error.message,
+          },
+          updatedAt: new Date(),
+        });
       });
 
-    res.json({
-      success: true,
-      message: 'Document uploaded successfully. Embedding to Pinecone in progress...',
-      data: {
-        documentId,
-        filename: file.originalname,
-        fileType,
-        chunkCount,
-        totalDocuments: knowledgeBase.totalDocuments,
-        status: 'processing',
-      },
-    });
   } catch (error) {
     console.error('Upload document error:', error);
     // Clean up file if it exists
@@ -309,6 +376,57 @@ export const deleteDocument = async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Failed to delete document',
+    });
+  }
+};
+
+/**
+ * @route   GET /api/knowledge/:botId/job/:jobId
+ * @desc    Get upload job status
+ * @access  Private
+ */
+export const getJobStatus = async (req, res) => {
+  try {
+    const userId = req.user.uid;
+    const { botId, jobId } = req.params;
+
+    // Verify bot ownership
+    const bot = await Bot.findOne({ _id: botId, userId });
+    if (!bot) {
+      return res.status(404).json({
+        success: false,
+        error: 'Bot not found',
+      });
+    }
+
+    // Get job status
+    const job = await UploadJob.findOne({ _id: jobId, userId, botId });
+    if (!job) {
+      return res.status(404).json({
+        success: false,
+        error: 'Job not found',
+      });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        jobId: job._id,
+        documentId: job.documentId,
+        filename: job.filename,
+        fileType: job.fileType,
+        status: job.status,
+        progress: job.progress,
+        result: job.result,
+        createdAt: job.createdAt,
+        updatedAt: job.updatedAt,
+      },
+    });
+  } catch (error) {
+    console.error('Get job status error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get job status',
     });
   }
 };

@@ -3,6 +3,7 @@ import { X, Upload, FileText, Loader2, CheckCircle2, XCircle, Trash2, Database, 
 import { useAuth } from '../context/AuthContext';
 import { setAuthToken } from '../services/api';
 import axios from 'axios';
+import UploadProgressBar from './UploadProgressBar';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
 
@@ -15,10 +16,27 @@ const KnowledgeBaseModal = ({ bot, setShowModal }) => {
   const [success, setSuccess] = useState('');
   const [selectedFile, setSelectedFile] = useState(null);
   const [dragActive, setDragActive] = useState(false);
+  const [uploadJobs, setUploadJobs] = useState([]); // Track active upload jobs
 
   useEffect(() => {
     fetchKnowledgeBase();
   }, [bot]);
+
+  // ESC key to close
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') setShowModal(false);
+    };
+    document.addEventListener('keydown', handleEsc);
+    return () => document.removeEventListener('keydown', handleEsc);
+  }, [setShowModal]);
+
+  // Click outside to close
+  const handleBackdropClick = (e) => {
+    if (e.target === e.currentTarget) {
+      setShowModal(false);
+    }
+  };
 
   const fetchKnowledgeBase = async () => {
     try {
@@ -107,19 +125,88 @@ const KnowledgeBaseModal = ({ bot, setShowModal }) => {
         }
       );
 
-      setSuccess(response.data.message || 'Document uploaded successfully!');
+      const { jobId, filename } = response.data.data;
+      
+      // Add job to tracking list
+      const newJob = {
+        jobId,
+        filename,
+        status: 'processing',
+        progress: { percentage: 10, message: 'Upload started...' },
+      };
+      setUploadJobs(prev => [...prev, newJob]);
+      
+      setSuccess('Document uploaded! Processing in background...');
       setSelectedFile(null);
       
-      // Refresh knowledge base
-      setTimeout(() => {
-        fetchKnowledgeBase();
-      }, 1000);
+      // Start polling for job status
+      pollJobStatus(jobId, token);
+
     } catch (err) {
       console.error('Upload error:', err);
       setError(err.response?.data?.error || 'Failed to upload document');
     } finally {
       setUploading(false);
     }
+  };
+
+  // Poll job status every 2 seconds
+  const pollJobStatus = async (jobId, token) => {
+    const maxAttempts = 150; // 5 minutes max (150 * 2 seconds)
+    let attempts = 0;
+
+    const poll = async () => {
+      try {
+        const response = await axios.get(
+          `${API_URL}/api/knowledge/${bot.id}/job/${jobId}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        const jobData = response.data.data;
+
+        // Update job in list
+        setUploadJobs(prev =>
+          prev.map(job =>
+            job.jobId === jobId ? { ...job, ...jobData } : job
+          )
+        );
+
+        // If completed or failed, stop polling
+        if (jobData.status === 'completed' || jobData.status === 'failed') {
+          if (jobData.status === 'completed') {
+            setSuccess(`${jobData.filename} processed successfully!`);
+            // Refresh knowledge base after completion
+            setTimeout(() => {
+              fetchKnowledgeBase();
+            }, 1000);
+          } else {
+            setError(`Failed to process ${jobData.filename}: ${jobData.result?.error}`);
+          }
+          
+          // Remove job from list after 10 seconds
+          setTimeout(() => {
+            setUploadJobs(prev => prev.filter(job => job.jobId !== jobId));
+          }, 10000);
+          
+          return;
+        }
+
+        // Continue polling if not done and under max attempts
+        attempts++;
+        if (attempts < maxAttempts) {
+          setTimeout(poll, 2000);
+        } else {
+          console.warn('Job polling timed out');
+          setError('Upload processing is taking longer than expected. Please check back later.');
+        }
+      } catch (err) {
+        console.error('Job polling error:', err);
+        // Remove job from list on error
+        setUploadJobs(prev => prev.filter(job => job.jobId !== jobId));
+      }
+    };
+
+    poll();
   };
 
   const handleDelete = async (documentId) => {
@@ -157,7 +244,10 @@ const KnowledgeBaseModal = ({ bot, setShowModal }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-50 p-4 overflow-y-auto animate-fadeIn">
+    <div 
+      className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-50 p-4 overflow-y-auto animate-fadeIn"
+      onClick={handleBackdropClick}
+    >
       <div className="relative bg-gradient-to-br from-gray-900 to-black border border-gray-700 rounded-3xl p-8 w-full max-w-4xl my-8 shadow-2xl">
         {/* Gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-accent-blue/5 via-transparent to-accent-pink/5 rounded-3xl pointer-events-none"></div>
@@ -174,7 +264,8 @@ const KnowledgeBaseModal = ({ bot, setShowModal }) => {
             </div>
             <button 
               onClick={() => setShowModal(false)}
-              className="text-gray-500 hover:text-white hover:bg-gray-800 p-2 rounded-lg transition-all"
+              className="text-gray-400 hover:text-white hover:bg-gray-800 p-3 rounded-xl transition-all hover:rotate-90 duration-300"
+              aria-label="Close modal"
             >
               <X size={24} />
             </button>
@@ -192,6 +283,16 @@ const KnowledgeBaseModal = ({ bot, setShowModal }) => {
             <div className="mb-6 p-4 bg-green-500/10 border border-green-500/30 rounded-xl text-green-400 text-sm flex items-center gap-2 animate-fadeIn">
               <CheckCircle2 size={18} />
               <span>{success}</span>
+            </div>
+          )}
+
+          {/* Active Upload Jobs */}
+          {uploadJobs.length > 0 && (
+            <div className="mb-6">
+              <h3 className="text-sm font-semibold text-gray-400 mb-3">Processing Documents</h3>
+              {uploadJobs.map((job) => (
+                <UploadProgressBar key={job.jobId} job={job} />
+              ))}
             </div>
           )}
 

@@ -5,6 +5,7 @@ import {
   getKnowledgeBase,
   deleteDocument,
   searchKnowledgeBase,
+  getJobStatus,
 } from '../controllers/knowledgeBaseController.js';
 
 const router = express.Router();
@@ -16,6 +17,9 @@ router.post('/:botId/upload', upload.single('document'), uploadDocument);
 
 // Get knowledge base for a bot
 router.get('/:botId', getKnowledgeBase);
+
+// Get upload job status
+router.get('/:botId/job/:jobId', getJobStatus);
 
 // Search knowledge base
 router.get('/:botId/search', searchKnowledgeBase);
