@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { X, Code, Copy, Check } from 'lucide-react';
+import { X, Code, Copy, Check, Sparkles } from 'lucide-react';
 import WidgetTemplates from './WidgetTemplates';
+import WidgetCustomizer from './WidgetCustomizer';
 
 const EmbedCodeModal = ({ bot, setShowModal }) => {
   const [embedCode, setEmbedCode] = useState('');
   const [iframeCode, setIframeCode] = useState('');
   const [copied, setCopied] = useState('');
-  const [activeTab, setActiveTab] = useState('templates'); // 'templates' or 'custom'
+  const [activeTab, setActiveTab] = useState('templates'); // 'templates', 'custom', or 'customizer'
+  const [showCustomizer, setShowCustomizer] = useState(false);
 
   // ESC key handler
   useEffect(() => {
@@ -104,6 +106,17 @@ const EmbedCodeModal = ({ bot, setShowModal }) => {
             Widget Templates
           </button>
           <button
+            onClick={() => setActiveTab('customizer')}
+            className={`px-6 py-3 font-semibold transition-all flex items-center gap-2 ${
+              activeTab === 'customizer'
+                ? 'text-purple-400 border-b-2 border-purple-400'
+                : 'text-gray-500 hover:text-white'
+            }`}
+          >
+            <Sparkles size={18} />
+            Live Customizer
+          </button>
+          <button
             onClick={() => setActiveTab('custom')}
             className={`px-6 py-3 font-semibold transition-all ${
               activeTab === 'custom'
@@ -119,6 +132,23 @@ const EmbedCodeModal = ({ bot, setShowModal }) => {
         {activeTab === 'templates' && (
           <div>
             <WidgetTemplates bot={bot} />
+          </div>
+        )}
+
+        {/* Live Customizer Tab */}
+        {activeTab === 'customizer' && (
+          <div className="bg-gradient-to-br from-purple-900/20 to-blue-900/20 border border-purple-500/30 rounded-xl p-8 text-center">
+            <Sparkles className="w-16 h-16 text-purple-400 mx-auto mb-4" />
+            <h3 className="text-2xl font-bold mb-2">Build Your Custom Widget</h3>
+            <p className="text-gray-400 mb-6 max-w-2xl mx-auto">
+              Create a fully customized chat widget with our live editor. Adjust colors, sizes, positions, and more with instant preview.
+            </p>
+            <button
+              onClick={() => setShowCustomizer(true)}
+              className="bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold px-8 py-3 rounded-xl hover:from-purple-700 hover:to-blue-700 transition-all transform hover:scale-105"
+            >
+              Open Live Customizer
+            </button>
           </div>
         )}
 
@@ -225,6 +255,11 @@ const EmbedCodeModal = ({ bot, setShowModal }) => {
           </div>
         )}
       </div>
+
+      {/* Customizer Modal */}
+      {showCustomizer && (
+        <WidgetCustomizer bot={bot} onClose={() => setShowCustomizer(false)} />
+      )}
     </div>
   );
 };
