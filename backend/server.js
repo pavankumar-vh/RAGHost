@@ -26,12 +26,25 @@ import widgetRoutes from './routes/widgetRoutes.js';
 import analyticsRoutes from './routes/analytics.js';
 import { errorHandler, notFound } from './middleware/errorHandler.js';
 import { authenticate } from './middleware/auth.js';
+import { 
+  securityHeaders, 
+  preventParameterPollution, 
+  detectInjection,
+  preventBruteForce,
+  safeErrorHandler
+} from './middleware/security.js';
 
 const app = express();
 const PORT = process.env.PORT || 5001;
 
 // Trust proxy - important for rate limiting behind reverse proxies (Render, Heroku, etc.)
 app.set('trust proxy', 1);
+
+// Security: Add security headers
+app.use(securityHeaders);
+
+// Security: Prevent parameter pollution
+app.use(preventParameterPollution);
 
 // Memory-optimized mode for 512MB environments (OPT-IN via ENABLE_LOW_MEMORY=true)
 // By default, runs in normal mode with full performance
@@ -155,6 +168,12 @@ const bodyLimit = isLowMemory ? '5mb' : '10mb';
 app.use(express.json({ limit: bodyLimit }));
 app.use(express.urlencoded({ extended: true, limit: bodyLimit }));
 
+// Security: Detect injection attempts
+app.use(detectInjection);
+
+// Security: Prevent brute force on authentication
+app.use('/api/keys', preventBruteForce(5, 15 * 60 * 1000));
+
 // Serve widget static files with proper headers
 app.use('/widget', (req, res, next) => {
   res.setHeader('X-Frame-Options', 'ALLOWALL');
@@ -243,6 +262,7 @@ app.use('/api/widget', widgetRoutes); // Widget embed code generation
 
 // Error handling
 app.use(notFound);
+app.use(safeErrorHandler); // Use safe error handler that doesn't leak internals
 app.use(errorHandler);
 
 /**

@@ -4,6 +4,7 @@ import { decrypt } from '../utils/encryption.js';
 import { queryPinecone } from '../services/pineconeService.js';
 import { generateResponse } from '../services/geminiService.js';
 import mongoose from 'mongoose';
+import { sanitizeString, isValidObjectId } from '../middleware/inputValidation.js';
 
 /**
  * @route   POST /api/chat/:botId/message
@@ -17,19 +18,35 @@ export const sendMessage = async (req, res) => {
     
     console.log('💬 Chat request received:', { botId, message: message?.substring(0, 50), sessionId });
 
+    // Security: Validate and sanitize message
     if (!message || !message.trim()) {
       return res.status(400).json({
         success: false,
         error: 'Message is required',
+        code: 'MESSAGE_REQUIRED',
       });
     }
 
-    // Validate botId format
-    if (!mongoose.Types.ObjectId.isValid(botId)) {
+    // Security: Limit message length (5000 chars)
+    const MAX_MESSAGE_LENGTH = 5000;
+    if (message.length > MAX_MESSAGE_LENGTH) {
+      return res.status(400).json({
+        success: false,
+        error: `Message too long. Maximum ${MAX_MESSAGE_LENGTH} characters allowed.`,
+        code: 'MESSAGE_TOO_LONG',
+      });
+    }
+
+    // Security: Sanitize message to prevent injection
+    const sanitizedMessage = sanitizeString(message);
+
+    // Security: Validate botId format
+    if (!isValidObjectId(botId)) {
       console.log('❌ Invalid botId format:', botId);
       return res.status(400).json({
         success: false,
-        error: 'Invalid bot ID format. Please provide a valid bot ID.',
+        error: 'Invalid bot ID format',
+        code: 'INVALID_BOT_ID',
       });
     }
 
@@ -74,7 +91,7 @@ export const sendMessage = async (req, res) => {
       apiKey: pineconeKey,
       environment: bot.pineconeEnvironment,
       indexName: bot.pineconeIndexName,
-      query: message,
+      query: sanitizedMessage, // Use sanitized message
       geminiKey: geminiKey, // Use Gemini for embeddings
       topK: 5, // Get top 5 most relevant chunks
       pineconeHost,
@@ -92,7 +109,7 @@ export const sendMessage = async (req, res) => {
     console.log('🤖 Generating AI response with Gemini...');
     const response = await generateResponse({
       apiKey: geminiKey,
-      message,
+      message: sanitizedMessage, // Use sanitized message
       context: context.matches || [],
       botName: bot.name,
       botType: bot.type,
