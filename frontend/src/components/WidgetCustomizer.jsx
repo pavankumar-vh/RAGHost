@@ -51,7 +51,6 @@ const WidgetCustomizer = ({ bot, onClose }) => {
     fontFamily: 'Inter, sans-serif',
     
     // Features
-    showWatermark: true,
     welcomeMessage: bot?.welcomeMessage || 'Hi! How can I help you today? 👋',
     
     // Animation
@@ -304,7 +303,6 @@ const WidgetCustomizer = ({ bot, onClose }) => {
       transform: scale(1.05);
     }
     
-    ${config.showWatermark ? `
     .raghost-watermark {
       padding: 8px 16px;
       text-align: center;
@@ -316,8 +314,8 @@ const WidgetCustomizer = ({ bot, onClose }) => {
     .raghost-watermark a {
       color: ${config.primaryColor};
       text-decoration: none;
+      font-weight: 600;
     }
-    ` : ''}
   </style>
 </head>
 <body>
@@ -364,11 +362,9 @@ const WidgetCustomizer = ({ bot, onClose }) => {
         </button>
       </div>
       
-      ${config.showWatermark ? `
       <div class="raghost-watermark">
         Powered by <a href="https://raghost.com" target="_blank">RAGhost</a>
       </div>
-      ` : ''}
     </div>
   </div>
   
@@ -416,7 +412,6 @@ const WidgetCustomizer = ({ bot, onClose }) => {
       buttonSize: ${config.buttonSize},
       buttonStyle: '${config.buttonStyle}',
       fontFamily: '${config.fontFamily}',
-      showWatermark: ${config.showWatermark},
       animationSpeed: '${config.animationSpeed}'
     };
     var script = document.createElement('script');
@@ -650,21 +645,17 @@ const WidgetCustomizer = ({ bot, onClose }) => {
               />
             </div>
 
-            {/* Show Watermark */}
-            <div className="flex items-center justify-between p-3 bg-gray-800/50 border border-gray-700 rounded-lg">
-              <span className="text-sm font-medium text-gray-200">Show Watermark</span>
-              <button
-                onClick={() => setConfig({...config, showWatermark: !config.showWatermark})}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  config.showWatermark ? 'bg-purple-500' : 'bg-gray-600'
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    config.showWatermark ? 'translate-x-6' : 'translate-x-1'
-                  }`}
-                />
-              </button>
+            {/* Watermark Notice */}
+            <div className="p-4 bg-gradient-to-r from-purple-900/30 to-blue-900/30 border border-purple-500/30 rounded-lg">
+              <div className="flex items-start gap-3">
+                <div className="text-2xl">✨</div>
+                <div>
+                  <h4 className="text-sm font-semibold text-purple-300 mb-1">RAGhost Watermark</h4>
+                  <p className="text-xs text-gray-400 leading-relaxed">
+                    The "Powered by RAGhost" watermark is required and will be displayed on all custom widgets. This helps support the platform and lets users discover RAGhost.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
 
