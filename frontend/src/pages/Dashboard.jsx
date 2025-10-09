@@ -1233,7 +1233,7 @@ const DocumentationView = () => {
           <Copy size={16} className="text-gray-400" />
         )}
       </button>
-      <pre className="text-sm text-gray-300 overflow-x-auto pr-12">
+      <pre className="text-sm text-gray-100 overflow-x-auto pr-12 font-mono">
         <code>{code}</code>
       </pre>
     </div>
@@ -1242,12 +1242,12 @@ const DocumentationView = () => {
   const StepCard = ({ number, title, children }) => (
     <div className="bg-dark-card rounded-xl p-6 border border-gray-700/50 hover:border-accent-blue/50 transition-all">
       <div className="flex items-start gap-4">
-        <div className="flex-shrink-0 w-10 h-10 bg-accent-blue rounded-full flex items-center justify-center font-bold text-lg">
+        <div className="flex-shrink-0 w-10 h-10 bg-accent-blue rounded-full flex items-center justify-center font-bold text-lg text-white">
           {number}
         </div>
         <div className="flex-1">
           <h3 className="text-xl font-semibold mb-3 text-white">{title}</h3>
-          <div className="text-gray-300 space-y-3">{children}</div>
+          <div className="text-gray-100 space-y-3">{children}</div>
         </div>
       </div>
     </div>
@@ -1261,7 +1261,7 @@ const DocumentationView = () => {
           <BookOpen size={32} className="text-accent-blue" />
           <h1 className="text-4xl font-bold">Documentation</h1>
         </div>
-        <p className="text-xl text-gray-300">
+        <p className="text-xl text-gray-100">
           Learn how to get your API keys and start building your AI chatbot
         </p>
       </div>
@@ -1270,9 +1270,9 @@ const DocumentationView = () => {
       <section>
         <div className="flex items-center gap-2 mb-6">
           <ChevronRight size={24} className="text-accent-yellow" />
-          <h2 className="text-3xl font-bold">Quick Start</h2>
+          <h2 className="text-3xl font-bold text-white">Quick Start</h2>
         </div>
-        <p className="text-lg text-gray-300 mb-6">
+        <p className="text-lg text-gray-100 mb-6">
           To create your chatbot, you'll need API keys from Google Gemini and Pinecone. Follow these simple steps:
         </p>
       </section>
@@ -1281,7 +1281,7 @@ const DocumentationView = () => {
       <section>
         <div className="flex items-center gap-3 mb-6">
           <Key size={28} className="text-accent-pink" />
-          <h2 className="text-3xl font-bold">Getting Your Gemini API Key</h2>
+          <h2 className="text-3xl font-bold text-white">Getting Your Gemini API Key</h2>
         </div>
         
         <div className="space-y-6">
@@ -1337,7 +1337,7 @@ const DocumentationView = () => {
       <section>
         <div className="flex items-center gap-3 mb-6">
           <Database size={28} className="text-accent-purple" />
-          <h2 className="text-3xl font-bold">Getting Your Pinecone API Key</h2>
+          <h2 className="text-3xl font-bold text-white">Getting Your Pinecone API Key</h2>
         </div>
         
         <div className="space-y-6">
@@ -1366,7 +1366,7 @@ const DocumentationView = () => {
             <ul className="list-disc list-inside space-y-2 ml-4 mt-2">
               <li>Click <strong>"Create Index"</strong> in the dashboard</li>
               <li><strong>Index Name:</strong> Choose any name (e.g., "my-chatbot")</li>
-              <li><strong>Dimensions:</strong> Enter <code className="bg-dark-bg px-2 py-1 rounded">768</code> (for Gemini embeddings)</li>
+              <li><strong>Dimensions:</strong> Enter <code className="bg-gray-900 text-accent-blue px-2 py-1 rounded border border-gray-700">768</code> (for Gemini embeddings)</li>
               <li><strong>Metric:</strong> Select <strong>"Cosine"</strong></li>
               <li><strong>Cloud:</strong> Choose any free region (e.g., "us-east-1")</li>
               <li>Click <strong>"Create Index"</strong></li>
@@ -1383,7 +1383,7 @@ const DocumentationView = () => {
               <li>Go to <strong>"API Keys"</strong> in the left sidebar</li>
               <li>Click <strong>"Create API Key"</strong></li>
               <li>Give it a name (e.g., "chatbot-key")</li>
-              <li>Copy your API key - it starts with <code className="bg-dark-bg px-2 py-1 rounded">pcsk_</code></li>
+              <li>Copy your API key - it starts with <code className="bg-gray-900 text-accent-purple px-2 py-1 rounded border border-gray-700">pcsk_</code></li>
             </ul>
             <CodeBlock 
               code="pcsk_example-1234_key567890abcdefghijklmnop" 
@@ -1456,21 +1456,21 @@ const DocumentationView = () => {
       {/* Troubleshooting */}
       <section>
         <div className="bg-dark-card rounded-xl p-8 border border-gray-700/50">
-          <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+          <h2 className="text-2xl font-bold mb-6 flex items-center gap-2 text-white">
             <span className="text-3xl">🔧</span> Troubleshooting
           </h2>
-          <div className="space-y-4 text-gray-300">
+          <div className="space-y-4 text-gray-100">
             <div>
               <h3 className="font-semibold text-white mb-2">❌ "Invalid API Key" Error</h3>
-              <p className="ml-4">• Double-check you copied the entire key without spaces<br/>• Make sure your Gemini API key is enabled in Google Cloud Console</p>
+              <p className="ml-4 text-gray-100">• Double-check you copied the entire key without spaces<br/>• Make sure your Gemini API key is enabled in Google Cloud Console</p>
             </div>
             <div>
               <h3 className="font-semibold text-white mb-2">❌ "Index Not Found" Error</h3>
-              <p className="ml-4">• Verify your Pinecone index name is spelled correctly<br/>• Ensure the index has finished initializing (check Pinecone dashboard)</p>
+              <p className="ml-4 text-gray-100">• Verify your Pinecone index name is spelled correctly<br/>• Ensure the index has finished initializing (check Pinecone dashboard)</p>
             </div>
             <div>
               <h3 className="font-semibold text-white mb-2">❌ Rate Limit Errors</h3>
-              <p className="ml-4">• Gemini free tier: 60 requests/min - wait a minute and try again<br/>• Consider upgrading if you need higher limits</p>
+              <p className="ml-4 text-gray-100">• Gemini free tier: 60 requests/min - wait a minute and try again<br/>• Consider upgrading if you need higher limits</p>
             </div>
           </div>
         </div>
@@ -1478,8 +1478,8 @@ const DocumentationView = () => {
 
       {/* Support */}
       <section className="text-center py-8">
-        <h2 className="text-2xl font-bold mb-4">Need Help?</h2>
-        <p className="text-gray-300 mb-6">
+        <h2 className="text-2xl font-bold mb-4 text-white">Need Help?</h2>
+        <p className="text-gray-100 mb-6">
           If you're having trouble getting your API keys, check out the official documentation:
         </p>
         <div className="flex gap-4 justify-center flex-wrap">

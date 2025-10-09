@@ -264,15 +264,22 @@ const KnowledgeBaseModal = ({ bot, setShowModal }) => {
 
     try {
       const token = await getIdToken();
-      await axios.delete(`${API_URL}/api/knowledge/${bot.id}/document/${documentId}`, {
+      const response = await axios.delete(`${API_URL}/api/knowledge/${bot.id}/document/${documentId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      
+      console.log('🗑️ Delete response:', response.data);
+      
+      // Update local state immediately
+      setDocuments(prev => prev.filter(doc => doc.id !== documentId));
       
       showSuccess(
         'Document and its vectors have been deleted successfully.',
         'Document Deleted'
       );
-      fetchKnowledgeBase();
+      
+      // Refresh knowledge base to get updated counts
+      await fetchKnowledgeBase();
     } catch (err) {
       console.error('Delete error:', err);
       const errorMsg = err.response?.data?.error || 'Failed to delete document';
