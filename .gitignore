@@ -71,3 +71,18 @@ private/
 TODO.md
 NOTES.md
 
+# Railway deployment config (keep local only)
+railway.toml
+railway.json
+nixpacks.toml
+Procfile
+RAILWAY_DEPLOYMENT.md
+deploy-railway.sh
+deploy-railway.ps1
+
+# Test and temporary files
+test-*.html
+test-*.ps1
+widget-demo.html
+widget-test.html
+.render-deploy
