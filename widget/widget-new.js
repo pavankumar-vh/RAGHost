@@ -23,7 +23,7 @@
   let isOpen = false;
 
   // Elements (will be created dynamically)
-  let chatButton, chatWindow, closeBtn, minimizeBtn, messagesContainer, input, sendBtn;
+  let chatButton, chatWindow, closeBtn, messagesContainer, input, sendBtn;
 
   // Initialize
   function init() {
@@ -177,32 +177,33 @@
       }
 
       .raghost-header-btn {
-        width: 32px;
-        height: 32px;
-        border: none;
+        width: 36px;
+        height: 36px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
         border-radius: 8px;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: all 0.2s ease;
-        background: rgba(255, 255, 255, 0.15);
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.2);
         color: white;
       }
 
       .raghost-header-btn:hover {
-        background: rgba(255, 255, 255, 0.25);
-        transform: scale(1.05);
+        background: rgba(255, 255, 255, 0.35);
+        border-color: rgba(255, 255, 255, 0.6);
+        transform: rotate(90deg) scale(1.1);
       }
 
       .raghost-header-btn:active {
-        transform: scale(0.95);
+        transform: rotate(90deg) scale(0.95);
       }
 
       .raghost-header-btn svg {
-        width: 18px;
-        height: 18px;
-        fill: currentColor;
+        width: 20px;
+        height: 20px;
+        stroke-width: 2.5;
       }
 
       .raghost-messages {
@@ -504,7 +505,6 @@
     chatButton = container.querySelector('.raghost-chat-button');
     chatWindow = container.querySelector('.raghost-chat-window');
     closeBtn = container.querySelector('.raghost-close-btn');
-    minimizeBtn = container.querySelector('.raghost-minimize-btn');
     messagesContainer = container.querySelector('.raghost-messages');
     input = container.querySelector('.raghost-input');
     sendBtn = container.querySelector('.raghost-send-btn');
@@ -540,14 +540,9 @@
             </div>
           </div>
           <div class="raghost-header-actions">
-            <button class="raghost-header-btn raghost-minimize-btn" aria-label="Minimize">
-              <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M19 13H5v-2h14v2z"/>
-              </svg>
-            </button>
-            <button class="raghost-header-btn raghost-close-btn" aria-label="Close">
-              <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/>
+            <button class="raghost-header-btn raghost-close-btn" aria-label="Close chat">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M18 6L6 18M6 6l12 12"/>
               </svg>
             </button>
           </div>
@@ -668,13 +663,14 @@
 
       .raghost-header-btn {
         color: white;
-        background: rgba(255, 255, 255, 0.2);
-        border: 1px solid rgba(255, 255, 255, 0.3);
+        background: rgba(255, 255, 255, 0.25);
+        border: 2px solid rgba(255, 255, 255, 0.4);
       }
 
       .raghost-header-btn:hover {
-        background: rgba(255, 255, 255, 0.3);
-        border-color: rgba(255, 255, 255, 0.5);
+        background: rgba(255, 255, 255, 0.4);
+        border-color: rgba(255, 255, 255, 0.6);
+        transform: rotate(90deg) scale(1.1);
       }
 
       .raghost-watermark {
@@ -767,13 +763,17 @@
 
       .raghost-header-btn {
         color: white;
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        background: rgba(255, 255, 255, 0.15);
+        border: 2px solid rgba(255, 255, 255, 0.4);
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
       }
 
       .raghost-header-btn:hover {
-        background: rgba(255, 255, 255, 0.25);
-        border-color: rgba(255, 255, 255, 0.5);
+        background: rgba(255, 255, 255, 0.35);
+        border-color: rgba(255, 255, 255, 0.6);
+        transform: rotate(90deg) scale(1.1);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
       }
 
       .raghost-watermark {
@@ -862,14 +862,15 @@
       }
 
       .raghost-header-btn {
-        color: white;
-        background: rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #ffffff;
+        background: #333;
+        border: 2px solid #555;
       }
 
       .raghost-header-btn:hover {
-        background: rgba(255, 255, 255, 0.2);
-        border-color: rgba(255, 255, 255, 0.3);
+        background: #444;
+        border-color: #777;
+        transform: rotate(90deg) scale(1.1);
       }
 
       .raghost-watermark {
@@ -978,15 +979,18 @@
       }
 
       .raghost-header-btn {
-        color: #000;
-        background: rgba(255, 255, 255, 0.3);
-        border: 1px solid rgba(0, 255, 255, 0.5);
+        color: #0ff;
+        background: #000;
+        border: 2px solid #0ff;
+        box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
       }
 
       .raghost-header-btn:hover {
-        background: rgba(255, 255, 255, 0.5);
+        background: #0ff;
+        color: #000;
         border-color: #0ff;
-        box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+        transform: rotate(90deg) scale(1.1);
+        box-shadow: 0 0 20px rgba(0, 255, 255, 0.6);
       }
 
       .raghost-watermark {
@@ -1083,13 +1087,14 @@
 
       .raghost-header-btn {
         color: white;
-        background: rgba(255, 255, 255, 0.2);
-        border: 1px solid rgba(255, 255, 255, 0.3);
+        background: rgba(255, 255, 255, 0.25);
+        border: 2px solid rgba(255, 255, 255, 0.4);
       }
 
       .raghost-header-btn:hover {
-        background: rgba(255, 255, 255, 0.3);
-        border-color: rgba(255, 255, 255, 0.5);
+        background: rgba(255, 255, 255, 0.4);
+        border-color: rgba(255, 255, 255, 0.6);
+        transform: rotate(90deg) scale(1.1);
       }
 
       .raghost-typing span {
@@ -1187,13 +1192,14 @@
 
       .raghost-header-btn {
         color: white;
-        background: rgba(255, 255, 255, 0.2);
-        border: 1px solid rgba(255, 255, 255, 0.3);
+        background: rgba(255, 255, 255, 0.25);
+        border: 2px solid rgba(255, 255, 255, 0.4);
       }
 
       .raghost-header-btn:hover {
-        background: rgba(255, 255, 255, 0.3);
-        border-color: rgba(255, 255, 255, 0.5);
+        background: rgba(255, 255, 255, 0.4);
+        border-color: rgba(255, 255, 255, 0.6);
+        transform: rotate(90deg) scale(1.1);
       }
 
       .raghost-typing span {
@@ -1216,7 +1222,6 @@
   function attachEventListeners() {
     chatButton.addEventListener('click', toggleChat);
     closeBtn.addEventListener('click', closeChat);
-    minimizeBtn.addEventListener('click', closeChat);
     sendBtn.addEventListener('click', handleSendMessage);
 
     input.addEventListener('keydown', (e) => {
