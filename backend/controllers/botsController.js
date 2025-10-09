@@ -4,7 +4,7 @@ import { encrypt, decrypt } from '../utils/encryption.js';
 // Create a new bot
 export const createBot = async (req, res) => {
   try {
-    const { name, type, description, color, pineconeKey, pineconeEnvironment, pineconeIndexName, geminiKey } = req.body;
+    const { name, type, description, color, pineconeKey, pineconeEnvironment, pineconeIndexName, geminiKey, systemPrompt } = req.body;
     const userId = req.user.uid;
 
     // Validation
@@ -115,6 +115,7 @@ export const createBot = async (req, res) => {
       pineconeIndexName,
       pineconeHost,
       geminiKey: encryptedGeminiKey,
+      systemPrompt: systemPrompt || '',
       pineconeVerified,
       geminiVerified,
       status,
@@ -133,6 +134,7 @@ export const createBot = async (req, res) => {
       description: bot.description,
       status: bot.status,
       color: bot.color,
+      systemPrompt: bot.systemPrompt,
       pineconeEnvironment: bot.pineconeEnvironment,
       pineconeIndexName: bot.pineconeIndexName,
       pineconeVerified: bot.pineconeVerified,
@@ -173,6 +175,7 @@ export const getBots = async (req, res) => {
       description: bot.description,
       status: bot.status,
       color: bot.color,
+      systemPrompt: bot.systemPrompt,
       pineconeEnvironment: bot.pineconeEnvironment,
       pineconeIndexName: bot.pineconeIndexName,
       pineconeVerified: bot.pineconeVerified,
@@ -210,6 +213,7 @@ export const getBotById = async (req, res) => {
       description: bot.description,
       status: bot.status,
       color: bot.color,
+      systemPrompt: bot.systemPrompt,
       pineconeEnvironment: bot.pineconeEnvironment,
       pineconeIndexName: bot.pineconeIndexName,
       pineconeVerified: bot.pineconeVerified,
@@ -233,7 +237,7 @@ export const updateBot = async (req, res) => {
   try {
     const userId = req.user.uid;
     const { id } = req.params;
-    const { name, type, description, color, pineconeKey, pineconeEnvironment, pineconeIndexName, geminiKey, useGlobalGeminiKey, status } = req.body;
+    const { name, type, description, color, pineconeKey, pineconeEnvironment, pineconeIndexName, geminiKey, useGlobalGeminiKey, status, systemPrompt } = req.body;
 
     const bot = await Bot.findOne({ _id: id, userId });
 
@@ -248,6 +252,7 @@ export const updateBot = async (req, res) => {
     if (color) bot.color = color;
     if (status) bot.status = status;
     if (useGlobalGeminiKey !== undefined) bot.useGlobalGeminiKey = useGlobalGeminiKey;
+    if (systemPrompt !== undefined) bot.systemPrompt = systemPrompt;
 
     // Update Pinecone config if provided
     if (pineconeKey) {
@@ -275,6 +280,7 @@ export const updateBot = async (req, res) => {
       description: bot.description,
       status: bot.status,
       color: bot.color,
+      systemPrompt: bot.systemPrompt,
       pineconeEnvironment: bot.pineconeEnvironment,
       pineconeIndexName: bot.pineconeIndexName,
       pineconeVerified: bot.pineconeVerified,
