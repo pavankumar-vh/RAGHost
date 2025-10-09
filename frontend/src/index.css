@@ -103,6 +103,27 @@ body {
     }
   }
 
+  /* Slide in animation for notifications */
+  @keyframes slideIn {
+    from {
+      transform: translate3d(100%, 0, 0) translateZ(0);
+      opacity: 0;
+    }
+    to {
+      transform: translate3d(0, 0, 0) translateZ(0);
+      opacity: 1;
+    }
+  }
+
+  .animate-slideIn {
+    animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform, opacity;
+  }
+      transform: translate3d(0, 0, 0);
+      opacity: 1;
+    }
+  }
+
   /* Slide out to right animation - 60fps optimized */
   @keyframes slideOutRight {
     from {

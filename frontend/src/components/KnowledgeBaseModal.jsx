@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { X, Upload, FileText, Loader2, CheckCircle2, XCircle, Trash2, Database, FileIcon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
 import { setAuthToken } from '../services/api';
 import axios from 'axios';
 import UploadProgressBar from './UploadProgressBar';
+import { parseUploadError, parseJobError } from '../utils/errorHandler';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
 
 const KnowledgeBaseModal = ({ bot, setShowModal }) => {
   const { getIdToken } = useAuth();
+  const { showSuccess, showError, showWarning, showInfo } = useNotification();
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -65,15 +68,22 @@ const KnowledgeBaseModal = ({ bot, setShowModal }) => {
 
   const validateAndSetFile = (file) => {
     const allowedTypes = ['application/pdf', 'text/plain', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/csv', 'text/markdown'];
-    const maxSize = 10 * 1024 * 1024; // 10MB
+    const maxSize = 50 * 1024 * 1024; // 50MB
 
     if (!allowedTypes.includes(file.type) && !file.name.match(/\.(pdf|txt|docx|csv|md)$/i)) {
-      setError('Invalid file type. Allowed: PDF, TXT, DOCX, CSV, MD');
+      showError(
+        'Please upload a valid document file.\n\nSupported formats:\n• PDF (.pdf)\n• Text (.txt)\n• Word (.docx)\n• CSV (.csv)\n• Markdown (.md)',
+        'Invalid File Type'
+      );
       return;
     }
 
     if (file.size > maxSize) {
-      setError('File too large. Maximum size: 10MB');
+      showError(
+        `File size: ${(file.size / (1024 * 1024)).toFixed(2)} MB\nMaximum allowed: 50 MB\n\nTip: Try compressing your PDF or splitting large documents into smaller parts.`,
+        'File Too Large',
+        { duration: 8000 }
+      );
       return;
     }
 
@@ -145,7 +155,10 @@ const KnowledgeBaseModal = ({ bot, setShowModal }) => {
         return updated;
       });
       
-      setSuccess('Document uploaded! Processing in background...');
+      showSuccess(
+        `${filename} uploaded successfully! Processing in background...`,
+        'Upload Started'
+      );
       setSelectedFile(null);
       
       // Start polling for job status
@@ -153,7 +166,11 @@ const KnowledgeBaseModal = ({ bot, setShowModal }) => {
 
     } catch (err) {
       console.error('Upload error:', err);
-      setError(err.response?.data?.error || 'Failed to upload document');
+      const errorInfo = parseUploadError(err);
+      showError(errorInfo.message, errorInfo.title, { 
+        duration: 10000,
+        action: errorInfo.action 
+      });
     } finally {
       setUploading(false);
     }
@@ -188,19 +205,28 @@ const KnowledgeBaseModal = ({ bot, setShowModal }) => {
         // If completed or failed, stop polling
         if (jobData.status === 'completed' || jobData.status === 'failed') {
           if (jobData.status === 'completed') {
-            setSuccess(`${jobData.filename} processed successfully!`);
+            showSuccess(
+              `Successfully processed ${jobData.result?.vectorsUploaded || 0} vectors`,
+              `${jobData.filename} Completed`,
+              { duration: 6000 }
+            );
             // Refresh knowledge base after completion
             setTimeout(() => {
               fetchKnowledgeBase();
             }, 1000);
           } else {
-            setError(`Failed to process ${jobData.filename}: ${jobData.result?.error}`);
+            // Parse job error with detailed explanation
+            const errorInfo = parseJobError(jobData.result);
+            showError(errorInfo.message, errorInfo.title, {
+              duration: 15000, // Keep error visible longer
+              action: errorInfo.action
+            });
           }
           
-          // Remove job from list after 10 seconds
+          // Remove job from list after showing notification
           setTimeout(() => {
             setUploadJobs(prev => prev.filter(job => job.jobId !== jobId));
-          }, 10000);
+          }, 3000);
           
           return;
         }
@@ -211,10 +237,20 @@ const KnowledgeBaseModal = ({ bot, setShowModal }) => {
           setTimeout(poll, 2000);
         } else {
           console.warn('Job polling timed out');
-          setError('Upload processing is taking longer than expected. Please check back later.');
+          showWarning(
+            'The upload is taking longer than expected. The processing continues in the background. Please refresh the knowledge base in a few minutes.',
+            'Processing Timeout',
+            { duration: 10000 }
+          );
+          setUploadJobs(prev => prev.filter(job => job.jobId !== jobId));
         }
       } catch (err) {
         console.error('Job polling error:', err);
+        showError(
+          'Failed to check processing status. The upload may still be processing in the background.',
+          'Status Check Failed',
+          { duration: 8000 }
+        );
         // Remove job from list on error
         setUploadJobs(prev => prev.filter(job => job.jobId !== jobId));
       }
@@ -224,7 +260,7 @@ const KnowledgeBaseModal = ({ bot, setShowModal }) => {
   };
 
   const handleDelete = async (documentId) => {
-    if (!window.confirm('Are you sure you want to delete this document?')) return;
+    if (!window.confirm('Are you sure you want to delete this document? This will also remove it from Pinecone.')) return;
 
     try {
       const token = await getIdToken();
@@ -232,11 +268,27 @@ const KnowledgeBaseModal = ({ bot, setShowModal }) => {
         headers: { Authorization: `Bearer ${token}` },
       });
       
-      setSuccess('Document deleted successfully');
+      showSuccess(
+        'Document and its vectors have been deleted successfully.',
+        'Document Deleted'
+      );
       fetchKnowledgeBase();
     } catch (err) {
       console.error('Delete error:', err);
-      setError(err.response?.data?.error || 'Failed to delete document');
+      const errorMsg = err.response?.data?.error || 'Failed to delete document';
+      showError(
+        errorMsg.includes('Pinecone') 
+          ? `${errorMsg}\n\nNote: The document was removed from our database, but failed to delete from Pinecone. You may need to delete it manually from your Pinecone dashboard.`
+          : errorMsg,
+        'Delete Failed',
+        { 
+          duration: 10000,
+          action: errorMsg.includes('Pinecone') ? {
+            label: 'Open Pinecone',
+            onClick: () => window.open('https://app.pinecone.io', '_blank')
+          } : null
+        }
+      );
     }
   };
 
