@@ -388,6 +388,24 @@
         border-top: 1px solid rgba(255, 255, 255, 0.1);
       }
 
+      .raghost-watermark {
+        padding: 8px 20px;
+        text-align: center;
+        font-size: 11px;
+        opacity: 0.6;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      .raghost-watermark a {
+        color: inherit;
+        text-decoration: none;
+        transition: opacity 0.2s ease;
+      }
+
+      .raghost-watermark a:hover {
+        opacity: 1;
+      }
+
       .raghost-input-wrapper {
         flex: 1;
         position: relative;
@@ -545,6 +563,10 @@
             </svg>
           </button>
         </div>
+
+        <div class="raghost-watermark">
+          Powered by <a href="https://rag-host.vercel.app" target="_blank" rel="noopener">RAGhost</a>
+        </div>
       </div>
     `;
   }
@@ -639,6 +661,20 @@
 
       .raghost-header-btn {
         color: white;
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .raghost-header-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
+
+      .raghost-watermark {
+        color: rgba(255, 255, 255, 0.6);
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .raghost-watermark a {
+        color: rgba(255, 255, 255, 0.8);
       }
     `;
   }
@@ -723,6 +759,22 @@
       .raghost-header-btn {
         color: white;
         border: 1px solid rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .raghost-header-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.3);
+      }
+
+      .raghost-watermark {
+        color: rgba(255, 255, 255, 0.5);
+        background: rgba(255, 255, 255, 0.05);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .raghost-watermark a {
+        color: rgba(255, 255, 255, 0.7);
       }
     `;
   }
@@ -802,6 +854,23 @@
 
       .raghost-header-btn {
         color: white;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid #333;
+      }
+
+      .raghost-header-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: #444;
+      }
+
+      .raghost-watermark {
+        color: #666;
+        background: #222;
+        border-top: 1px solid #333;
+      }
+
+      .raghost-watermark a {
+        color: #0ea5e9;
       }
     `;
   }
@@ -901,6 +970,24 @@
 
       .raghost-header-btn {
         color: #000;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(0, 255, 255, 0.3);
+      }
+
+      .raghost-header-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: #0ff;
+        box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+      }
+
+      .raghost-watermark {
+        color: rgba(0, 255, 255, 0.6);
+        background: #000;
+        border-top: 2px solid #0ff;
+      }
+
+      .raghost-watermark a {
+        color: #f0f;
       }
     `;
   }
@@ -987,10 +1074,25 @@
 
       .raghost-header-btn {
         color: white;
+        background: rgba(255, 255, 255, 0.15);
+      }
+
+      .raghost-header-btn:hover {
+        background: rgba(255, 255, 255, 0.25);
       }
 
       .raghost-typing span {
         background: #667eea;
+      }
+
+      .raghost-watermark {
+        color: #999;
+        background: #f8f9fa;
+        border-top: 1px solid #e8e8e8;
+      }
+
+      .raghost-watermark a {
+        color: #667eea;
       }
     `;
   }
@@ -1074,10 +1176,25 @@
 
       .raghost-header-btn {
         color: white;
+        background: rgba(255, 255, 255, 0.15);
+      }
+
+      .raghost-header-btn:hover {
+        background: rgba(255, 255, 255, 0.25);
       }
 
       .raghost-typing span {
         background: #2563eb;
+      }
+
+      .raghost-watermark {
+        color: #6b7280;
+        background: #f9fafb;
+        border-top: 1px solid #e5e7eb;
+      }
+
+      .raghost-watermark a {
+        color: #2563eb;
       }
     `;
   }
