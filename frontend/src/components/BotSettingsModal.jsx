@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Upload, FileText, Trash2, Users, Settings as SettingsIcon, Loader2, Plus, Mail } from 'lucide-react';
 import { botsService, knowledgeService, setAuthToken } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import ConfirmDialog from './ConfirmDialog';
 
 const BotSettingsModal = ({ bot, setShowModal, onUpdate }) => {
   const { getIdToken } = useAuth();
@@ -10,6 +11,9 @@ const BotSettingsModal = ({ bot, setShowModal, onUpdate }) => {
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState(null);
+  const [dialogState, setDialogState] = useState({ isOpen: false, type: 'alert', title: '', message: '', onConfirm: null });
+  const [deleteDocId, setDeleteDocId] = useState(null);
+  const [removeMemberEmail, setRemoveMemberEmail] = useState(null);
   
   // Advanced settings
   const [settings, setSettings] = useState({
@@ -91,17 +95,29 @@ const BotSettingsModal = ({ bot, setShowModal, onUpdate }) => {
   };
 
   const handleDeleteDocument = async (documentId) => {
-    if (!window.confirm('Are you sure you want to delete this document?')) return;
-
     try {
       const token = await getIdToken();
       if (token) {
         setAuthToken(token);
         await knowledgeService.deleteDocument(bot.id, documentId);
         await loadKnowledgeBase();
+        setDialogState({
+          isOpen: true,
+          type: 'success',
+          title: 'Document Deleted',
+          message: 'The document has been successfully removed from your knowledge base.',
+          onConfirm: null
+        });
       }
     } catch (error) {
       console.error('Error deleting document:', error);
+      setDialogState({
+        isOpen: true,
+        type: 'error',
+        title: 'Delete Failed',
+        message: error.response?.data?.error || 'Failed to delete document. Please try again.',
+        onConfirm: null
+      });
     }
   };
 
@@ -113,11 +129,23 @@ const BotSettingsModal = ({ bot, setShowModal, onUpdate }) => {
         setAuthToken(token);
         await botsService.updateSettings(bot.id, settings);
         if (onUpdate) await onUpdate();
-        alert('Settings updated successfully!');
+        setDialogState({
+          isOpen: true,
+          type: 'success',
+          title: 'Settings Updated!',
+          message: 'Your bot settings have been saved successfully.',
+          onConfirm: null
+        });
       }
     } catch (error) {
       console.error('Error updating settings:', error);
-      alert('Failed to update settings');
+      setDialogState({
+        isOpen: true,
+        type: 'error',
+        title: 'Update Failed',
+        message: error.response?.data?.error || 'Failed to update settings. Please try again.',
+        onConfirm: null
+      });
     } finally {
       setLoading(false);
     }
@@ -135,24 +163,42 @@ const BotSettingsModal = ({ bot, setShowModal, onUpdate }) => {
         setTeamMembers(response.data.teamMembers);
         setNewMemberEmail('');
         setNewMemberRole('viewer');
+        setDialogState({
+          isOpen: true,
+          type: 'success',
+          title: 'Team Member Added!',
+          message: `${newMemberEmail} has been added to your team.`,
+          onConfirm: null
+        });
       }
     } catch (error) {
       console.error('Error adding team member:', error);
-      alert(error.response?.data?.error || 'Failed to add team member');
+      setDialogState({
+        isOpen: true,
+        type: 'error',
+        title: 'Failed to Add Member',
+        message: error.response?.data?.error || 'Failed to add team member. Please try again.',
+        onConfirm: null
+      });
     } finally {
       setLoading(false);
     }
   };
 
   const handleRemoveTeamMember = async (email) => {
-    if (!window.confirm(`Remove ${email} from team?`)) return;
-
     try {
       const token = await getIdToken();
       if (token) {
         setAuthToken(token);
         const response = await botsService.removeTeamMember(bot.id, email);
         setTeamMembers(response.data.teamMembers);
+        setDialogState({
+          isOpen: true,
+          type: 'success',
+          title: 'Member Removed',
+          message: `${email} has been removed from your team.`,
+          onConfirm: null
+        });
       }
     } catch (error) {
       console.error('Error removing team member:', error);
@@ -275,7 +321,7 @@ const BotSettingsModal = ({ bot, setShowModal, onUpdate }) => {
                           </div>
                         </div>
                         <button
-                          onClick={() => handleDeleteDocument(doc.id)}
+                          onClick={() => setDeleteDocId(doc.id)}
                           className="text-gray-500 hover:text-red-400 p-2 rounded-lg hover:bg-red-500/10 transition-all"
                         >
                           <Trash2 size={18} />
@@ -402,7 +448,7 @@ const BotSettingsModal = ({ bot, setShowModal, onUpdate }) => {
                           </div>
                         </div>
                         <button
-                          onClick={() => handleRemoveTeamMember(member.email)}
+                          onClick={() => setRemoveMemberEmail(member.email)}
                           className="text-gray-500 hover:text-red-400 p-2 rounded-lg hover:bg-red-500/10 transition-all"
                         >
                           <Trash2 size={18} />
@@ -416,6 +462,48 @@ const BotSettingsModal = ({ bot, setShowModal, onUpdate }) => {
           </div>
         </div>
       </div>
+
+      {/* Success/Error Dialog */}
+      <ConfirmDialog
+        isOpen={dialogState.isOpen}
+        onClose={() => setDialogState({ ...dialogState, isOpen: false })}
+        onConfirm={dialogState.onConfirm}
+        title={dialogState.title}
+        message={dialogState.message}
+        type={dialogState.type}
+      />
+
+      {/* Delete Document Confirmation */}
+      <ConfirmDialog
+        isOpen={deleteDocId !== null}
+        onClose={() => setDeleteDocId(null)}
+        onConfirm={() => {
+          handleDeleteDocument(deleteDocId);
+          setDeleteDocId(null);
+        }}
+        title="Delete Document?"
+        message="Are you sure you want to delete this document? This will permanently remove it from your knowledge base."
+        confirmText="Delete"
+        cancelText="Cancel"
+        type="warning"
+        danger={true}
+      />
+
+      {/* Remove Team Member Confirmation */}
+      <ConfirmDialog
+        isOpen={removeMemberEmail !== null}
+        onClose={() => setRemoveMemberEmail(null)}
+        onConfirm={() => {
+          handleRemoveTeamMember(removeMemberEmail);
+          setRemoveMemberEmail(null);
+        }}
+        title="Remove Team Member?"
+        message={`Are you sure you want to remove ${removeMemberEmail} from your team? They will lose access to this bot.`}
+        confirmText="Remove"
+        cancelText="Cancel"
+        type="warning"
+        danger={true}
+      />
     </div>
   );
 };

@@ -6,6 +6,7 @@ import BotConfigModal from '../components/BotConfigModal';
 import EditBotModal from '../components/EditBotModal';
 import EmbedCodeModal from '../components/EmbedCodeModal';
 import KnowledgeBaseModal from '../components/KnowledgeBaseModal';
+import ConfirmDialog from '../components/ConfirmDialog';
 import AnalyticsView from '../components/AnalyticsView';
 import { BarChart } from '@mui/x-charts/BarChart';
 import { LineChart } from '@mui/x-charts/LineChart';
@@ -54,6 +55,8 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [analytics, setAnalytics] = useState(null);
   const [dailyStats, setDailyStats] = useState([]);
+  const [dialogState, setDialogState] = useState({ isOpen: false, type: 'alert', title: '', message: '', onConfirm: null });
+  const [deleteBotId, setDeleteBotId] = useState(null);
 
   // Fetch bots and analytics on component mount
   useEffect(() => {
@@ -129,11 +132,21 @@ const Dashboard = () => {
           if (pinecone === 'failed') failedServices.push('Pinecone');
           if (gemini === 'failed') failedServices.push('Gemini');
           
-          alert(`⚠️ Bot created but ${failedServices.join(' and ')} verification failed.\n\n` +
-                `The bot is marked as inactive. Please check your API keys.\n\n` +
-                (errors ? `Errors:\n${errors.join('\n')}` : ''));
+          setDialogState({
+            isOpen: true,
+            type: 'warning',
+            title: 'Bot Created with Warnings',
+            message: `Bot created but ${failedServices.join(' and ')} verification failed.\n\nThe bot is marked as inactive. Please check your API keys.\n\n${errors ? `Errors:\n${errors.join('\n')}` : ''}`,
+            onConfirm: null
+          });
         } else {
-          alert('✅ Bot created successfully!\nAll API connections verified.');
+          setDialogState({
+            isOpen: true,
+            type: 'success',
+            title: 'Bot Created Successfully!',
+            message: 'All API connections verified. Your bot is ready to use.',
+            onConfirm: null
+          });
         }
       }
       
@@ -164,7 +177,13 @@ const Dashboard = () => {
       const response = await botsService.updateBot(botId, botData);
       console.log('✅ Bot updated successfully:', response);
       
-      alert('✅ Bot updated successfully!\n\nYour changes have been saved.');
+      setDialogState({
+        isOpen: true,
+        type: 'success',
+        title: 'Bot Updated Successfully!',
+        message: 'Your changes have been saved.',
+        onConfirm: null
+      });
       
       await fetchBots();
       console.log('🔄 Bots list refreshed');
@@ -175,13 +194,18 @@ const Dashboard = () => {
   };
 
   const handleDeleteBot = async (botId) => {
-    if (window.confirm('Are you sure you want to delete this bot?')) {
-      const token = await getIdToken();
-      if (token) {
-        setAuthToken(token);
-        await botsService.deleteBot(botId);
-        await fetchBots();
-      }
+    const token = await getIdToken();
+    if (token) {
+      setAuthToken(token);
+      await botsService.deleteBot(botId);
+      await fetchBots();
+      setDialogState({
+        isOpen: true,
+        type: 'success',
+        title: 'Bot Deleted',
+        message: 'Your bot has been permanently deleted.',
+        onConfirm: null
+      });
     }
   };
 
@@ -242,7 +266,7 @@ const Dashboard = () => {
                 setSelectedBot(bot);
                 setShowEditModal(true);
               }}
-              onDelete={handleDeleteBot}
+              onDelete={(botId) => setDeleteBotId(botId)}
               onShowEmbed={(bot) => {
                 setSelectedBot(bot);
                 setShowEmbedModal(true);
@@ -301,6 +325,32 @@ const Dashboard = () => {
           setShowModal={setShowEmbedModal}
         />
       )}
+
+      {/* Success/Alert Dialog */}
+      <ConfirmDialog
+        isOpen={dialogState.isOpen}
+        onClose={() => setDialogState({ ...dialogState, isOpen: false })}
+        onConfirm={dialogState.onConfirm}
+        title={dialogState.title}
+        message={dialogState.message}
+        type={dialogState.type}
+      />
+
+      {/* Delete Bot Confirmation */}
+      <ConfirmDialog
+        isOpen={deleteBotId !== null}
+        onClose={() => setDeleteBotId(null)}
+        onConfirm={() => {
+          handleDeleteBot(deleteBotId);
+          setDeleteBotId(null);
+        }}
+        title="Delete Bot?"
+        message="Are you sure you want to permanently delete this bot? This action cannot be undone and will remove all associated data, configurations, and knowledge base documents."
+        confirmText="Delete Bot"
+        cancelText="Cancel"
+        type="warning"
+        danger={true}
+      />
     </div>
   );
 };

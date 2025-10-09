@@ -5,6 +5,7 @@ import { useNotification } from '../context/NotificationContext';
 import { setAuthToken } from '../services/api';
 import axios from 'axios';
 import UploadProgressBar from './UploadProgressBar';
+import ConfirmDialog from './ConfirmDialog';
 import { parseUploadError, parseJobError } from '../utils/errorHandler';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
@@ -20,6 +21,7 @@ const KnowledgeBaseModal = ({ bot, setShowModal }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [dragActive, setDragActive] = useState(false);
   const [uploadJobs, setUploadJobs] = useState([]); // Track active upload jobs
+  const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, documentId: null });
 
   useEffect(() => {
     fetchKnowledgeBase();
@@ -260,8 +262,6 @@ const KnowledgeBaseModal = ({ bot, setShowModal }) => {
   };
 
   const handleDelete = async (documentId) => {
-    if (!window.confirm('Are you sure you want to delete this document? This will also remove it from Pinecone.')) return;
-
     try {
       const token = await getIdToken();
       const response = await axios.delete(`${API_URL}/api/knowledge/${bot.id}/document/${documentId}`, {
@@ -488,7 +488,7 @@ const KnowledgeBaseModal = ({ bot, setShowModal }) => {
                       </div>
                     </div>
                     <button
-                      onClick={() => handleDelete(doc._id)}
+                      onClick={() => setConfirmDialog({ isOpen: true, documentId: doc._id })}
                       className="p-2 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
                       title="Delete document"
                     >
@@ -501,6 +501,19 @@ const KnowledgeBaseModal = ({ bot, setShowModal }) => {
           </div>
         </div>
       </div>
+
+      {/* Confirm Delete Dialog */}
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        onClose={() => setConfirmDialog({ isOpen: false, documentId: null })}
+        onConfirm={() => handleDelete(confirmDialog.documentId)}
+        title="Delete Document?"
+        message="Are you sure you want to delete this document? This will permanently remove it from your knowledge base and delete all associated vectors from Pinecone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        type="warning"
+        danger={true}
+      />
     </div>
   );
 };
