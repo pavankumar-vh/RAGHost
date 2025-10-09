@@ -25,13 +25,15 @@
 | **Backend API** | [raghost-pcgw.onrender.com](https://raghost-pcgw.onrender.com/health) | ✅ Live |
 | **Documentation** | In-app at `/docs` tab | ✅ Available |
 
-### Quick Test
-Try the live demo:
-1. Visit [rag-host.vercel.app](https://rag-host.vercel.app)
-2. Sign up or login
-3. Create your first bot
-4. Upload documents
-5. Chat with your AI assistant!
+### 🚀 Quick Test
+
+**Try the live demo:**
+
+1. **Visit** [rag-host.vercel.app](https://rag-host.vercel.app)
+2. **Sign up** or login
+3. **Create** your first bot
+4. **Upload** documents
+5. **Chat** with your AI assistant!
 
 </div>
 
