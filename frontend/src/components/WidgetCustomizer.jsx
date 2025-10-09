@@ -363,7 +363,7 @@ const WidgetCustomizer = ({ bot, onClose }) => {
       </div>
       
       <div class="raghost-watermark">
-        Powered by <a href="https://raghost.com" target="_blank">RAGhost</a>
+        Powered by <a href="https://rag-host.vercel.app" target="_blank">RAGhost</a>
       </div>
     </div>
   </div>

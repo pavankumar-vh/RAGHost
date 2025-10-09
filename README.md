@@ -699,11 +699,11 @@ Each template supports these configuration options:
 
 ```javascript
 window.raghostConfig = {
-  botId: 'your-bot-id',              // Required: Your bot ID
-  apiUrl: 'https://api.raghost.com', // Required: API endpoint
-  botName: 'Support Bot',            // Bot display name
-  botType: 'Support',                // Bot type
-  color: 'pink',                     // Theme: pink, yellow, blue
+  botId: 'your-bot-id',                         // Required: Your bot ID
+  apiUrl: 'https://raghost-pcgw.onrender.com',  // Required: API endpoint
+  botName: 'Support Bot',                       // Bot display name
+  botType: 'Support',                           // Bot type
+  color: 'pink',                                // Theme: pink, yellow, blue
   
   // Template-specific options
   position: 'bottom-right',          // Widget position
