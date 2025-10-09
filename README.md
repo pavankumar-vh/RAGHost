@@ -29,11 +29,11 @@
 
 **Try the live demo:**
 
-1. **Visit** [rag-host.vercel.app](https://rag-host.vercel.app)
-2. **Sign up** or login
-3. **Create** your first bot
-4. **Upload** documents
-5. **Chat** with your AI assistant!
+**Visit** [rag-host.vercel.app](https://rag-host.vercel.app)
+**Sign up** or login
+**Create** your first bot
+**Upload** documents
+**Chat** with your AI assistant!
 
 </div>
 
