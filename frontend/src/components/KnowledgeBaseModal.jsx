@@ -125,7 +125,10 @@ const KnowledgeBaseModal = ({ bot, setShowModal }) => {
         }
       );
 
+      console.log('📤 Upload response:', response.data);
+      
       const { jobId, filename } = response.data.data;
+      console.log('📋 Job ID:', jobId, 'Filename:', filename);
       
       // Add job to tracking list
       const newJob = {
@@ -134,7 +137,13 @@ const KnowledgeBaseModal = ({ bot, setShowModal }) => {
         status: 'processing',
         progress: { percentage: 10, message: 'Upload started...' },
       };
-      setUploadJobs(prev => [...prev, newJob]);
+      console.log('➕ Adding job to tracking:', newJob);
+      setUploadJobs(prev => {
+        console.log('📊 Current jobs:', prev);
+        const updated = [...prev, newJob];
+        console.log('📊 Updated jobs:', updated);
+        return updated;
+      });
       
       setSuccess('Document uploaded! Processing in background...');
       setSelectedFile(null);
@@ -152,24 +161,29 @@ const KnowledgeBaseModal = ({ bot, setShowModal }) => {
 
   // Poll job status every 2 seconds
   const pollJobStatus = async (jobId, token) => {
+    console.log('🔄 Starting to poll job:', jobId);
     const maxAttempts = 150; // 5 minutes max (150 * 2 seconds)
     let attempts = 0;
 
     const poll = async () => {
       try {
+        console.log(`🔍 Polling attempt ${attempts + 1} for job ${jobId}`);
         const response = await axios.get(
           `${API_URL}/api/knowledge/${bot.id}/job/${jobId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
         const jobData = response.data.data;
+        console.log('📊 Job status update:', jobData);
 
         // Update job in list
-        setUploadJobs(prev =>
-          prev.map(job =>
+        setUploadJobs(prev => {
+          const updated = prev.map(job =>
             job.jobId === jobId ? { ...job, ...jobData } : job
-          )
-        );
+          );
+          console.log('📊 Jobs after update:', updated);
+          return updated;
+        });
 
         // If completed or failed, stop polling
         if (jobData.status === 'completed' || jobData.status === 'failed') {
@@ -290,11 +304,13 @@ const KnowledgeBaseModal = ({ bot, setShowModal }) => {
           {uploadJobs.length > 0 && (
             <div className="mb-6">
               <h3 className="text-sm font-semibold text-gray-400 mb-3">Processing Documents</h3>
-              {uploadJobs.map((job) => (
-                <UploadProgressBar key={job.jobId} job={job} />
-              ))}
+              {uploadJobs.map((job) => {
+                console.log('🎨 Rendering progress bar for job:', job);
+                return <UploadProgressBar key={job.jobId} job={job} />;
+              })}
             </div>
           )}
+          {uploadJobs.length === 0 && console.log('⚠️ No upload jobs to display')}
 
           {/* Upload Section */}
           <div className="mb-8 p-6 bg-black/20 rounded-2xl border border-gray-800/50">

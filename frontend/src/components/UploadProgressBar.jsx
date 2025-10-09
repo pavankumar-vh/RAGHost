@@ -2,7 +2,12 @@ import React from 'react';
 import { Loader2, CheckCircle2, XCircle, FileText } from 'lucide-react';
 
 const UploadProgressBar = ({ job }) => {
-  if (!job) return null;
+  console.log('🎨 UploadProgressBar rendering with job:', job);
+  
+  if (!job) {
+    console.log('⚠️ No job provided to UploadProgressBar');
+    return null;
+  }
 
   const getStatusIcon = () => {
     switch (job.status) {
@@ -64,8 +69,8 @@ const UploadProgressBar = ({ job }) => {
         <div className="flex items-center gap-3">
           <FileText size={18} className="text-gray-400" />
           <div>
-            <p className="font-medium text-sm">{job.filename}</p>
-            <p className="text-xs text-gray-500">{job.fileType.toUpperCase()}</p>
+            <p className="font-medium text-sm">{job.filename || 'Unknown file'}</p>
+            <p className="text-xs text-gray-500">{job.fileType ? job.fileType.toUpperCase() : 'FILE'}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
