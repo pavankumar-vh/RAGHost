@@ -67,11 +67,26 @@ export const verifyToken = async (idToken) => {
   if (!firebaseInitialized) {
     throw new Error('Firebase is not initialized. Please configure Firebase credentials.');
   }
+  
   try {
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    // Verify token with checkRevoked option to ensure token hasn't been revoked
+    const decodedToken = await admin.auth().verifyIdToken(idToken, true);
+    
+    // Additional validation: Check if token is not expired
+    const currentTime = Math.floor(Date.now() / 1000);
+    if (decodedToken.exp < currentTime) {
+      throw new Error('Token has expired');
+    }
+    
+    // Check if token was issued in the future (clock skew attack)
+    if (decodedToken.iat > currentTime + 60) { // Allow 60 seconds tolerance
+      throw new Error('Token issued in the future');
+    }
+    
     return decodedToken;
   } catch (error) {
-    throw new Error('Invalid or expired token');
+    console.error('Token verification failed:', error.message);
+    throw new Error(`Invalid or expired token: ${error.message}`);
   }
 };
 

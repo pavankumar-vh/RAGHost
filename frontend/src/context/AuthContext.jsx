@@ -98,7 +98,15 @@ export const AuthProvider = ({ children }) => {
   // Get ID Token
   const getIdToken = async () => {
     if (currentUser) {
-      return await currentUser.getIdToken();
+      try {
+        // Force token refresh to ensure it's valid
+        return await currentUser.getIdToken(true);
+      } catch (error) {
+        console.error('Error getting ID token:', error);
+        // If token refresh fails, user might be logged out
+        await logout();
+        return null;
+      }
     }
     return null;
   };
@@ -115,6 +123,14 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
       if (user) {
         console.log('✅ User authenticated:', user.email);
+        
+        // Validate token on auth state change
+        user.getIdToken(true).catch((error) => {
+          console.error('Token validation failed:', error);
+          signOut(auth);
+        });
+      } else {
+        console.log('❌ No user authenticated');
       }
     }, (error) => {
       console.error('Auth state change error:', error);

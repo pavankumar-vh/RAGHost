@@ -10,12 +10,35 @@ const api = axios.create({
   },
 });
 
+// Add response interceptor to handle token expiration
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Token expired or invalid
+      console.error('❌ Authentication error: Token expired or invalid');
+      
+      // Clear the token
+      delete api.defaults.headers.common['Authorization'];
+      
+      // Redirect to login if we're not already there
+      if (window.location.pathname !== '/login') {
+        console.log('Redirecting to login due to auth error...');
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 // Add auth token to requests
 export const setAuthToken = (token) => {
   if (token) {
     api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    console.log('✅ Auth token set for API requests');
   } else {
     delete api.defaults.headers.common['Authorization'];
+    console.log('❌ Auth token removed from API requests');
   }
 };
 
