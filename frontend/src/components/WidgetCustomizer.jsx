@@ -5,6 +5,28 @@ const WidgetCustomizer = ({ bot, onClose }) => {
   const [copied, setCopied] = useState(false);
   const iframeRef = useRef(null);
 
+  // Add custom scrollbar styles
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      .customizer-scrollbar::-webkit-scrollbar {
+        width: 8px;
+      }
+      .customizer-scrollbar::-webkit-scrollbar-track {
+        background: #1a1a1a;
+      }
+      .customizer-scrollbar::-webkit-scrollbar-thumb {
+        background: #4a4a4a;
+        border-radius: 4px;
+      }
+      .customizer-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #5a5a5a;
+      }
+    `;
+    document.head.appendChild(style);
+    return () => document.head.removeChild(style);
+  }, []);
+
   // Customization state
   const [config, setConfig] = useState({
     // Colors
@@ -410,22 +432,22 @@ const WidgetCustomizer = ({ bot, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-900/50 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-7xl max-h-[90vh] overflow-hidden flex flex-col">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-[#0A0A0A] border border-gray-800 rounded-2xl shadow-2xl w-full max-w-7xl max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+        <div className="p-6 border-b border-gray-800 flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <Sparkles className="w-6 h-6 text-purple-600" />
+            <h2 className="text-2xl font-bold text-gray-100 flex items-center gap-2">
+              <Sparkles className="w-6 h-6 text-purple-400" />
               Widget Customizer
             </h2>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="text-sm text-gray-400 mt-1">
               Customize your chat widget with live preview
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            className="p-2 rounded-lg hover:bg-gray-800 transition-colors text-gray-400 hover:text-white"
           >
             <X className="w-5 h-5" />
           </button>
@@ -434,39 +456,39 @@ const WidgetCustomizer = ({ bot, onClose }) => {
         {/* Content */}
         <div className="flex-1 overflow-hidden flex">
           {/* Left Panel - Controls */}
-          <div className="w-[400px] border-r border-gray-200 overflow-y-auto p-6 space-y-6">
+          <div className="w-[400px] border-r border-gray-800 overflow-y-auto p-6 space-y-6 bg-[#0F0F0F] customizer-scrollbar">
             {/* Colors */}
             <div>
-              <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                <Palette className="w-4 h-4" />
+              <h3 className="text-sm font-semibold text-gray-100 mb-3 flex items-center gap-2">
+                <Palette className="w-4 h-4 text-purple-400" />
                 Colors
               </h3>
               <div className="space-y-3">
                 <div>
-                  <label className="text-xs text-gray-600 block mb-1">Primary Color</label>
+                  <label className="text-xs text-gray-400 block mb-1">Primary Color</label>
                   <input
                     type="color"
                     value={config.primaryColor}
                     onChange={(e) => setConfig({...config, primaryColor: e.target.value})}
-                    className="w-full h-10 rounded-lg border border-gray-300 cursor-pointer"
+                    className="w-full h-10 rounded-lg border border-gray-700 cursor-pointer bg-gray-800"
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-gray-600 block mb-1">Secondary Color</label>
+                  <label className="text-xs text-gray-400 block mb-1">Secondary Color</label>
                   <input
                     type="color"
                     value={config.secondaryColor}
                     onChange={(e) => setConfig({...config, secondaryColor: e.target.value})}
-                    className="w-full h-10 rounded-lg border border-gray-300 cursor-pointer"
+                    className="w-full h-10 rounded-lg border border-gray-700 cursor-pointer bg-gray-800"
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-gray-600 block mb-1">Background Color</label>
+                  <label className="text-xs text-gray-400 block mb-1">Background Color</label>
                   <input
                     type="color"
                     value={config.backgroundColor}
                     onChange={(e) => setConfig({...config, backgroundColor: e.target.value})}
-                    className="w-full h-10 rounded-lg border border-gray-300 cursor-pointer"
+                    className="w-full h-10 rounded-lg border border-gray-700 cursor-pointer bg-gray-800"
                   />
                 </div>
               </div>
@@ -474,13 +496,13 @@ const WidgetCustomizer = ({ bot, onClose }) => {
 
             {/* Size */}
             <div>
-              <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                <Layout className="w-4 h-4" />
+              <h3 className="text-sm font-semibold text-gray-100 mb-3 flex items-center gap-2">
+                <Layout className="w-4 h-4 text-purple-400" />
                 Size
               </h3>
               <div className="space-y-3">
                 <div>
-                  <label className="text-xs text-gray-600 block mb-1">
+                  <label className="text-xs text-gray-400 block mb-1">
                     Width: {config.width}px
                   </label>
                   <input
@@ -489,11 +511,11 @@ const WidgetCustomizer = ({ bot, onClose }) => {
                     max="500"
                     value={config.width}
                     onChange={(e) => setConfig({...config, width: parseInt(e.target.value)})}
-                    className="w-full"
+                    className="w-full accent-purple-500"
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-gray-600 block mb-1">
+                  <label className="text-xs text-gray-400 block mb-1">
                     Height: {config.height}px
                   </label>
                   <input
@@ -502,11 +524,11 @@ const WidgetCustomizer = ({ bot, onClose }) => {
                     max="700"
                     value={config.height}
                     onChange={(e) => setConfig({...config, height: parseInt(e.target.value)})}
-                    className="w-full"
+                    className="w-full accent-purple-500"
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-gray-600 block mb-1">
+                  <label className="text-xs text-gray-400 block mb-1">
                     Button Size: {config.buttonSize}px
                   </label>
                   <input
@@ -515,7 +537,7 @@ const WidgetCustomizer = ({ bot, onClose }) => {
                     max="80"
                     value={config.buttonSize}
                     onChange={(e) => setConfig({...config, buttonSize: parseInt(e.target.value)})}
-                    className="w-full"
+                    className="w-full accent-purple-500"
                   />
                 </div>
               </div>
@@ -523,7 +545,7 @@ const WidgetCustomizer = ({ bot, onClose }) => {
 
             {/* Position */}
             <div>
-              <h3 className="text-sm font-semibold text-gray-900 mb-3">Position</h3>
+              <h3 className="text-sm font-semibold text-gray-100 mb-3">Position</h3>
               <div className="grid grid-cols-3 gap-2">
                 {['bottom-left', 'bottom-center', 'bottom-right'].map(pos => (
                   <button
@@ -531,8 +553,8 @@ const WidgetCustomizer = ({ bot, onClose }) => {
                     onClick={() => setConfig({...config, position: pos})}
                     className={`p-3 rounded-lg border-2 text-xs font-medium transition-all ${
                       config.position === pos
-                        ? 'border-purple-600 bg-purple-50 text-purple-700'
-                        : 'border-gray-200 hover:border-gray-300'
+                        ? 'border-purple-500 bg-purple-500/20 text-purple-300'
+                        : 'border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600 hover:bg-gray-800'
                     }`}
                   >
                     {pos.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
@@ -543,7 +565,7 @@ const WidgetCustomizer = ({ bot, onClose }) => {
 
             {/* Button Style */}
             <div>
-              <h3 className="text-sm font-semibold text-gray-900 mb-3">Button Style</h3>
+              <h3 className="text-sm font-semibold text-gray-100 mb-3">Button Style</h3>
               <div className="grid grid-cols-3 gap-2">
                 {['circle', 'rounded-square', 'square'].map(style => (
                   <button
@@ -551,8 +573,8 @@ const WidgetCustomizer = ({ bot, onClose }) => {
                     onClick={() => setConfig({...config, buttonStyle: style})}
                     className={`p-3 rounded-lg border-2 text-xs font-medium transition-all ${
                       config.buttonStyle === style
-                        ? 'border-purple-600 bg-purple-50 text-purple-700'
-                        : 'border-gray-200 hover:border-gray-300'
+                        ? 'border-purple-500 bg-purple-500/20 text-purple-300'
+                        : 'border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600 hover:bg-gray-800'
                     }`}
                   >
                     {style.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
@@ -563,7 +585,7 @@ const WidgetCustomizer = ({ bot, onClose }) => {
 
             {/* Border Radius */}
             <div>
-              <h3 className="text-sm font-semibold text-gray-900 mb-3">
+              <h3 className="text-sm font-semibold text-gray-100 mb-3">
                 Border Radius: {config.borderRadius}px
               </h3>
               <input
@@ -572,20 +594,20 @@ const WidgetCustomizer = ({ bot, onClose }) => {
                 max="32"
                 value={config.borderRadius}
                 onChange={(e) => setConfig({...config, borderRadius: parseInt(e.target.value)})}
-                className="w-full"
+                className="w-full accent-purple-500"
               />
             </div>
 
             {/* Font Family */}
             <div>
-              <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                <Type className="w-4 h-4" />
+              <h3 className="text-sm font-semibold text-gray-100 mb-3 flex items-center gap-2">
+                <Type className="w-4 h-4 text-purple-400" />
                 Font Family
               </h3>
               <select
                 value={config.fontFamily}
                 onChange={(e) => setConfig({...config, fontFamily: e.target.value})}
-                className="w-full p-2 rounded-lg border border-gray-300 text-sm"
+                className="w-full p-2 rounded-lg border border-gray-700 bg-gray-800 text-gray-200 text-sm focus:border-purple-500 focus:outline-none"
               >
                 <option value="Inter, sans-serif">Inter</option>
                 <option value="Roboto, sans-serif">Roboto</option>
@@ -598,7 +620,7 @@ const WidgetCustomizer = ({ bot, onClose }) => {
 
             {/* Animation Speed */}
             <div>
-              <h3 className="text-sm font-semibold text-gray-900 mb-3">Animation Speed</h3>
+              <h3 className="text-sm font-semibold text-gray-100 mb-3">Animation Speed</h3>
               <div className="grid grid-cols-3 gap-2">
                 {['slow', 'normal', 'fast'].map(speed => (
                   <button
@@ -606,8 +628,8 @@ const WidgetCustomizer = ({ bot, onClose }) => {
                     onClick={() => setConfig({...config, animationSpeed: speed})}
                     className={`p-3 rounded-lg border-2 text-xs font-medium transition-all ${
                       config.animationSpeed === speed
-                        ? 'border-purple-600 bg-purple-50 text-purple-700'
-                        : 'border-gray-200 hover:border-gray-300'
+                        ? 'border-purple-500 bg-purple-500/20 text-purple-300'
+                        : 'border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600 hover:bg-gray-800'
                     }`}
                   >
                     {speed.charAt(0).toUpperCase() + speed.slice(1)}
@@ -618,23 +640,23 @@ const WidgetCustomizer = ({ bot, onClose }) => {
 
             {/* Welcome Message */}
             <div>
-              <h3 className="text-sm font-semibold text-gray-900 mb-3">Welcome Message</h3>
+              <h3 className="text-sm font-semibold text-gray-100 mb-3">Welcome Message</h3>
               <textarea
                 value={config.welcomeMessage}
                 onChange={(e) => setConfig({...config, welcomeMessage: e.target.value})}
                 rows={3}
-                className="w-full p-3 rounded-lg border border-gray-300 text-sm resize-none"
+                className="w-full p-3 rounded-lg border border-gray-700 bg-gray-800 text-gray-200 text-sm resize-none focus:border-purple-500 focus:outline-none placeholder-gray-500"
                 placeholder="Enter welcome message..."
               />
             </div>
 
             {/* Show Watermark */}
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-              <span className="text-sm font-medium text-gray-700">Show Watermark</span>
+            <div className="flex items-center justify-between p-3 bg-gray-800/50 border border-gray-700 rounded-lg">
+              <span className="text-sm font-medium text-gray-200">Show Watermark</span>
               <button
                 onClick={() => setConfig({...config, showWatermark: !config.showWatermark})}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  config.showWatermark ? 'bg-purple-600' : 'bg-gray-300'
+                  config.showWatermark ? 'bg-purple-500' : 'bg-gray-600'
                 }`}
               >
                 <span
@@ -647,12 +669,12 @@ const WidgetCustomizer = ({ bot, onClose }) => {
           </div>
 
           {/* Right Panel - Live Preview */}
-          <div className="flex-1 bg-gradient-to-br from-gray-50 to-gray-100 p-8 flex flex-col">
+          <div className="flex-1 bg-gradient-to-br from-gray-900 to-black p-8 flex flex-col">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Live Preview</h3>
+              <h3 className="text-lg font-semibold text-gray-100">Live Preview</h3>
               <button
                 onClick={handleCopyCode}
-                className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium"
+                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all text-sm font-medium shadow-lg shadow-purple-500/20"
               >
                 {copied ? (
                   <>
@@ -668,7 +690,7 @@ const WidgetCustomizer = ({ bot, onClose }) => {
               </button>
             </div>
 
-            <div className="flex-1 bg-white rounded-xl shadow-lg overflow-hidden border-2 border-gray-200">
+            <div className="flex-1 bg-gray-800 rounded-xl shadow-2xl overflow-hidden border-2 border-gray-700">
               <iframe
                 ref={iframeRef}
                 className="w-full h-full"
@@ -676,7 +698,7 @@ const WidgetCustomizer = ({ bot, onClose }) => {
               />
             </div>
 
-            <p className="text-xs text-gray-500 mt-4 text-center">
+            <p className="text-xs text-gray-400 mt-4 text-center">
               💡 Tip: Changes are reflected instantly in the preview
             </p>
           </div>
