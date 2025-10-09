@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RAGhost Widget - Template Showcase</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      color: white;
+      font-size: 48px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 16px;
+      text-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .subtitle {
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 20px;
+      text-align: center;
+      margin-bottom: 60px;
+    }
+
+    .templates-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+      margin-bottom: 60px;
+    }
+
+    .template-card {
+      background: white;
+      border-radius: 20px;
+      padding: 32px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .template-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .template-card.active {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .template-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .template-card.active .template-icon {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .template-name {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .template-description {
+      font-size: 15px;
+      line-height: 1.6;
+      opacity: 0.8;
+      margin-bottom: 20px;
+    }
+
+    .template-preview {
+      width: 100%;
+      height: 200px;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-top: 20px;
+      position: relative;
+    }
+
+    .template-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .select-btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .template-card.active .select-btn {
+      background: white;
+      color: #667eea;
+    }
+
+    .select-btn:hover {
+      transform: scale(1.02);
+    }
+
+    .select-btn:active {
+      transform: scale(0.98);
+    }
+
+    .info-section {
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      margin-bottom: 40px;
+    }
+
+    .info-section h2 {
+      font-size: 32px;
+      color: #667eea;
+      margin-bottom: 20px;
+    }
+
+    .info-section p {
+      font-size: 16px;
+      line-height: 1.8;
+      color: #666;
+      margin-bottom: 16px;
+    }
+
+    .code-block {
+      background: #1a1a1a;
+      color: #0ff;
+      padding: 24px;
+      border-radius: 12px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      overflow-x: auto;
+      margin: 20px 0;
+    }
+
+    .feature-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin: 30px 0;
+    }
+
+    .feature-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .feature-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 18px;
+    }
+
+    .feature-text {
+      flex: 1;
+    }
+
+    .feature-text h3 {
+      font-size: 16px;
+      color: #333;
+      margin-bottom: 4px;
+    }
+
+    .feature-text p {
+      font-size: 14px;
+      color: #666;
+      margin: 0;
+    }
+
+    .current-template {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: white;
+      padding: 16px 24px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      font-weight: 600;
+      z-index: 1000;
+    }
+
+    .current-template .label {
+      font-size: 12px;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .current-template .name {
+      font-size: 18px;
+      color: #667eea;
+      margin-top: 4px;
+    }
+
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 32px;
+      }
+
+      .subtitle {
+        font-size: 16px;
+      }
+
+      .templates-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .current-template {
+        position: static;
+        margin-bottom: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="current-template">
+    <div class="label">Active Template</div>
+    <div class="name" id="activeTemplate">Modern Gradient</div>
+  </div>
+
+  <div class="container">
+    <h1>🤖 RAGhost Widget Templates</h1>
+    <p class="subtitle">Choose your perfect chatbot design - All floating bubble style with beautiful animations</p>
+
+    <div class="templates-grid">
+      <!-- Template 1: Modern Gradient -->
+      <div class="template-card active" data-template="modern-gradient">
+        <div class="template-icon">🎨</div>
+        <div class="template-name">Modern Gradient</div>
+        <p class="template-description">
+          Sleek design with beautiful gradient backgrounds and glass-like effects. Perfect for modern websites.
+        </p>
+        <button class="select-btn" onclick="selectTemplate('modern-gradient', this)">
+          ✓ Selected
+        </button>
+      </div>
+
+      <!-- Template 2: Glass Morphism -->
+      <div class="template-card" data-template="glass-morphism">
+        <div class="template-icon">💎</div>
+        <div class="template-name">Glass Morphism</div>
+        <p class="template-description">
+          Stunning frosted glass effect with backdrop blur. Creates a premium, elegant appearance.
+        </p>
+        <button class="select-btn" onclick="selectTemplate('glass-morphism', this)">
+          Select Template
+        </button>
+      </div>
+
+      <!-- Template 3: Minimal Dark -->
+      <div class="template-card" data-template="minimal-dark">
+        <div class="template-icon">🌙</div>
+        <div class="template-name">Minimal Dark</div>
+        <p class="template-description">
+          Clean, minimal dark theme with sharp borders. Great for tech-focused sites and apps.
+        </p>
+        <button class="select-btn" onclick="selectTemplate('minimal-dark', this)">
+          Select Template
+        </button>
+      </div>
+
+      <!-- Template 4: Neon Glow -->
+      <div class="template-card" data-template="neon-glow">
+        <div class="template-icon">⚡</div>
+        <div class="template-name">Neon Glow</div>
+        <p class="template-description">
+          Cyberpunk-inspired design with neon cyan and magenta glows. Bold and eye-catching.
+        </p>
+        <button class="select-btn" onclick="selectTemplate('neon-glow', this)">
+          Select Template
+        </button>
+      </div>
+
+      <!-- Template 5: Soft Light -->
+      <div class="template-card" data-template="soft-light">
+        <div class="template-icon">☀️</div>
+        <div class="template-name">Soft Light</div>
+        <p class="template-description">
+          Light theme with soft shadows and gentle gradients. Clean and professional look.
+        </p>
+        <button class="select-btn" onclick="selectTemplate('soft-light', this)">
+          Select Template
+        </button>
+      </div>
+
+      <!-- Template 6: Corporate -->
+      <div class="template-card" data-template="corporate">
+        <div class="template-icon">🏢</div>
+        <div class="template-name">Corporate</div>
+        <p class="template-description">
+          Professional business design with classic blue. Perfect for corporate websites.
+        </p>
+        <button class="select-btn" onclick="selectTemplate('corporate', this)">
+          Select Template
+        </button>
+      </div>
+    </div>
+
+    <!-- Features Section -->
+    <div class="info-section">
+      <h2>✨ Amazing Features</h2>
+      <div class="feature-list">
+        <div class="feature-item">
+          <div class="feature-icon">💬</div>
+          <div class="feature-text">
+            <h3>Markdown Support</h3>
+            <p>Bold, italic, code blocks, links - all beautifully formatted</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🎭</div>
+          <div class="feature-text">
+            <h3>Smooth Animations</h3>
+            <p>Butter-smooth open/close animations with scaling effects</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">📱</div>
+          <div class="feature-text">
+            <h3>Fully Responsive</h3>
+            <p>Works perfectly on desktop, tablet, and mobile devices</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🎯</div>
+          <div class="feature-text">
+            <h3>Floating Bubble</h3>
+            <p>Bottom-right corner placement, non-intrusive design</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">⚙️</div>
+          <div class="feature-text">
+            <h3>Easy Integration</h3>
+            <p>Just 2 lines of code to add to your website</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🔒</div>
+          <div class="feature-text">
+            <h3>Session Management</h3>
+            <p>Maintains conversation context across page reloads</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Integration Guide -->
+    <div class="info-section">
+      <h2>🚀 How to Integrate</h2>
+      <p>Add these two lines to your website's HTML, just before the closing <code>&lt;/body&gt;</code> tag:</p>
+      
+      <div class="code-block">
+&lt;script&gt;
+  window.RAGhostConfig = {
+    botId: 'YOUR_BOT_ID',
+    apiUrl: 'https://raghost-pcgw.onrender.com',
+    botName: 'AI Assistant',
+    template: 'modern-gradient', // Choose: modern-gradient, glass-morphism, minimal-dark, neon-glow, soft-light, corporate
+    welcomeMessage: 'Hi! How can I help you today? 👋'
+  };
+&lt;/script&gt;
+&lt;script src="https://rag-host.vercel.app/widget/widget-new.js"&gt;&lt;/script&gt;
+      </div>
+
+      <p><strong>That's it!</strong> Your beautiful floating chatbot will appear in the bottom-right corner.</p>
+
+      <h2 style="margin-top: 40px;">🎨 Customize Template</h2>
+      <p>Simply change the <code>template</code> value in the config:</p>
+      <ul style="list-style: none; padding: 0;">
+        <li style="padding: 8px 0;">✨ <code>modern-gradient</code> - Gradient backgrounds with glass effects</li>
+        <li style="padding: 8px 0;">💎 <code>glass-morphism</code> - Frosted glass with backdrop blur</li>
+        <li style="padding: 8px 0;">🌙 <code>minimal-dark</code> - Clean dark theme</li>
+        <li style="padding: 8px 0;">⚡ <code>neon-glow</code> - Cyberpunk neon style</li>
+        <li style="padding: 8px 0;">☀️ <code>soft-light</code> - Light theme with soft shadows</li>
+        <li style="padding: 8px 0;">🏢 <code>corporate</code> - Professional business look</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Widget Configuration -->
+  <script>
+    // This will be dynamically updated based on template selection
+    window.RAGhostConfig = {
+      botId: 'demo',
+      apiUrl: 'https://raghost-pcgw.onrender.com',
+      botName: 'AI Assistant',
+      template: 'modern-gradient',
+      welcomeMessage: 'Hi! How can I help you today? 👋'
+    };
+  </script>
+
+  <!-- Load Widget -->
+  <script src="./widget-new.js"></script>
+
+  <script>
+    // Template selection functionality
+    function selectTemplate(templateName, button) {
+      // Update active state
+      document.querySelectorAll('.template-card').forEach(card => {
+        card.classList.remove('active');
+        card.querySelector('.select-btn').textContent = 'Select Template';
+      });
+      
+      const card = button.closest('.template-card');
+      card.classList.add('active');
+      button.textContent = '✓ Selected';
+
+      // Update active template display
+      document.getElementById('activeTemplate').textContent = 
+        templateName.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+
+      // Reload widget with new template
+      window.RAGhostConfig.template = templateName;
+      
+      // Remove old widget
+      const oldWidget = document.querySelector('.raghost-widget-container');
+      if (oldWidget) {
+        oldWidget.remove();
+      }
+
+      // Reload widget script
+      const oldScript = document.querySelector('script[src*="widget-new.js"]');
+      if (oldScript) {
+        oldScript.remove();
+      }
+
+      const script = document.createElement('script');
+      script.src = './widget-new.js?t=' + Date.now();
+      document.body.appendChild(script);
+
+      // Show success message
+      setTimeout(() => {
+        if (window.RAGhostWidget) {
+          window.RAGhostWidget.open();
+        }
+      }, 500);
+    }
+  </script>
+</body>
+</html>
