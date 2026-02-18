@@ -26,11 +26,21 @@ export const getProfile = async (req, res) => {
  */
 export const updateProfile = async (req, res) => {
   try {
-    const { displayName, photoURL } = req.body;
+    const { displayName, photoURL, preferences } = req.body;
 
     const updateData = {};
-    if (displayName !== undefined) updateData.displayName = displayName.trim();
-    if (photoURL !== undefined)    updateData.photoURL = photoURL;
+    if (displayName   !== undefined) updateData.displayName  = displayName.trim();
+    if (photoURL      !== undefined) updateData.photoURL     = photoURL;
+    if (preferences   !== undefined) {
+      // Merge into existing preferences subdoc using dot-notation keys
+      const allowedPrefKeys = [
+        'avatarColor', 'avatarEmoji', 'avatarMode',
+        'emailNotifications', 'queryAlerts', 'weeklyDigest', 'compactSidebar',
+      ];
+      for (const key of allowedPrefKeys) {
+        if (preferences[key] !== undefined) updateData[`preferences.${key}`] = preferences[key];
+      }
+    }
 
     if (Object.keys(updateData).length === 0) {
       return res.status(400).json({ success: false, error: 'No valid fields to update' });

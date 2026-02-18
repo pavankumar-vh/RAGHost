@@ -116,11 +116,56 @@ const ProfileView = ({ bots = [] }) => {
   // Sync name from firebase on mount
   useEffect(() => { setDisplayName(currentUser?.displayName || ''); }, [currentUser]);
 
-  // Save prefs to localStorage whenever they change
-  useEffect(() => { localStorage.setItem('raghost_prefs', JSON.stringify(prefs)); }, [prefs]);
-  useEffect(() => { localStorage.setItem('raghost_avatar_color', avatarColor); }, [avatarColor]);
-  useEffect(() => { localStorage.setItem('raghost_avatar_emoji', avatarEmoji); }, [avatarEmoji]);
-  useEffect(() => { localStorage.setItem('raghost_avatar_mode', avatarMode); }, [avatarMode]);
+  // ── backend sync ──
+  const syncTimer = useRef(null);
+  const syncToBackend = (preferences) => {
+    clearTimeout(syncTimer.current);
+    syncTimer.current = setTimeout(async () => {
+      try {
+        const token = await getIdToken();
+        setAuthToken(token);
+        await userService.updateProfile({ preferences });
+      } catch (e) { console.warn('Preferences sync failed:', e.message); }
+    }, 600);
+  };
+
+  // Hydrate state from backend when profile loads
+  useEffect(() => {
+    if (!backendProfile) return;
+    const p = backendProfile.preferences || {};
+    if (p.avatarColor)             setAvatarColor(p.avatarColor);
+    if (p.avatarEmoji !== undefined) setAvatarEmoji(p.avatarEmoji || '');
+    if (p.avatarMode)              setAvatarMode(p.avatarMode);
+    setPrefs({
+      emailNotifications: p.emailNotifications ?? false,
+      queryAlerts:        p.queryAlerts        ?? false,
+      weeklyDigest:       p.weeklyDigest       ?? false,
+      compactSidebar:     p.compactSidebar     ?? false,
+    });
+  }, [backendProfile]);
+
+  // ── change handlers: update state + localStorage + backend ──
+  const handleAvatarColorChange = (color) => {
+    setAvatarColor(color);
+    localStorage.setItem('raghost_avatar_color', color);
+    syncToBackend({ avatarColor: color, avatarEmoji, avatarMode, ...prefs });
+  };
+  const handleAvatarEmojiChange = (emoji) => {
+    setAvatarEmoji(emoji);
+    localStorage.setItem('raghost_avatar_emoji', emoji);
+    syncToBackend({ avatarColor, avatarEmoji: emoji, avatarMode, ...prefs });
+  };
+  const handleAvatarModeChange = (mode) => {
+    setAvatarMode(mode);
+    localStorage.setItem('raghost_avatar_mode', mode);
+    syncToBackend({ avatarColor, avatarEmoji, avatarMode: mode, ...prefs });
+  };
+  const handlePrefChange = (key) => {
+    const updated = { ...prefs, [key]: !prefs[key] };
+    setPrefs(updated);
+    localStorage.setItem('raghost_prefs', JSON.stringify(updated));
+    syncToBackend({ avatarColor, avatarEmoji, avatarMode, ...updated });
+  };
 
   // ── derived stats ──
   const totalQueries = bots.reduce((s, b) => s + (b.totalQueries || 0), 0);
@@ -332,7 +377,7 @@ const ProfileView = ({ bots = [] }) => {
           <Field label="Avatar Style">
             <div className="flex gap-2">
               {[['initials', 'Initials'], ['emoji', 'Emoji'], ['url', 'Image URL']].map(([mode, label]) => (
-                <button key={mode} onClick={() => setAvatarMode(mode)}
+                <button key={mode} onClick={() => handleAvatarModeChange(mode)}
                   className={`flex-1 py-1.5 text-xs font-bold border-2 border-black transition-colors ${avatarMode === mode ? 'bg-nb-yellow' : 'bg-white hover:bg-gray-50'}`}>
                   {label}
                 </button>
@@ -344,7 +389,7 @@ const ProfileView = ({ bots = [] }) => {
             <Field label="Background Color">
               <div className="flex flex-wrap gap-2">
                 {AVATAR_COLORS.map(c => (
-                  <button key={c} onClick={() => setAvatarColor(c)}
+                  <button key={c} onClick={() => handleAvatarColorChange(c)}
                     className={`w-8 h-8 border-2 transition-all ${avatarColor === c ? 'border-black scale-110 shadow-nb-sm' : 'border-gray-300 hover:border-black'}`}
                     style={{ background: c }} />
                 ))}
@@ -356,7 +401,7 @@ const ProfileView = ({ bots = [] }) => {
             <Field label="Choose Emoji">
               <div className="flex flex-wrap gap-2 mb-2">
                 {EMOJI_OPTIONS.map(e => (
-                  <button key={e} onClick={() => setAvatarEmoji(e)}
+                  <button key={e} onClick={() => handleAvatarEmojiChange(e)}
                     className={`w-9 h-9 text-xl border-2 flex items-center justify-center transition-all ${avatarEmoji === e ? 'border-black bg-nb-yellow scale-110' : 'border-gray-300 hover:border-black bg-white'}`}>
                     {e}
                   </button>
@@ -364,7 +409,7 @@ const ProfileView = ({ bots = [] }) => {
               </div>
               <div className="flex flex-wrap gap-2">
                 {AVATAR_COLORS.map(c => (
-                  <button key={c} onClick={() => setAvatarColor(c)}
+                  <button key={c} onClick={() => handleAvatarColorChange(c)}
                     className={`w-6 h-6 border-2 ${avatarColor === c ? 'border-black scale-110' : 'border-gray-300 hover:border-black'}`}
                     style={{ background: c }} />
                 ))}
@@ -444,7 +489,7 @@ const ProfileView = ({ bots = [] }) => {
                 <p className="text-sm font-bold">{label}</p>
                 <p className="text-xs text-nb-muted">{description}</p>
               </div>
-              <button onClick={() => setPrefs(p => ({ ...p, [key]: !p[key] }))}
+              <button onClick={() => handlePrefChange(key)}
                 className={`relative w-10 h-5 border-2 border-black flex-shrink-0 transition-colors ${prefs[key] ? 'bg-nb-yellow' : 'bg-gray-200'}`}>
                 <span className={`absolute top-0 h-3 w-3 border-2 border-black bg-white transition-all ${prefs[key] ? 'left-4' : 'left-0'}`} />
               </button>
