@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { analyticsService, setAuthToken } from '../services/api';
-import { LineChart } from '@mui/x-charts/LineChart';
-import { BarChart } from '@mui/x-charts/BarChart';
+import { Line } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  LineElement, PointElement, LinearScale, CategoryScale,
+  Filler, Tooltip,
+} from 'chart.js';
 import {
   BarChart3,
   Bot,
@@ -13,6 +17,8 @@ import {
   Loader2,
   Activity
 } from 'lucide-react';
+
+ChartJS.register(LineElement, PointElement, LinearScale, CategoryScale, Filler, Tooltip);
 
 // Analytics View Component
 const AnalyticsView = ({ bots, loading }) => {
@@ -69,7 +75,7 @@ const AnalyticsView = ({ bots, loading }) => {
   }
 
   return (
-    <div className="space-y-6 max-w-6xl">
+    <div className="space-y-6 w-full">
       <div>
         <h2 className="text-2xl font-bold text-nb-text">Analytics Dashboard</h2>
         <p className="text-nb-muted text-sm mt-0.5">Comprehensive insights into your bot performance</p>
@@ -212,39 +218,58 @@ const AdvancedActivityChart = ({ dailyStats, metric }) => {
 
   const chartColor = metric === 'queries' ? '#3b82f6' : '#ec4899';
 
+  const chartData = {
+    labels: data.map(d => d.date),
+    datasets: [{
+      data: data.map(d => d.value),
+      borderColor: '#000',
+      borderWidth: 2,
+      backgroundColor: `${chartColor}12`,
+      fill: true,
+      tension: 0.4,
+      pointBackgroundColor: chartColor,
+      pointBorderColor: '#000',
+      pointBorderWidth: 2,
+      pointRadius: 4,
+      pointHoverRadius: 6,
+    }],
+  };
+
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#000',
+        titleColor: '#fff',
+        bodyColor: '#fff',
+        borderColor: '#000',
+        borderWidth: 2,
+        padding: 8,
+        displayColors: false,
+        callbacks: { label: item => `${item.parsed.y} ${metric}` },
+      },
+    },
+    scales: {
+      x: {
+        grid: { display: false },
+        border: { display: false },
+        ticks: { color: '#6B6B6B', font: { size: 11, weight: '600' } },
+      },
+      y: {
+        grid: { color: '#e5e5e5' },
+        border: { display: false },
+        ticks: { color: '#6B6B6B', font: { size: 11 }, maxTicksLimit: 5 },
+        beginAtZero: true,
+      },
+    },
+  };
+
   return (
     <div className="space-y-4">
       <div className="h-72 w-full">
-        <LineChart
-          xAxis={[{
-            scaleType: 'point',
-            data: data.map(d => d.date),
-          }]}
-          series={[
-            {
-              data: data.map(d => d.value),
-              label: metric === 'queries' ? 'Queries' : 'Tokens',
-              color: chartColor,
-              area: true,
-              showMark: true,
-            },
-          ]}
-          height={280}
-          margin={{ top: 20, bottom: 40, left: 60, right: 20 }}
-          grid={{ vertical: true, horizontal: true }}
-          sx={{
-            '& .MuiChartsAxis-line': { stroke: '#e5e5e5' },
-            '& .MuiChartsAxis-tick': { stroke: '#e5e5e5' },
-            '& .MuiChartsAxis-tickLabel': { fill: '#6B6B6B', fontSize: '11px' },
-            '& .MuiChartsGrid-line': { stroke: '#e5e5e5', strokeDasharray: '3 3' },
-            '& .MuiChartsLegend-label': { fill: '#0D0D0D', fontSize: '12px' },
-            '& .MuiLineElement-root': { strokeWidth: 2 },
-            '& .MuiAreaElement-root': { fillOpacity: 0.08 },
-          }}
-          slotProps={{
-            legend: { hidden: false, position: { vertical: 'top', horizontal: 'right' } }
-          }}
-        />
+        <Line data={chartData} options={chartOptions} />
       </div>
 
       {/* Stats Summary */}
