@@ -8,6 +8,9 @@ import {
   testBotConnection,
   getEmbedCode,
   getBotByIdPublic,
+  getEmbedHistory,
+  addEmbedSnapshot,
+  deleteEmbedSnapshot,
 } from '../controllers/botsController.js';
 import { authenticate } from '../middleware/auth.js';
 
@@ -39,5 +42,10 @@ router.post('/:id/test', testBotConnection);
 
 // Get embed code for bot
 router.get('/:id/embed', getEmbedCode);
+
+// Embed version history
+router.get('/:id/embed-history', getEmbedHistory);
+router.post('/:id/embed-history', addEmbedSnapshot);
+router.delete('/:id/embed-history/:snapId', deleteEmbedSnapshot);
 
 export default router;

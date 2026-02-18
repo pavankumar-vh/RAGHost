@@ -1,6 +1,59 @@
 import Bot from '../models/Bot.js';
 import { encrypt, decrypt } from '../utils/encryption.js';
 
+/* ─────────────── EMBED HISTORY ─────────────── */
+
+export const getEmbedHistory = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.uid;
+    const bot = await Bot.findOne({ _id: id, userId }, 'embedHistory name');
+    if (!bot) return res.status(404).json({ success: false, error: 'Bot not found' });
+    const history = [...(bot.embedHistory || [])].reverse(); // newest first
+    res.json({ success: true, data: history });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to fetch embed history' });
+  }
+};
+
+export const addEmbedSnapshot = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.uid;
+    const { color, name, type, note } = req.body;
+    const bot = await Bot.findOne({ _id: id, userId });
+    if (!bot) return res.status(404).json({ success: false, error: 'Bot not found' });
+    bot.embedHistory = bot.embedHistory || [];
+    // Avoid duplicate consecutive snapshots
+    const last = bot.embedHistory[bot.embedHistory.length - 1];
+    if (last && last.color === color && last.name === name && last.type === type) {
+      const history = [...bot.embedHistory].reverse();
+      return res.json({ success: true, data: history, duplicate: true });
+    }
+    bot.embedHistory.push({ savedAt: new Date(), color, name, type, note: note || '' });
+    if (bot.embedHistory.length > 10) bot.embedHistory = bot.embedHistory.slice(-10);
+    await bot.save();
+    const history = [...bot.embedHistory].reverse();
+    res.json({ success: true, data: history });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to save embed snapshot' });
+  }
+};
+
+export const deleteEmbedSnapshot = async (req, res) => {
+  try {
+    const { id, snapId } = req.params;
+    const userId = req.user.uid;
+    const bot = await Bot.findOne({ _id: id, userId });
+    if (!bot) return res.status(404).json({ success: false, error: 'Bot not found' });
+    bot.embedHistory = (bot.embedHistory || []).filter(s => s._id.toString() !== snapId);
+    await bot.save();
+    res.json({ success: true, data: [...bot.embedHistory].reverse() });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to delete snapshot' });
+  }
+};
+
 // Create a new bot
 export const createBot = async (req, res) => {
   try {

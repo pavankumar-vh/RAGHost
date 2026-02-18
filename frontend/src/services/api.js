@@ -123,6 +123,20 @@ export const botsService = {
     const response = await api.put(`/api/bots/${botId}/settings`, settings);
     return response.data;
   },
+
+  // Embed version history
+  getEmbedHistory: async (botId) => {
+    const response = await api.get(`/api/bots/${botId}/embed-history`);
+    return response.data;
+  },
+  addEmbedSnapshot: async (botId, snapshot) => {
+    const response = await api.post(`/api/bots/${botId}/embed-history`, snapshot);
+    return response.data;
+  },
+  deleteEmbedSnapshot: async (botId, snapId) => {
+    const response = await api.delete(`/api/bots/${botId}/embed-history/${snapId}`);
+    return response.data;
+  },
 };
 
 // Analytics endpoints

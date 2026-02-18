@@ -108,6 +108,15 @@ const botSchema = new mongoose.Schema(
       default: '',
     },
     
+    // Embed Config Version History
+    embedHistory: [{
+      savedAt:  { type: Date, default: Date.now },
+      color:    { type: String },
+      name:     { type: String },
+      type:     { type: String },
+      note:     { type: String, default: '' },
+    }],
+
     // Team Collaboration
     teamMembers: [{
       email: { type: String, required: true },
