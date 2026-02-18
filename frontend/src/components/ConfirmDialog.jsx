@@ -41,15 +41,15 @@ const ConfirmDialog = ({
   const getIcon = () => {
     switch (type) {
       case 'warning':
-        return <AlertTriangle size={48} className="text-amber-400" />;
+        return <AlertTriangle size={28} className="text-nb-text" />;
       case 'error':
-        return <AlertCircle size={48} className="text-red-400" />;
+        return <AlertCircle size={28} className="text-red-600" />;
       case 'success':
-        return <CheckCircle size={48} className="text-green-400" />;
+        return <CheckCircle size={28} className="text-green-600" />;
       case 'alert':
-        return <Info size={48} className="text-blue-400" />;
+        return <Info size={28} className="text-nb-blue" />;
       default:
-        return <AlertTriangle size={48} className={danger ? "text-red-400" : "text-accent-blue"} />;
+        return <AlertTriangle size={28} className={danger ? 'text-red-600' : 'text-nb-text'} />;
     }
   };
 
@@ -77,85 +77,48 @@ const ConfirmDialog = ({
     }
   }, [isOpen]);
 
+  const iconBg = {
+    warning: 'bg-nb-yellow',
+    error: 'bg-red-100',
+    success: 'bg-green-100',
+    alert: 'bg-nb-blue/30',
+    confirm: danger ? 'bg-red-100' : 'bg-nb-yellow',
+  }[type] || 'bg-nb-yellow';
+
   return (
-    <div 
-      className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[9999] p-4 animate-fadeIn"
+    <div
+      className="fixed inset-0 bg-black/60 flex items-center justify-center z-[9999] p-4"
       onClick={handleBackdropClick}
     >
-      <div className="relative bg-gradient-to-br from-gray-900 to-black border rounded-2xl p-8 w-full max-w-md shadow-2xl animate-slideIn">
-        {/* Gradient overlay */}
-        <div className={`absolute inset-0 bg-gradient-to-br ${getGradientClass()} rounded-2xl pointer-events-none`}></div>
-        
-        {/* Close button */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 p-2 hover:bg-white/10 rounded-lg transition-all duration-200 z-10 group"
-          aria-label="Close"
-        >
-          <X size={20} className="text-gray-400 group-hover:text-white transition-colors" />
-        </button>
+      <div className="bg-white border-2 border-black shadow-nb-xl w-full max-w-md p-8">
+        <div className="flex justify-end mb-2">
+          <button onClick={onClose} className="nb-btn bg-white p-1.5"><X size={18} /></button>
+        </div>
 
-        {/* Content */}
-        <div className="relative z-10">
-          {/* Icon */}
-          <div className="flex justify-center mb-6">
-            <div className="p-4 bg-gray-800/50 rounded-full backdrop-blur-sm">
-              {getIcon()}
-            </div>
+        <div className="flex justify-center mb-5">
+          <div className={`w-16 h-16 border-2 border-black ${iconBg} flex items-center justify-center`}>
+            {getIcon()}
           </div>
+        </div>
 
-          {/* Title */}
-          {title && (
-            <h2 className="text-2xl font-bold text-white text-center mb-4">
-              {title}
-            </h2>
+        {title && <h2 className="text-xl font-bold text-nb-text text-center mb-3">{title}</h2>}
+        <p className="text-nb-text text-center mb-8 leading-relaxed whitespace-pre-line text-sm">{message}</p>
+
+        <div className={`flex gap-3 ${type === 'alert' || type === 'success' || type === 'error' ? 'justify-center' : 'justify-end'}`}>
+          {(type === 'confirm' || type === 'warning') && (
+            <button onClick={onClose} className="nb-btn bg-white px-5 py-2.5">{cancelText}</button>
           )}
-
-          {/* Message */}
-          <p className="text-gray-100 text-center mb-8 leading-relaxed whitespace-pre-line">
-            {message}
-          </p>
-
-          {/* Buttons */}
-          <div className={`flex gap-3 ${type === 'alert' || type === 'success' || type === 'error' ? 'justify-center' : 'justify-end'}`}>
-            {(type === 'confirm' || type === 'warning') && (
-              <button
-                onClick={onClose}
-                className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-xl font-medium transition-all duration-200 hover:scale-105 active:scale-95"
-              >
-                {cancelText}
-              </button>
-            )}
-            
-            {type === 'confirm' || type === 'warning' ? (
-              <button
-                onClick={() => {
-                  onConfirm();
-                  onClose();
-                }}
-                className={`px-6 py-3 ${
-                  danger 
-                    ? 'bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600' 
-                    : 'bg-gradient-to-r from-accent-blue to-accent-purple hover:from-accent-blue/90 hover:to-accent-purple/90'
-                } text-white rounded-xl font-medium transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg`}
-              >
-                {confirmText}
-              </button>
-            ) : (
-              <button
-                onClick={onClose}
-                className={`px-8 py-3 ${
-                  type === 'success' 
-                    ? 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600'
-                    : type === 'error'
-                    ? 'bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600'
-                    : 'bg-gradient-to-r from-accent-blue to-accent-purple hover:from-accent-blue/90 hover:to-accent-purple/90'
-                } text-white rounded-xl font-medium transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg`}
-              >
-                OK
-              </button>
-            )}
-          </div>
+          {type === 'confirm' || type === 'warning' ? (
+            <button onClick={() => { onConfirm(); onClose(); }}
+              className={`nb-btn px-5 py-2.5 ${danger ? 'bg-red-500 text-white border-red-600 hover:bg-red-600' : 'bg-nb-yellow border-black'}`}>
+              {confirmText}
+            </button>
+          ) : (
+            <button onClick={onClose}
+              className={`nb-btn px-8 py-2.5 ${type === 'success' ? 'bg-green-300 border-black' : type === 'error' ? 'bg-red-500 text-white border-red-600' : 'bg-nb-yellow border-black'}`}>
+              OK
+            </button>
+          )}
         </div>
       </div>
     </div>

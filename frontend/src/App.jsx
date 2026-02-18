@@ -13,8 +13,9 @@ const ProtectedRoute = ({ children }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-dark-bg">
-        <div className="text-accent-blue text-xl">Loading...</div>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-nb-bg gap-3">
+        <div className="w-10 h-10 border-4 border-black border-t-nb-yellow animate-spin" />
+        <p className="text-sm font-bold text-nb-muted">Loading...</p>
       </div>
     );
   }
@@ -28,8 +29,9 @@ const PublicRoute = ({ children }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-dark-bg">
-        <div className="text-accent-blue text-xl">Loading...</div>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-nb-bg gap-3">
+        <div className="w-10 h-10 border-4 border-black border-t-nb-yellow animate-spin" />
+        <p className="text-sm font-bold text-nb-muted">Loading...</p>
       </div>
     );
   }

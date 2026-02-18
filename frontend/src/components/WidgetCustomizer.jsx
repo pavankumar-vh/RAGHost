@@ -427,23 +427,18 @@ const WidgetCustomizer = ({ bot, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-[#0A0A0A] border border-gray-800 rounded-2xl shadow-2xl w-full max-w-7xl max-h-[90vh] overflow-hidden flex flex-col">
+    <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+      <div className="bg-nb-bg border-2 border-black shadow-nb w-full max-w-7xl max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="p-6 border-b border-gray-800 flex items-center justify-between">
+        <div className="p-5 border-b-2 border-black bg-nb-yellow flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-gray-100 flex items-center gap-2">
-              <Sparkles className="w-6 h-6 text-purple-400" />
+            <h2 className="text-xl font-bold text-black flex items-center gap-2">
+              <Sparkles className="w-5 h-5" />
               Widget Customizer
             </h2>
-            <p className="text-sm text-gray-400 mt-1">
-              Customize your chat widget with live preview
-            </p>
+            <p className="text-sm text-black/60 mt-0.5">Customize your chat widget with live preview</p>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-lg hover:bg-gray-800 transition-colors text-gray-400 hover:text-white"
-          >
+          <button onClick={onClose} className="nb-btn bg-white border-black p-2">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -451,107 +446,67 @@ const WidgetCustomizer = ({ bot, onClose }) => {
         {/* Content */}
         <div className="flex-1 overflow-hidden flex">
           {/* Left Panel - Controls */}
-          <div className="w-[400px] border-r border-gray-800 overflow-y-auto p-6 space-y-6 bg-[#0F0F0F] customizer-scrollbar">
+          <div className="w-[380px] border-r-2 border-black overflow-y-auto p-5 space-y-5 bg-nb-bg">
             {/* Colors */}
             <div>
-              <h3 className="text-sm font-semibold text-gray-100 mb-3 flex items-center gap-2">
-                <Palette className="w-4 h-4 text-purple-400" />
-                Colors
+              <h3 className="text-sm font-bold text-nb-text mb-3 flex items-center gap-2">
+                <Palette className="w-4 h-4" /> Colors
               </h3>
               <div className="space-y-3">
-                <div>
-                  <label className="text-xs text-gray-400 block mb-1">Primary Color</label>
-                  <input
-                    type="color"
-                    value={config.primaryColor}
-                    onChange={(e) => setConfig({...config, primaryColor: e.target.value})}
-                    className="w-full h-10 rounded-lg border border-gray-700 cursor-pointer bg-gray-800"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-gray-400 block mb-1">Secondary Color</label>
-                  <input
-                    type="color"
-                    value={config.secondaryColor}
-                    onChange={(e) => setConfig({...config, secondaryColor: e.target.value})}
-                    className="w-full h-10 rounded-lg border border-gray-700 cursor-pointer bg-gray-800"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-gray-400 block mb-1">Background Color</label>
-                  <input
-                    type="color"
-                    value={config.backgroundColor}
-                    onChange={(e) => setConfig({...config, backgroundColor: e.target.value})}
-                    className="w-full h-10 rounded-lg border border-gray-700 cursor-pointer bg-gray-800"
-                  />
-                </div>
+                {[
+                  { label: 'Primary Color', key: 'primaryColor' },
+                  { label: 'Secondary Color', key: 'secondaryColor' },
+                  { label: 'Background Color', key: 'backgroundColor' },
+                ].map(({ label, key }) => (
+                  <div key={key}>
+                    <label className="text-xs font-bold text-nb-muted block mb-1">{label}</label>
+                    <input
+                      type="color"
+                      value={config[key]}
+                      onChange={(e) => setConfig({...config, [key]: e.target.value})}
+                      className="w-full h-10 border-2 border-black cursor-pointer"
+                    />
+                  </div>
+                ))}
               </div>
             </div>
 
             {/* Size */}
             <div>
-              <h3 className="text-sm font-semibold text-gray-100 mb-3 flex items-center gap-2">
-                <Layout className="w-4 h-4 text-purple-400" />
-                Size
+              <h3 className="text-sm font-bold text-nb-text mb-3 flex items-center gap-2">
+                <Layout className="w-4 h-4" /> Size
               </h3>
               <div className="space-y-3">
                 <div>
-                  <label className="text-xs text-gray-400 block mb-1">
-                    Width: {config.width}px
-                  </label>
-                  <input
-                    type="range"
-                    min="300"
-                    max="500"
-                    value={config.width}
+                  <label className="text-xs font-bold text-nb-muted block mb-1">Width: {config.width}px</label>
+                  <input type="range" min="300" max="500" value={config.width}
                     onChange={(e) => setConfig({...config, width: parseInt(e.target.value)})}
-                    className="w-full accent-purple-500"
-                  />
+                    className="w-full accent-black" />
                 </div>
                 <div>
-                  <label className="text-xs text-gray-400 block mb-1">
-                    Height: {config.height}px
-                  </label>
-                  <input
-                    type="range"
-                    min="400"
-                    max="700"
-                    value={config.height}
+                  <label className="text-xs font-bold text-nb-muted block mb-1">Height: {config.height}px</label>
+                  <input type="range" min="400" max="700" value={config.height}
                     onChange={(e) => setConfig({...config, height: parseInt(e.target.value)})}
-                    className="w-full accent-purple-500"
-                  />
+                    className="w-full accent-black" />
                 </div>
                 <div>
-                  <label className="text-xs text-gray-400 block mb-1">
-                    Button Size: {config.buttonSize}px
-                  </label>
-                  <input
-                    type="range"
-                    min="50"
-                    max="80"
-                    value={config.buttonSize}
+                  <label className="text-xs font-bold text-nb-muted block mb-1">Button Size: {config.buttonSize}px</label>
+                  <input type="range" min="50" max="80" value={config.buttonSize}
                     onChange={(e) => setConfig({...config, buttonSize: parseInt(e.target.value)})}
-                    className="w-full accent-purple-500"
-                  />
+                    className="w-full accent-black" />
                 </div>
               </div>
             </div>
 
             {/* Position */}
             <div>
-              <h3 className="text-sm font-semibold text-gray-100 mb-3">Position</h3>
+              <h3 className="text-sm font-bold text-nb-text mb-3">Position</h3>
               <div className="grid grid-cols-3 gap-2">
                 {['bottom-left', 'bottom-center', 'bottom-right'].map(pos => (
-                  <button
-                    key={pos}
-                    onClick={() => setConfig({...config, position: pos})}
-                    className={`p-3 rounded-lg border-2 text-xs font-medium transition-all ${
-                      config.position === pos
-                        ? 'border-purple-500 bg-purple-500/20 text-purple-300'
-                        : 'border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600 hover:bg-gray-800'
-                    }`}
-                  >
+                  <button key={pos} onClick={() => setConfig({...config, position: pos})}
+                    className={`p-2 border-2 text-xs font-bold transition-all ${
+                      config.position === pos ? 'border-black bg-nb-yellow shadow-nb-sm' : 'border-black bg-white hover:bg-nb-yellow/30'
+                    }`}>
                     {pos.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
                   </button>
                 ))}
@@ -560,18 +515,13 @@ const WidgetCustomizer = ({ bot, onClose }) => {
 
             {/* Button Style */}
             <div>
-              <h3 className="text-sm font-semibold text-gray-100 mb-3">Button Style</h3>
+              <h3 className="text-sm font-bold text-nb-text mb-3">Button Style</h3>
               <div className="grid grid-cols-3 gap-2">
                 {['circle', 'rounded-square', 'square'].map(style => (
-                  <button
-                    key={style}
-                    onClick={() => setConfig({...config, buttonStyle: style})}
-                    className={`p-3 rounded-lg border-2 text-xs font-medium transition-all ${
-                      config.buttonStyle === style
-                        ? 'border-purple-500 bg-purple-500/20 text-purple-300'
-                        : 'border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600 hover:bg-gray-800'
-                    }`}
-                  >
+                  <button key={style} onClick={() => setConfig({...config, buttonStyle: style})}
+                    className={`p-2 border-2 text-xs font-bold transition-all ${
+                      config.buttonStyle === style ? 'border-black bg-nb-pink shadow-nb-sm' : 'border-black bg-white hover:bg-nb-pink/30'
+                    }`}>
                     {style.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
                   </button>
                 ))}
@@ -580,30 +530,20 @@ const WidgetCustomizer = ({ bot, onClose }) => {
 
             {/* Border Radius */}
             <div>
-              <h3 className="text-sm font-semibold text-gray-100 mb-3">
-                Border Radius: {config.borderRadius}px
-              </h3>
-              <input
-                type="range"
-                min="8"
-                max="32"
-                value={config.borderRadius}
+              <h3 className="text-sm font-bold text-nb-text mb-2">Border Radius: {config.borderRadius}px</h3>
+              <input type="range" min="8" max="32" value={config.borderRadius}
                 onChange={(e) => setConfig({...config, borderRadius: parseInt(e.target.value)})}
-                className="w-full accent-purple-500"
-              />
+                className="w-full accent-black" />
             </div>
 
             {/* Font Family */}
             <div>
-              <h3 className="text-sm font-semibold text-gray-100 mb-3 flex items-center gap-2">
-                <Type className="w-4 h-4 text-purple-400" />
-                Font Family
+              <h3 className="text-sm font-bold text-nb-text mb-3 flex items-center gap-2">
+                <Type className="w-4 h-4" /> Font Family
               </h3>
-              <select
-                value={config.fontFamily}
+              <select value={config.fontFamily}
                 onChange={(e) => setConfig({...config, fontFamily: e.target.value})}
-                className="w-full p-2 rounded-lg border border-gray-700 bg-gray-800 text-gray-200 text-sm focus:border-purple-500 focus:outline-none"
-              >
+                className="nb-input w-full text-sm">
                 <option value="Inter, sans-serif">Inter</option>
                 <option value="Roboto, sans-serif">Roboto</option>
                 <option value="'Open Sans', sans-serif">Open Sans</option>
@@ -615,18 +555,13 @@ const WidgetCustomizer = ({ bot, onClose }) => {
 
             {/* Animation Speed */}
             <div>
-              <h3 className="text-sm font-semibold text-gray-100 mb-3">Animation Speed</h3>
+              <h3 className="text-sm font-bold text-nb-text mb-3">Animation Speed</h3>
               <div className="grid grid-cols-3 gap-2">
                 {['slow', 'normal', 'fast'].map(speed => (
-                  <button
-                    key={speed}
-                    onClick={() => setConfig({...config, animationSpeed: speed})}
-                    className={`p-3 rounded-lg border-2 text-xs font-medium transition-all ${
-                      config.animationSpeed === speed
-                        ? 'border-purple-500 bg-purple-500/20 text-purple-300'
-                        : 'border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600 hover:bg-gray-800'
-                    }`}
-                  >
+                  <button key={speed} onClick={() => setConfig({...config, animationSpeed: speed})}
+                    className={`p-2 border-2 text-xs font-bold transition-all ${
+                      config.animationSpeed === speed ? 'border-black bg-nb-blue shadow-nb-sm' : 'border-black bg-white hover:bg-nb-blue/30'
+                    }`}>
                     {speed.charAt(0).toUpperCase() + speed.slice(1)}
                   </button>
                 ))}
@@ -635,24 +570,24 @@ const WidgetCustomizer = ({ bot, onClose }) => {
 
             {/* Welcome Message */}
             <div>
-              <h3 className="text-sm font-semibold text-gray-100 mb-3">Welcome Message</h3>
+              <h3 className="text-sm font-bold text-nb-text mb-2">Welcome Message</h3>
               <textarea
                 value={config.welcomeMessage}
                 onChange={(e) => setConfig({...config, welcomeMessage: e.target.value})}
                 rows={3}
-                className="w-full p-3 rounded-lg border border-gray-700 bg-gray-800 text-gray-200 text-sm resize-none focus:border-purple-500 focus:outline-none placeholder-gray-500"
+                className="nb-input w-full text-sm resize-none"
                 placeholder="Enter welcome message..."
               />
             </div>
 
             {/* Watermark Notice */}
-            <div className="p-4 bg-gradient-to-r from-purple-900/30 to-blue-900/30 border border-purple-500/30 rounded-lg">
+            <div className="bg-nb-yellow/40 border-2 border-black p-4">
               <div className="flex items-start gap-3">
-                <div className="text-2xl">✨</div>
+                <span className="text-xl">✨</span>
                 <div>
-                  <h4 className="text-sm font-semibold text-purple-300 mb-1">RAGhost Watermark</h4>
-                  <p className="text-xs text-gray-400 leading-relaxed">
-                    The "Powered by RAGhost" watermark is required and will be displayed on all custom widgets. This helps support the platform and lets users discover RAGhost.
+                  <h4 className="text-sm font-bold text-nb-text mb-1">RAGhost Watermark</h4>
+                  <p className="text-xs text-nb-muted leading-relaxed">
+                    The "Powered by RAGhost" watermark is required on all custom widgets.
                   </p>
                 </div>
               </div>
@@ -660,38 +595,22 @@ const WidgetCustomizer = ({ bot, onClose }) => {
           </div>
 
           {/* Right Panel - Live Preview */}
-          <div className="flex-1 bg-gradient-to-br from-gray-900 to-black p-8 flex flex-col">
+          <div className="flex-1 bg-nb-bg/50 p-6 flex flex-col">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-100">Live Preview</h3>
-              <button
-                onClick={handleCopyCode}
-                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all text-sm font-medium shadow-lg shadow-purple-500/20"
-              >
-                {copied ? (
-                  <>
-                    <Check className="w-4 h-4" />
-                    Copied!
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-4 h-4" />
-                    Copy Code
-                  </>
-                )}
+              <h3 className="text-lg font-bold text-nb-text">Live Preview</h3>
+              <button onClick={handleCopyCode}
+                className={`nb-btn px-4 py-2 text-sm font-bold ${
+                  copied ? 'bg-green-200 border-green-600' : 'bg-black text-white border-black'
+                }`}>
+                {copied ? <><Check className="w-4 h-4 inline mr-1" />Copied!</> : <><Copy className="w-4 h-4 inline mr-1" />Copy Code</>}
               </button>
             </div>
 
-            <div className="flex-1 bg-gray-800 rounded-xl shadow-2xl overflow-hidden border-2 border-gray-700">
-              <iframe
-                ref={iframeRef}
-                className="w-full h-full"
-                title="Widget Preview"
-              />
+            <div className="flex-1 border-2 border-black shadow-nb overflow-hidden bg-white">
+              <iframe ref={iframeRef} className="w-full h-full" title="Widget Preview" />
             </div>
 
-            <p className="text-xs text-gray-400 mt-4 text-center">
-              💡 Tip: Changes are reflected instantly in the preview
-            </p>
+            <p className="text-xs text-nb-muted mt-3 text-center">💡 Changes are reflected instantly in the preview</p>
           </div>
         </div>
       </div>
