@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Eye, EyeOff, Loader2, Database, Zap, XCircle, ChevronDown, Check } from 'lucide-react';
 
 /* ── Reusable row for the bot-type dropdown ── */
@@ -46,18 +46,6 @@ const BotConfigModal = ({ setShowModal, onSave }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [botTypeOpen, setBotTypeOpen] = useState(false);
-  const botTypeRef = useRef(null);
-
-  // Close dropdown on outside click
-  useEffect(() => {
-    const handler = (e) => {
-      if (botTypeRef.current && !botTypeRef.current.contains(e.target)) {
-        setBotTypeOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
 
   const handleClose = () => {
     setIsClosing(true);
@@ -286,8 +274,8 @@ const BotConfigModal = ({ setShowModal, onSave }) => {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* ── Bot Type Custom Dropdown ── */}
-                <div ref={botTypeRef} className="relative">
+                {/* ── Bot Type Custom Dropdown (inline expand — avoids overflow clipping) ── */}
+                <div className="md:col-span-2">
                   <label className="block text-sm font-bold mb-1 text-nb-text">Bot Type *</label>
                   {/* Trigger button */}
                   <button
@@ -313,33 +301,39 @@ const BotConfigModal = ({ setShowModal, onSave }) => {
                     <ChevronDown size={15} className={`flex-shrink-0 transition-transform duration-200 ${botTypeOpen ? 'rotate-180' : ''}`} />
                   </button>
 
-                  {/* Dropdown panel */}
+                  {/* Inline expand panel — renders in-flow so modal overflow can't clip it */}
                   {botTypeOpen && (
-                    <div className="absolute z-30 mt-1 left-0 right-0 max-h-[340px] overflow-y-auto bg-white border-2 border-black shadow-[4px_4px_0_0_#000]">
+                    <div className="mt-1 border-2 border-black bg-white shadow-[4px_4px_0_0_#000]">
                       {/* Group: Popular */}
-                      <div className="px-3 pt-2 pb-1">
-                        <p className="text-[10px] font-black text-nb-muted uppercase tracking-widest">Popular Templates</p>
+                      <div className="px-3 pt-2 pb-1 bg-gray-50 border-b border-black/10">
+                        <p className="text-[10px] font-black text-nb-muted uppercase tracking-widest">⭐ Popular Templates</p>
                       </div>
-                      {botTypeOptions.filter((o) => o.tag === 'Popular').map((opt) => (
-                        <BotTypeOption key={opt.value} opt={opt} selected={formData.type === opt.value}
-                          onSelect={() => { handleTypeChange(opt.value); setBotTypeOpen(false); }} />
-                      ))}
+                      <div className="grid grid-cols-1 sm:grid-cols-3">
+                        {botTypeOptions.filter((o) => o.tag === 'Popular').map((opt) => (
+                          <BotTypeOption key={opt.value} opt={opt} selected={formData.type === opt.value}
+                            onSelect={() => { handleTypeChange(opt.value); setBotTypeOpen(false); }} />
+                        ))}
+                      </div>
                       {/* Group: Regulated */}
-                      <div className="px-3 pt-3 pb-1 border-t border-black/10">
-                        <p className="text-[10px] font-black text-nb-muted uppercase tracking-widest">Regulated Industries</p>
+                      <div className="px-3 pt-2 pb-1 bg-gray-50 border-t-2 border-b border-black/10">
+                        <p className="text-[10px] font-black text-nb-muted uppercase tracking-widest">🏥 Regulated Industries</p>
                       </div>
-                      {botTypeOptions.filter((o) => o.tag === 'Regulated').map((opt) => (
-                        <BotTypeOption key={opt.value} opt={opt} selected={formData.type === opt.value}
-                          onSelect={() => { handleTypeChange(opt.value); setBotTypeOpen(false); }} />
-                      ))}
+                      <div className="grid grid-cols-1 sm:grid-cols-3">
+                        {botTypeOptions.filter((o) => o.tag === 'Regulated').map((opt) => (
+                          <BotTypeOption key={opt.value} opt={opt} selected={formData.type === opt.value}
+                            onSelect={() => { handleTypeChange(opt.value); setBotTypeOpen(false); }} />
+                        ))}
+                      </div>
                       {/* Group: All others */}
-                      <div className="px-3 pt-3 pb-1 border-t border-black/10">
-                        <p className="text-[10px] font-black text-nb-muted uppercase tracking-widest">All Types</p>
+                      <div className="px-3 pt-2 pb-1 bg-gray-50 border-t-2 border-b border-black/10">
+                        <p className="text-[10px] font-black text-nb-muted uppercase tracking-widest">🤖 All Types</p>
                       </div>
-                      {botTypeOptions.filter((o) => !o.tag || o.tag === 'Advanced').map((opt) => (
-                        <BotTypeOption key={opt.value} opt={opt} selected={formData.type === opt.value}
-                          onSelect={() => { handleTypeChange(opt.value); setBotTypeOpen(false); }} />
-                      ))}
+                      <div className="grid grid-cols-1 sm:grid-cols-3">
+                        {botTypeOptions.filter((o) => !o.tag || o.tag === 'Advanced').map((opt) => (
+                          <BotTypeOption key={opt.value} opt={opt} selected={formData.type === opt.value}
+                            onSelect={() => { handleTypeChange(opt.value); setBotTypeOpen(false); }} />
+                        ))}
+                      </div>
                     </div>
                   )}
 
