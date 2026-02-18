@@ -123,6 +123,36 @@ export const botsService = {
     const response = await api.put(`/api/bots/${botId}/settings`, settings);
     return response.data;
   },
+
+  // Embed version history
+  getEmbedHistory: async (botId) => {
+    const response = await api.get(`/api/bots/${botId}/embed-history`);
+    return response.data;
+  },
+  addEmbedSnapshot: async (botId, snapshot) => {
+    const response = await api.post(`/api/bots/${botId}/embed-history`, snapshot);
+    return response.data;
+  },
+  deleteEmbedSnapshot: async (botId, snapId) => {
+    const response = await api.delete(`/api/bots/${botId}/embed-history/${snapId}`);
+    return response.data;
+  },
+
+  // Advanced settings (temperature, maxTokens, systemPrompt, welcomeMessage)
+  updateSettings: async (botId, settings) => {
+    const response = await api.put(`/api/bots/${botId}/settings`, settings);
+    return response.data;
+  },
+
+  // Widget customizer config
+  getWidgetConfig: async (botId) => {
+    const response = await api.get(`/api/bots/${botId}/widget-config`);
+    return response.data;
+  },
+  saveWidgetConfig: async (botId, config) => {
+    const response = await api.put(`/api/bots/${botId}/widget-config`, config);
+    return response.data;
+  },
 };
 
 // Analytics endpoints
@@ -148,6 +178,33 @@ export const analyticsService = {
   // Get top performing bots
   getTopBots: async (limit = 5, sortBy = 'queries') => {
     const response = await api.get(`/api/analytics/top-bots?limit=${limit}&sortBy=${sortBy}`);
+    return response.data;
+  },
+};
+
+// User profile endpoints
+export const userService = {
+  // Get profile from MongoDB
+  getProfile: async () => {
+    const response = await api.get('/api/users/profile');
+    return response.data;
+  },
+
+  // Update displayName / photoURL in MongoDB
+  updateProfile: async (data) => {
+    const response = await api.put('/api/users/profile', data);
+    return response.data;
+  },
+
+  // Get aggregate stats
+  getStats: async () => {
+    const response = await api.get('/api/users/stats');
+    return response.data;
+  },
+
+  // Delete all MongoDB data (call BEFORE Firebase deleteUser)
+  deleteAccount: async () => {
+    const response = await api.delete('/api/users/account');
     return response.data;
   },
 };

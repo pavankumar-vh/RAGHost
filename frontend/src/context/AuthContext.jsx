@@ -7,7 +7,12 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   updateProfile,
+  updatePassword,
+  updateEmail,
   sendPasswordResetEmail,
+  deleteUser,
+  reauthenticateWithCredential,
+  EmailAuthProvider,
 } from 'firebase/auth';
 import { auth } from '../config/firebase';
 
@@ -84,15 +89,48 @@ export const AuthProvider = ({ children }) => {
   // Forgot Password - Send reset email
   const resetPassword = async (email) => {
     try {
-      if (!auth) {
-        throw new Error('Firebase is not properly configured. Please check your .env file.');
-      }
+      if (!auth) throw new Error('Firebase is not properly configured. Please check your .env file.');
       await sendPasswordResetEmail(auth, email);
       return { success: true, message: 'Password reset email sent! Check your inbox.' };
     } catch (error) {
       console.error('Password reset error:', error);
       throw error;
     }
+  };
+
+  // Update display name
+  const updateDisplayName = async (name) => {
+    if (!currentUser) throw new Error('No user logged in');
+    await updateProfile(currentUser, { displayName: name });
+    // Force a re-render by refreshing the token
+    await currentUser.reload();
+    return currentUser;
+  };
+
+  // Update avatar/photoURL
+  const updatePhotoURL = async (url) => {
+    if (!currentUser) throw new Error('No user logged in');
+    await updateProfile(currentUser, { photoURL: url });
+    await currentUser.reload();
+    return currentUser;
+  };
+
+  // Update email (requires recent login)
+  const updateUserEmail = async (newEmail, currentPassword) => {
+    if (!currentUser) throw new Error('No user logged in');
+    const credential = EmailAuthProvider.credential(currentUser.email, currentPassword);
+    await reauthenticateWithCredential(currentUser, credential);
+    await updateEmail(currentUser, newEmail);
+  };
+
+  // Delete account (requires recent login)
+  const deleteAccount = async (password) => {
+    if (!currentUser) throw new Error('No user logged in');
+    if (password) {
+      const credential = EmailAuthProvider.credential(currentUser.email, password);
+      await reauthenticateWithCredential(currentUser, credential);
+    }
+    await deleteUser(currentUser);
   };
 
   // Get ID Token
@@ -148,6 +186,10 @@ export const AuthProvider = ({ children }) => {
     logout,
     signInWithGoogle,
     resetPassword,
+    updateDisplayName,
+    updatePhotoURL,
+    updateUserEmail,
+    deleteAccount,
     getIdToken,
     loading,
     error,

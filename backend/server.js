@@ -22,6 +22,7 @@ import chatRoutes from './routes/chat.js';
 import knowledgeRoutes from './routes/knowledge.js';
 import widgetRoutes from './routes/widgetRoutes.js';
 import analyticsRoutes from './routes/analytics.js';
+import usersRoutes from './routes/users.js';
 import { errorHandler, notFound } from './middleware/errorHandler.js';
 import { authenticate } from './middleware/auth.js';
 import { 
@@ -255,6 +256,7 @@ app.use('/api/keys', authenticate, keysRoutes);
 app.use('/api/bots', botsRoutes); // Authentication is applied per-route in bots.js
 app.use('/api/knowledge', authenticate, knowledgeRoutes);
 app.use('/api/analytics', authenticate, analyticsRoutes);
+app.use('/api/users', authenticate, usersRoutes);
 app.use('/api/chat', chatRoutes); // Public chat API (no auth required)
 app.use('/api/widget', widgetRoutes); // Widget embed code generation
 

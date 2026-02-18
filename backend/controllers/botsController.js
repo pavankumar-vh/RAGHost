@@ -1,6 +1,59 @@
 import Bot from '../models/Bot.js';
 import { encrypt, decrypt } from '../utils/encryption.js';
 
+/* ─────────────── EMBED HISTORY ─────────────── */
+
+export const getEmbedHistory = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.uid;
+    const bot = await Bot.findOne({ _id: id, userId }, 'embedHistory name');
+    if (!bot) return res.status(404).json({ success: false, error: 'Bot not found' });
+    const history = [...(bot.embedHistory || [])].reverse(); // newest first
+    res.json({ success: true, data: history });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to fetch embed history' });
+  }
+};
+
+export const addEmbedSnapshot = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.uid;
+    const { color, name, type, note } = req.body;
+    const bot = await Bot.findOne({ _id: id, userId });
+    if (!bot) return res.status(404).json({ success: false, error: 'Bot not found' });
+    bot.embedHistory = bot.embedHistory || [];
+    // Avoid duplicate consecutive snapshots
+    const last = bot.embedHistory[bot.embedHistory.length - 1];
+    if (last && last.color === color && last.name === name && last.type === type) {
+      const history = [...bot.embedHistory].reverse();
+      return res.json({ success: true, data: history, duplicate: true });
+    }
+    bot.embedHistory.push({ savedAt: new Date(), color, name, type, note: note || '' });
+    if (bot.embedHistory.length > 10) bot.embedHistory = bot.embedHistory.slice(-10);
+    await bot.save();
+    const history = [...bot.embedHistory].reverse();
+    res.json({ success: true, data: history });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to save embed snapshot' });
+  }
+};
+
+export const deleteEmbedSnapshot = async (req, res) => {
+  try {
+    const { id, snapId } = req.params;
+    const userId = req.user.uid;
+    const bot = await Bot.findOne({ _id: id, userId });
+    if (!bot) return res.status(404).json({ success: false, error: 'Bot not found' });
+    bot.embedHistory = (bot.embedHistory || []).filter(s => s._id.toString() !== snapId);
+    await bot.save();
+    res.json({ success: true, data: [...bot.embedHistory].reverse() });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to delete snapshot' });
+  }
+};
+
 // Create a new bot
 export const createBot = async (req, res) => {
   try {
@@ -183,6 +236,11 @@ export const getBots = async (req, res) => {
       totalQueries: bot.totalQueries,
       avgResponseTime: bot.avgResponseTime,
       accuracy: bot.accuracy,
+      temperature: bot.temperature,
+      maxTokens: bot.maxTokens,
+      welcomeMessage: bot.welcomeMessage,
+      widgetConfig: bot.widgetConfig,
+      teamMembers: bot.teamMembers || [],
       createdAt: bot.createdAt,
       updatedAt: bot.updatedAt,
     }));
@@ -221,6 +279,11 @@ export const getBotById = async (req, res) => {
       totalQueries: bot.totalQueries,
       avgResponseTime: bot.avgResponseTime,
       accuracy: bot.accuracy,
+      temperature: bot.temperature,
+      maxTokens: bot.maxTokens,
+      welcomeMessage: bot.welcomeMessage,
+      widgetConfig: bot.widgetConfig,
+      teamMembers: bot.teamMembers || [],
       createdAt: bot.createdAt,
       updatedAt: bot.updatedAt,
     };
@@ -299,6 +362,69 @@ export const updateBot = async (req, res) => {
   } catch (error) {
     console.error('Error updating bot:', error);
     res.status(500).json({ error: 'Failed to update bot' });
+  }
+};
+
+// Update bot AI settings (temperature, maxTokens, systemPrompt, welcomeMessage)
+export const updateSettings = async (req, res) => {
+  try {
+    const userId = req.user.uid;
+    const { id } = req.params;
+    const { temperature, maxTokens, systemPrompt, welcomeMessage } = req.body;
+
+    const bot = await Bot.findOne({ _id: id, userId });
+    if (!bot) return res.status(404).json({ error: 'Bot not found' });
+
+    if (temperature   !== undefined) bot.temperature   = Math.min(2, Math.max(0, Number(temperature)));
+    if (maxTokens     !== undefined) bot.maxTokens     = Math.max(1, Number(maxTokens));
+    if (systemPrompt  !== undefined) bot.systemPrompt  = systemPrompt;
+    if (welcomeMessage !== undefined) bot.welcomeMessage = welcomeMessage;
+
+    await bot.save();
+    res.json({
+      success: true,
+      data: { temperature: bot.temperature, maxTokens: bot.maxTokens, systemPrompt: bot.systemPrompt, welcomeMessage: bot.welcomeMessage },
+    });
+  } catch (error) {
+    console.error('Error updating settings:', error);
+    res.status(500).json({ error: 'Failed to update settings' });
+  }
+};
+
+// Save widget customizer config
+export const saveWidgetConfig = async (req, res) => {
+  try {
+    const userId = req.user.uid;
+    const { id } = req.params;
+    const allowed = ['primaryColor','secondaryColor','backgroundColor','textColor','width','height','position','borderRadius','buttonSize','buttonStyle','fontFamily','animationSpeed'];
+
+    const bot = await Bot.findOne({ _id: id, userId });
+    if (!bot) return res.status(404).json({ error: 'Bot not found' });
+
+    bot.widgetConfig = bot.widgetConfig || {};
+    for (const key of allowed) {
+      if (req.body[key] !== undefined) bot.widgetConfig[key] = req.body[key];
+    }
+    bot.markModified('widgetConfig');
+    await bot.save();
+    res.json({ success: true, data: bot.widgetConfig });
+  } catch (error) {
+    console.error('Error saving widget config:', error);
+    res.status(500).json({ error: 'Failed to save widget config' });
+  }
+};
+
+// Get widget customizer config
+export const getWidgetConfig = async (req, res) => {
+  try {
+    const userId = req.user.uid;
+    const { id } = req.params;
+    const bot = await Bot.findOne({ _id: id, userId }, 'widgetConfig welcomeMessage');
+    if (!bot) return res.status(404).json({ error: 'Bot not found' });
+    res.json({ success: true, data: { ...bot.widgetConfig?.toObject?.() || bot.widgetConfig, welcomeMessage: bot.welcomeMessage } });
+  } catch (error) {
+    console.error('Error fetching widget config:', error);
+    res.status(500).json({ error: 'Failed to fetch widget config' });
   }
 };
 
