@@ -253,7 +253,7 @@ const Sidebar = ({ activePage, setActivePage, handleLogout, currentUser, isOpen,
       </div>
 
       {/* ─ Nav items ─ */}
-      <nav className="flex-1 p-2 space-y-0.5 overflow-y-auto">
+      <nav className="flex-1 p-2 space-y-1 overflow-y-auto">
         {menuItems.map(({ name, icon: Icon, accent }) => {
           const active = activePage === name;
           return (
@@ -262,7 +262,7 @@ const Sidebar = ({ activePage, setActivePage, handleLogout, currentUser, isOpen,
               onClick={() => setActivePage(name)}
               title={isCollapsed ? name : undefined}
               className={`w-full flex items-center font-bold text-sm border-2 transition-all duration-150 group relative
-                ${isCollapsed ? 'lg:justify-center lg:px-0 lg:py-3 px-3 py-2.5 gap-3' : 'gap-3 px-3 py-2.5'}
+                ${isCollapsed ? 'lg:justify-center lg:px-0 lg:py-3.5 px-3 py-3 gap-3' : 'gap-3 px-3 py-3'}
                 ${active
                   ? `${accent} border-black shadow-[2px_2px_0_0_#000] text-black`
                   : 'border-transparent text-nb-muted hover:border-black hover:bg-gray-50 hover:text-black'
@@ -288,7 +288,7 @@ const Sidebar = ({ activePage, setActivePage, handleLogout, currentUser, isOpen,
           title={isCollapsed ? 'Sign Out' : undefined}
           className={`w-full flex items-center gap-3 font-bold text-sm border-2 border-transparent text-nb-muted
             hover:border-red-500 hover:bg-red-50 hover:text-red-600 transition-all duration-150
-            ${isCollapsed ? 'lg:justify-center lg:px-0 lg:py-3 px-3 py-2.5' : 'px-3 py-2.5'}`}
+            ${isCollapsed ? 'lg:justify-center lg:px-0 lg:py-3.5 px-3 py-3' : 'px-3 py-3'}`}
         >
           <LogOut size={17} className="flex-shrink-0" />
           <span className={isCollapsed ? 'lg:hidden' : ''}>Sign Out</span>
@@ -310,7 +310,7 @@ const DashboardView = ({ stats, bots, setShowBotModal, loading, dailyStats }) =>
   ];
 
   return (
-    <div className="space-y-6 max-w-6xl">
+    <div className="space-y-6 w-full">
       {bots.length === 0 && (
         <div className="bg-nb-yellow border-2 border-black shadow-nb p-4 sm:p-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
@@ -468,7 +468,7 @@ const MyBotsView = ({ bots, setShowBotModal, setSelectedBot, setShowKnowledgeMod
   const filtered = bots.filter(b => !searchQuery || b.name?.toLowerCase().includes(searchQuery.toLowerCase()));
   const accents = ['bg-nb-yellow', 'bg-nb-pink', 'bg-nb-blue', 'bg-purple-200', 'bg-orange-200', 'bg-green-200'];
   return (
-      <div className="space-y-4 sm:space-y-6 max-w-6xl">
+      <div className="space-y-4 sm:space-y-6 w-full">
       <div className="flex items-center justify-between gap-3">
         <div>
           <h2 className="text-xl sm:text-2xl font-bold">My Bots</h2>
@@ -565,7 +565,7 @@ const ApiKeysView = ({ bots, loading, onEdit, fetchBots }) => {
   if (loading) return <LoadingSpinner />;
 
   return (
-    <div className="space-y-4 sm:space-y-6 max-w-5xl">
+    <div className="space-y-4 sm:space-y-6 w-full">
       <div>
         <h2 className="text-xl sm:text-2xl font-bold">API Keys</h2>
         <p className="text-nb-muted text-sm mt-0.5">Monitor and test per-bot API connections</p>
@@ -643,7 +643,7 @@ const DocumentationView = () => {
   );
 
   return (
-    <div className="space-y-8 max-w-4xl">
+    <div className="space-y-8 w-full">
       <div className="bg-nb-yellow border-2 border-black shadow-nb p-6">
         <div className="flex items-center gap-3"><BookOpen size={28} /><div><h1 className="text-3xl font-bold">Documentation</h1><p className="text-black/60 text-sm">Get your API keys and deploy your first bot</p></div></div>
       </div>
