@@ -5,14 +5,28 @@ import {
   User, Mail, Lock, Trash2, Camera, Check, AlertCircle, Loader2,
   Shield, Activity, Bot, MessageSquare, Calendar, Clock, Edit3,
   Save, X, Eye, EyeOff, RefreshCw, Download, LogOut, Zap,
-  ChevronRight, Star, Globe, Key,
+  ChevronRight, Star, Globe, Key, Bell, AlertTriangle, BarChart2, PanelLeft,
 } from 'lucide-react';
 
 /* ─── tiny helpers ─── */
-const AVATAR_COLORS = [
-  '#FFE500', '#FF6B9D', '#4D9FFF', '#a78bfa', '#fb923c',
-  '#34d399', '#f87171', '#60a5fa', '#fbbf24', '#c084fc',
+/* ─── avatar gradient presets ─── */
+const AVATAR_PRESETS = [
+  { id: 'sunset',   style: 'linear-gradient(135deg,#FF6B9D,#FFE500)' },
+  { id: 'ocean',    style: 'linear-gradient(135deg,#4D9FFF,#34d399)' },
+  { id: 'aurora',   style: 'linear-gradient(135deg,#a78bfa,#60a5fa)' },
+  { id: 'fire',     style: 'linear-gradient(135deg,#fb923c,#f87171)' },
+  { id: 'mint',     style: 'linear-gradient(135deg,#34d399,#4D9FFF)' },
+  { id: 'candy',    style: 'linear-gradient(135deg,#FF6B9D,#a78bfa)' },
+  { id: 'gold',     style: 'linear-gradient(135deg,#FFE500,#fb923c)' },
+  { id: 'neon',     style: 'linear-gradient(135deg,#4D9FFF,#a78bfa)' },
+  { id: 'forest',   style: 'linear-gradient(135deg,#34d399,#fbbf24)' },
+  { id: 'rose',     style: 'linear-gradient(135deg,#f87171,#fbbf24)' },
+  { id: 'cosmic',   style: 'linear-gradient(135deg,#1e1b4b,#a78bfa)' },
+  { id: 'nb-plain', style: '#FFE500' },
 ];
+
+// legacy fallback: map old hex to nearest preset id
+const hexToPreset = (hex) => AVATAR_PRESETS.find(p => p.style === hex) ? hex : AVATAR_PRESETS[0].id;
 
 const Section = ({ title, icon: Icon, children, accent = 'bg-nb-yellow' }) => (
   <div className="bg-white border-2 border-black shadow-nb">
@@ -86,7 +100,8 @@ const ProfileView = ({ bots = [] }) => {
   const [nameEditing, setNameEditing]     = useState(false);
 
   // ── avatar ──
-  const [avatarColor, setAvatarColor]     = useState(() => localStorage.getItem('raghost_avatar_color') || AVATAR_COLORS[0]);
+  const [avatarPreset, setAvatarPreset]   = useState(() => localStorage.getItem('raghost_avatar_preset') || 'sunset');
+  const [avatarColor, setAvatarColor]     = useState(() => localStorage.getItem('raghost_avatar_color') || AVATAR_PRESETS[0].style);
   const [avatarEmoji, setAvatarEmoji]     = useState(() => localStorage.getItem('raghost_avatar_emoji') || '');
   const [avatarMode, setAvatarMode]       = useState(() => localStorage.getItem('raghost_avatar_mode') || 'initials'); // initials | emoji | url
   const [avatarUrl, setAvatarUrl]         = useState(currentUser?.photoURL || '');
@@ -133,7 +148,12 @@ const ProfileView = ({ bots = [] }) => {
   useEffect(() => {
     if (!backendProfile) return;
     const p = backendProfile.preferences || {};
-    if (p.avatarColor)             setAvatarColor(p.avatarColor);
+    if (p.avatarColor) {
+      setAvatarColor(p.avatarColor);
+      // try to match to preset
+      const match = AVATAR_PRESETS.find(pr => pr.style === p.avatarColor);
+      if (match) setAvatarPreset(match.id);
+    }
     if (p.avatarEmoji !== undefined) setAvatarEmoji(p.avatarEmoji || '');
     if (p.avatarMode)              setAvatarMode(p.avatarMode);
     setPrefs({
@@ -145,10 +165,12 @@ const ProfileView = ({ bots = [] }) => {
   }, [backendProfile]);
 
   // ── change handlers: update state + localStorage + backend ──
-  const handleAvatarColorChange = (color) => {
-    setAvatarColor(color);
-    localStorage.setItem('raghost_avatar_color', color);
-    syncToBackend({ avatarColor: color, avatarEmoji, avatarMode, ...prefs });
+  const handleAvatarColorChange = (preset) => {
+    setAvatarPreset(preset.id);
+    setAvatarColor(preset.style);
+    localStorage.setItem('raghost_avatar_preset', preset.id);
+    localStorage.setItem('raghost_avatar_color', preset.style);
+    syncToBackend({ avatarColor: preset.style, avatarEmoji, avatarMode, ...prefs });
   };
   const handleAvatarEmojiChange = (emoji) => {
     setAvatarEmoji(emoji);
@@ -193,9 +215,10 @@ const ProfileView = ({ bots = [] }) => {
         </div>
       );
     }
+    // initials with gradient
     return (
       <div className={`border-2 border-black flex items-center justify-center font-black ${className}`}
-        style={{ width: size, height: size, background: avatarColor, fontSize: size * 0.32, color: '#000' }}>
+        style={{ width: size, height: size, background: avatarColor, fontSize: size * 0.32, color: avatarColor.includes('1e1b4b') ? '#fff' : '#000' }}>
         {initials}
       </div>
     );
@@ -386,14 +409,27 @@ const ProfileView = ({ bots = [] }) => {
           </Field>
 
           {avatarMode === 'initials' && (
-            <Field label="Background Color">
-              <div className="flex flex-wrap gap-2">
-                {AVATAR_COLORS.map(c => (
-                  <button key={c} onClick={() => handleAvatarColorChange(c)}
-                    className={`w-8 h-8 border-2 transition-all ${avatarColor === c ? 'border-black scale-110 shadow-nb-sm' : 'border-gray-300 hover:border-black'}`}
-                    style={{ background: c }} />
+            <Field label="Gradient Preset">
+              <div className="grid grid-cols-6 gap-2">
+                {AVATAR_PRESETS.map(preset => (
+                  <button
+                    key={preset.id}
+                    title={preset.id.replace('-',' ')}
+                    onClick={() => handleAvatarColorChange(preset)}
+                    className={`h-9 border-2 transition-all relative overflow-hidden ${
+                      avatarPreset === preset.id ? 'border-black scale-110 shadow-[3px_3px_0px_0px_#000]' : 'border-transparent hover:border-black'
+                    }`}
+                    style={{ background: preset.style }}
+                  >
+                    {avatarPreset === preset.id && (
+                      <span className="absolute inset-0 flex items-center justify-center">
+                        <Check size={13} className={preset.id === 'cosmic' ? 'text-white' : 'text-black'} strokeWidth={3} />
+                      </span>
+                    )}
+                  </button>
                 ))}
               </div>
+              <p className="text-xs text-nb-muted mt-2 capitalize">{avatarPreset.replace('-',' ')} gradient</p>
             </Field>
           )}
 
@@ -408,10 +444,10 @@ const ProfileView = ({ bots = [] }) => {
                 ))}
               </div>
               <div className="flex flex-wrap gap-2">
-                {AVATAR_COLORS.map(c => (
-                  <button key={c} onClick={() => handleAvatarColorChange(c)}
-                    className={`w-6 h-6 border-2 ${avatarColor === c ? 'border-black scale-110' : 'border-gray-300 hover:border-black'}`}
-                    style={{ background: c }} />
+                {AVATAR_PRESETS.slice(0,8).map(preset => (
+                  <button key={preset.id} onClick={() => handleAvatarColorChange(preset)}
+                    className={`w-6 h-6 border-2 transition-all ${avatarPreset === preset.id ? 'border-black scale-110' : 'border-gray-300 hover:border-black'}`}
+                    style={{ background: preset.style }} />
                 ))}
               </div>
             </Field>
@@ -479,19 +515,33 @@ const ProfileView = ({ bots = [] }) => {
         {/* ── PREFERENCES ── */}
         <Section title="Preferences" icon={Star} accent="bg-purple-300">
           {[
-            { key: 'emailNotifications', label: 'Email Notifications', description: 'Receive updates about your bots via email' },
-            { key: 'queryAlerts',        label: 'Query Limit Alerts',  description: 'Alert when a bot exceeds 80% of query limit' },
-            { key: 'weeklyDigest',       label: 'Weekly Digest',       description: 'Weekly summary of bot performance' },
-            { key: 'compactSidebar',     label: 'Compact Sidebar',     description: 'Default to collapsed sidebar on load' },
-          ].map(({ key, label, description }) => (
-            <div key={key} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
-              <div>
-                <p className="text-sm font-bold">{label}</p>
-                <p className="text-xs text-nb-muted">{description}</p>
+            { key: 'emailNotifications', label: 'Email Notifications', description: 'Receive updates about your bots via email',    icon: Bell },
+            { key: 'queryAlerts',        label: 'Query Limit Alerts',  description: 'Alert when a bot exceeds 80% of query limit', icon: AlertTriangle },
+            { key: 'weeklyDigest',       label: 'Weekly Digest',       description: 'Weekly summary of bot performance',           icon: BarChart2 },
+            { key: 'compactSidebar',     label: 'Compact Sidebar',     description: 'Default to collapsed sidebar on load',        icon: PanelLeft },
+          ].map(({ key, label, description, icon: PrefIcon }) => (
+            <div key={key} className="flex items-center justify-between py-3.5 border-b border-gray-100 last:border-0 gap-4">
+              <div className="flex items-start gap-3 min-w-0">
+                <div className="w-8 h-8 border-2 border-black bg-purple-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <PrefIcon size={14} />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-bold">{label}</p>
+                  <p className="text-xs text-nb-muted">{description}</p>
+                </div>
               </div>
-              <button onClick={() => handlePrefChange(key)}
-                className={`relative w-10 h-5 border-2 border-black flex-shrink-0 transition-colors ${prefs[key] ? 'bg-nb-yellow' : 'bg-gray-200'}`}>
-                <span className={`absolute top-0 h-3 w-3 border-2 border-black bg-white transition-all ${prefs[key] ? 'left-4' : 'left-0'}`} />
+              {/* pill toggle */}
+              <button
+                onClick={() => handlePrefChange(key)}
+                role="switch"
+                aria-checked={prefs[key]}
+                className={`relative flex-shrink-0 w-12 h-6 border-2 border-black rounded-full transition-colors duration-200 ${
+                  prefs[key] ? 'bg-nb-yellow' : 'bg-gray-200'
+                }`}
+              >
+                <span className={`absolute top-0.5 w-4 h-4 rounded-full border-2 border-black bg-white shadow-[1px_1px_0px_0px_#000] transition-all duration-200 ${
+                  prefs[key] ? 'left-6' : 'left-0.5'
+                }`} />
               </button>
             </div>
           ))}
