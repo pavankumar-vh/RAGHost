@@ -137,7 +137,22 @@ export const botsService = {
     const response = await api.delete(`/api/bots/${botId}/embed-history/${snapId}`);
     return response.data;
   },
-};
+
+  // Advanced settings (temperature, maxTokens, systemPrompt, welcomeMessage)
+  updateSettings: async (botId, settings) => {
+    const response = await api.put(`/api/bots/${botId}/settings`, settings);
+    return response.data;
+  },
+
+  // Widget customizer config
+  getWidgetConfig: async (botId) => {
+    const response = await api.get(`/api/bots/${botId}/widget-config`);
+    return response.data;
+  },
+  saveWidgetConfig: async (botId, config) => {
+    const response = await api.put(`/api/bots/${botId}/widget-config`, config);
+    return response.data;
+  },
 
 // Analytics endpoints
 export const analyticsService = {

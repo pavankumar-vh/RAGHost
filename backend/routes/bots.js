@@ -11,6 +11,9 @@ import {
   getEmbedHistory,
   addEmbedSnapshot,
   deleteEmbedSnapshot,
+  updateSettings,
+  saveWidgetConfig,
+  getWidgetConfig,
 } from '../controllers/botsController.js';
 import { authenticate } from '../middleware/auth.js';
 
@@ -47,5 +50,12 @@ router.get('/:id/embed', getEmbedCode);
 router.get('/:id/embed-history', getEmbedHistory);
 router.post('/:id/embed-history', addEmbedSnapshot);
 router.delete('/:id/embed-history/:snapId', deleteEmbedSnapshot);
+
+// Advanced settings
+router.put('/:id/settings', updateSettings);
+
+// Widget customizer config
+router.get('/:id/widget-config', getWidgetConfig);
+router.put('/:id/widget-config', saveWidgetConfig);
 
 export default router;

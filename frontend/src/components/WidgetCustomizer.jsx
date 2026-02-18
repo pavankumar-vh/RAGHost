@@ -1,9 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Code, Copy, Check, Palette, Layout, Type, Sparkles } from 'lucide-react';
+import { botsService, setAuthToken } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 const WidgetCustomizer = ({ bot, onClose }) => {
+  const { getIdToken } = useAuth();
   const [copied, setCopied] = useState(false);
   const iframeRef = useRef(null);
+  const syncTimer = useRef(null);
 
   // Add custom scrollbar styles
   useEffect(() => {
@@ -56,6 +60,42 @@ const WidgetCustomizer = ({ bot, onClose }) => {
     // Animation
     animationSpeed: 'normal', // slow, normal, fast
   });
+
+  // Load saved config from backend on open
+  useEffect(() => {
+    const loadConfig = async () => {
+      try {
+        const botId = bot?._id || bot?.id;
+        if (!botId) return;
+        const token = await getIdToken();
+        if (!token) return;
+        setAuthToken(token);
+        const res = await botsService.getWidgetConfig(botId);
+        if (res.data) {
+          setConfig(prev => ({ ...prev, ...res.data }));
+        }
+      } catch (e) {
+        console.warn('Could not load widget config:', e.message);
+      }
+    };
+    loadConfig();
+  }, []);
+
+  // Debounce-sync any config change to backend
+  const updateConfig = (patch) => {
+    const next = { ...config, ...patch };
+    setConfig(next);
+    clearTimeout(syncTimer.current);
+    syncTimer.current = setTimeout(async () => {
+      try {
+        const botId = bot?._id || bot?.id;
+        if (!botId) return;
+        const token = await getIdToken();
+        setAuthToken(token);
+        await botsService.saveWidgetConfig(botId, next);
+      } catch (e) { console.warn('Widget config sync failed:', e.message); }
+    }, 800);
+  };
 
   // Generate preview HTML
   const generatePreviewHTML = () => {
@@ -463,7 +503,7 @@ const WidgetCustomizer = ({ bot, onClose }) => {
                     <input
                       type="color"
                       value={config[key]}
-                      onChange={(e) => setConfig({...config, [key]: e.target.value})}
+                      onChange={(e) => updateConfig({[key]: e.target.value})}
                       className="w-full h-10 border-2 border-black cursor-pointer"
                     />
                   </div>
@@ -480,19 +520,19 @@ const WidgetCustomizer = ({ bot, onClose }) => {
                 <div>
                   <label className="text-xs font-bold text-nb-muted block mb-1">Width: {config.width}px</label>
                   <input type="range" min="300" max="500" value={config.width}
-                    onChange={(e) => setConfig({...config, width: parseInt(e.target.value)})}
+                    onChange={(e) => updateConfig({width: parseInt(e.target.value)})}
                     className="w-full accent-black" />
                 </div>
                 <div>
                   <label className="text-xs font-bold text-nb-muted block mb-1">Height: {config.height}px</label>
                   <input type="range" min="400" max="700" value={config.height}
-                    onChange={(e) => setConfig({...config, height: parseInt(e.target.value)})}
+                    onChange={(e) => updateConfig({height: parseInt(e.target.value)})}
                     className="w-full accent-black" />
                 </div>
                 <div>
                   <label className="text-xs font-bold text-nb-muted block mb-1">Button Size: {config.buttonSize}px</label>
                   <input type="range" min="50" max="80" value={config.buttonSize}
-                    onChange={(e) => setConfig({...config, buttonSize: parseInt(e.target.value)})}
+                    onChange={(e) => updateConfig({buttonSize: parseInt(e.target.value)})}
                     className="w-full accent-black" />
                 </div>
               </div>
@@ -503,7 +543,7 @@ const WidgetCustomizer = ({ bot, onClose }) => {
               <h3 className="text-sm font-bold text-nb-text mb-3">Position</h3>
               <div className="grid grid-cols-3 gap-2">
                 {['bottom-left', 'bottom-center', 'bottom-right'].map(pos => (
-                  <button key={pos} onClick={() => setConfig({...config, position: pos})}
+                  <button key={pos} onClick={() => updateConfig({position: pos})}
                     className={`p-2 border-2 text-xs font-bold transition-all ${
                       config.position === pos ? 'border-black bg-nb-yellow shadow-nb-sm' : 'border-black bg-white hover:bg-nb-yellow/30'
                     }`}>
@@ -518,7 +558,7 @@ const WidgetCustomizer = ({ bot, onClose }) => {
               <h3 className="text-sm font-bold text-nb-text mb-3">Button Style</h3>
               <div className="grid grid-cols-3 gap-2">
                 {['circle', 'rounded-square', 'square'].map(style => (
-                  <button key={style} onClick={() => setConfig({...config, buttonStyle: style})}
+                  <button key={style} onClick={() => updateConfig({buttonStyle: style})}
                     className={`p-2 border-2 text-xs font-bold transition-all ${
                       config.buttonStyle === style ? 'border-black bg-nb-pink shadow-nb-sm' : 'border-black bg-white hover:bg-nb-pink/30'
                     }`}>
@@ -532,7 +572,7 @@ const WidgetCustomizer = ({ bot, onClose }) => {
             <div>
               <h3 className="text-sm font-bold text-nb-text mb-2">Border Radius: {config.borderRadius}px</h3>
               <input type="range" min="8" max="32" value={config.borderRadius}
-                onChange={(e) => setConfig({...config, borderRadius: parseInt(e.target.value)})}
+                onChange={(e) => updateConfig({borderRadius: parseInt(e.target.value)})}
                 className="w-full accent-black" />
             </div>
 
@@ -542,7 +582,7 @@ const WidgetCustomizer = ({ bot, onClose }) => {
                 <Type className="w-4 h-4" /> Font Family
               </h3>
               <select value={config.fontFamily}
-                onChange={(e) => setConfig({...config, fontFamily: e.target.value})}
+                onChange={(e) => updateConfig({fontFamily: e.target.value})}
                 className="nb-input w-full text-sm">
                 <option value="Inter, sans-serif">Inter</option>
                 <option value="Roboto, sans-serif">Roboto</option>
@@ -558,7 +598,7 @@ const WidgetCustomizer = ({ bot, onClose }) => {
               <h3 className="text-sm font-bold text-nb-text mb-3">Animation Speed</h3>
               <div className="grid grid-cols-3 gap-2">
                 {['slow', 'normal', 'fast'].map(speed => (
-                  <button key={speed} onClick={() => setConfig({...config, animationSpeed: speed})}
+                  <button key={speed} onClick={() => updateConfig({animationSpeed: speed})}
                     className={`p-2 border-2 text-xs font-bold transition-all ${
                       config.animationSpeed === speed ? 'border-black bg-nb-blue shadow-nb-sm' : 'border-black bg-white hover:bg-nb-blue/30'
                     }`}>
@@ -573,7 +613,7 @@ const WidgetCustomizer = ({ bot, onClose }) => {
               <h3 className="text-sm font-bold text-nb-text mb-2">Welcome Message</h3>
               <textarea
                 value={config.welcomeMessage}
-                onChange={(e) => setConfig({...config, welcomeMessage: e.target.value})}
+                onChange={(e) => updateConfig({welcomeMessage: e.target.value})}
                 rows={3}
                 className="nb-input w-full text-sm resize-none"
                 placeholder="Enter welcome message..."

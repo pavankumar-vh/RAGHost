@@ -107,6 +107,26 @@ const botSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    welcomeMessage: {
+      type: String,
+      default: 'Hi! How can I help you today? 👋',
+    },
+
+    // Widget Customizer Config
+    widgetConfig: {
+      primaryColor:    { type: String, default: '#667eea' },
+      secondaryColor:  { type: String, default: '#764ba2' },
+      backgroundColor: { type: String, default: '#ffffff' },
+      textColor:       { type: String, default: '#000000' },
+      width:           { type: Number, default: 400 },
+      height:          { type: Number, default: 600 },
+      position:        { type: String, default: 'bottom-right' },
+      borderRadius:    { type: Number, default: 16 },
+      buttonSize:      { type: Number, default: 60 },
+      buttonStyle:     { type: String, default: 'circle' },
+      fontFamily:      { type: String, default: 'Inter, sans-serif' },
+      animationSpeed:  { type: String, default: 'normal' },
+    },
     
     // Embed Config Version History
     embedHistory: [{
