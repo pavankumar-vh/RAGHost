@@ -19,7 +19,8 @@ import {
   Bot, Key, BarChart3, Home, LogOut, BookOpen, Plus, Search, TrendingUp,
   Activity, Zap, Database, MessageSquare, Loader2, Trash2, Edit, Code,
   CheckCircle2, XCircle, Copy, Check, ExternalLink, Menu, X, UserCircle,
-  ChevronLeft, ChevronRight,
+  ChevronLeft, ChevronRight, Terminal, Globe, AlertCircle, RefreshCw,
+  Upload, Settings, Shield, Cpu, Hash, FileText, ArrowRight, Layers,
 } from 'lucide-react';
 
 ChartJS.register(LineElement, PointElement, LinearScale, CategoryScale, Filler, Tooltip);
@@ -201,8 +202,8 @@ const Sidebar = ({ activePage, setActivePage, handleLogout, currentUser, isOpen,
     .split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
 
   return (
-    <aside className={`fixed top-0 left-0 h-full bg-white border-r-2 border-black flex flex-col z-30
-      transition-all duration-300 ease-in-out
+    <aside className={`fixed top-0 left-0 h-screen bg-white border-r-2 border-black flex flex-col z-30
+      transition-all duration-300 ease-in-out overflow-hidden
       ${ isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0
       ${ collapsed ? 'w-16' : 'w-64' }`}>
 
@@ -605,79 +606,527 @@ const ApiKeysView = ({ bots, loading, onEdit, fetchBots }) => {
 
 /* ─────────────────── DOCUMENTATION VIEW ─────────────────── */
 const DocumentationView = () => {
+  const [activeTab, setActiveTab] = useState('quickstart');
   const [copiedId, setCopiedId] = useState('');
-  const copy = (text, id) => { navigator.clipboard.writeText(text); setCopiedId(id); setTimeout(() => setCopiedId(''), 2000); };
 
-  const CodeBlock = ({ code, id }) => (
-    <div className="relative mt-2 border-2 border-black bg-gray-900 text-white font-mono text-sm p-4 overflow-x-auto">
-      <button onClick={() => copy(code, id)} className="absolute top-2 right-2 border border-white/20 bg-white/10 hover:bg-white/20 p-1.5 transition-colors">
-        {copiedId === id ? <Check size={14} className="text-green-400" /> : <Copy size={14} />}
-      </button>
-      <pre className="pr-10"><code>{code}</code></pre>
+  const copy = (text, id) => {
+    navigator.clipboard.writeText(text);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(''), 2000);
+  };
+
+  const CodeBlock = ({ code, id, lang = 'bash' }) => (
+    <div className="relative mt-2 border-2 border-black bg-gray-950 text-green-300 font-mono text-xs sm:text-sm overflow-x-auto">
+      <div className="flex items-center justify-between px-4 py-1.5 bg-black/60 border-b border-white/10">
+        <span className="text-white/40 text-xs uppercase tracking-wider">{lang}</span>
+        <button onClick={() => copy(code, id)} className="flex items-center gap-1 border border-white/20 bg-white/10 hover:bg-white/20 px-2 py-0.5 text-xs text-white transition-colors">
+          {copiedId === id ? <><Check size={11} className="text-green-400" />Copied!</> : <><Copy size={11} />Copy</>}
+        </button>
+      </div>
+      <pre className="p-4 overflow-x-auto whitespace-pre"><code>{code}</code></pre>
     </div>
   );
 
-  return (
-    <div className="space-y-8 w-full max-w-4xl">
-      <div className="bg-nb-yellow border-2 border-black shadow-nb p-6">
-        <div className="flex items-center gap-3"><BookOpen size={28} /><div><h1 className="text-3xl font-bold">Documentation</h1><p className="text-black/60 text-sm">Get your API keys and deploy your first bot</p></div></div>
-      </div>
-      {[
-        {
-          icon: Key, label: 'Gemini API Key', color: 'bg-nb-pink',
-          steps: [
-            { n: 1, t: 'Visit Google AI Studio', a: 'bg-nb-yellow', c: <><p className="text-sm">Get your free API key:</p><a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 mt-2 nb-btn bg-black text-white border-black px-3 py-1.5 text-xs">Open AI Studio <ExternalLink size={12} /></a></> },
-            { n: 2, t: 'Copy Your API Key', a: 'bg-nb-yellow', c: <><p className="text-sm">Create an API Key and copy it:</p><CodeBlock code="AIzaSyD-example_key-1234567890abcdef" id="gemini-eg" /></> },
-            { n: 3, t: 'Free Tier', a: 'bg-nb-yellow', c: <p className="text-sm">60 requests/minute — completely free for development.</p> },
-          ],
-        },
-        {
-          icon: Database, label: 'Pinecone API Key', color: 'bg-nb-blue',
-          steps: [
-            { n: 1, t: 'Sign up for Pinecone', a: 'bg-nb-blue', c: <a href="https://www.pinecone.io/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 nb-btn bg-black text-white border-black px-3 py-1.5 text-xs">Go to Pinecone <ExternalLink size={12} /></a> },
-            { n: 2, t: 'Create an Index', a: 'bg-nb-blue', c: <ul className="text-sm space-y-1 list-disc list-inside"><li>Dimensions: <code className="bg-gray-100 px-1 rounded">768</code></li><li>Metric: Cosine</li><li>Cloud: any free region</li></ul> },
-            { n: 3, t: 'Get Your API Key', a: 'bg-nb-blue', c: <><p className="text-sm">Go to "API Keys" in the sidebar:</p><CodeBlock code="pcsk_example-1234_key567890abcdefghijklmnop" id="pine-eg" /></> },
-          ],
-        },
-      ].map(({ icon: Icon, label, color, steps }) => (
-        <section key={label}>
-          <div className="flex items-center gap-3 mb-4">
-            <div className={`w-8 h-8 border-2 border-black ${color} flex items-center justify-center`}><Icon size={16} /></div>
-            <h2 className="text-xl font-bold">{label}</h2>
-          </div>
-          <div className="space-y-3">
-            {steps.map(({ n, t, a, c }) => (
-              <div key={n} className="bg-white border-2 border-black shadow-nb p-5">
-                <div className="flex items-start gap-4">
-                  <div className={`w-9 h-9 border-2 border-black ${a} flex items-center justify-center font-bold flex-shrink-0`}>{n}</div>
-                  <div className="flex-1"><h3 className="font-bold mb-2">{t}</h3>{c}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      ))}
-      <section>
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-8 h-8 border-2 border-black bg-green-300 flex items-center justify-center"><Zap size={16} /></div>
-          <h2 className="text-xl font-bold">Deploy Your Bot</h2>
+  const Badge = ({ children, color = 'bg-nb-yellow' }) => (
+    <span className={`inline-flex items-center px-2 py-0.5 text-xs font-bold border-2 border-black ${color}`}>{children}</span>
+  );
+
+  const EndpointRow = ({ method, path, desc, badge }) => {
+    const colors = { GET: 'bg-green-200 text-green-800', POST: 'bg-nb-blue text-blue-800', PUT: 'bg-nb-yellow text-yellow-800', DELETE: 'bg-red-200 text-red-800' };
+    return (
+      <div className="border-2 border-black p-3 sm:p-4 bg-white hover:bg-nb-bg transition-colors">
+        <div className="flex flex-wrap items-center gap-2 mb-1">
+          <span className={`font-mono text-xs font-bold px-2 py-0.5 border-2 border-black ${colors[method] || 'bg-gray-100'}`}>{method}</span>
+          <code className="font-mono text-xs sm:text-sm text-black font-bold break-all">{path}</code>
+          {badge && <Badge color="bg-nb-pink">{badge}</Badge>}
         </div>
-        <div className="space-y-3">
-          {['Create Your Bot — Click "New Bot" in My Bots', 'Enter API Keys — Paste your Gemini & Pinecone keys', 'Upload Documents — PDF, TXT, DOCX (max 10MB)', 'Test — Use the embedded chat widget!'].map((s, i) => (
-            <div key={i} className="bg-white border-2 border-black shadow-nb p-4 flex items-start gap-3">
-              <div className="w-7 h-7 border-2 border-black bg-nb-yellow flex items-center justify-center font-bold text-sm flex-shrink-0">{i + 1}</div>
-              <p className="text-sm font-medium pt-0.5">{s}</p>
+        <p className="text-xs text-nb-muted pl-1">{desc}</p>
+      </div>
+    );
+  };
+
+  const tabs = [
+    { id: 'quickstart', label: 'Quick Start',    icon: Zap },
+    { id: 'widget',     label: 'Widget Embed',   icon: Globe },
+    { id: 'api',        label: 'API Reference',  icon: Terminal },
+    { id: 'config',     label: 'Configuration',  icon: Settings },
+    { id: 'trouble',    label: 'Troubleshooting', icon: AlertCircle },
+  ];
+
+  return (
+    <div className="w-full max-w-4xl space-y-0">
+      {/* Header */}
+      <div className="bg-nb-yellow border-2 border-black shadow-nb p-5 sm:p-6 mb-6">
+        <div className="flex items-start sm:items-center gap-3 sm:gap-4">
+          <div className="w-12 h-12 border-2 border-black bg-black flex items-center justify-center flex-shrink-0">
+            <BookOpen size={22} className="text-nb-yellow" />
+          </div>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight">Documentation</h1>
+            <p className="text-black/60 text-sm mt-0.5">Everything you need to build and deploy AI chatbots with RAGhost</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex gap-1 overflow-x-auto pb-1 mb-5 scrollbar-none">
+        {tabs.map(({ id, label, icon: Icon }) => (
+          <button key={id} onClick={() => setActiveTab(id)}
+            className={`flex items-center gap-1.5 px-3 py-2 font-bold text-xs sm:text-sm border-2 whitespace-nowrap transition-all flex-shrink-0 ${
+              activeTab === id ? 'bg-black text-white border-black' : 'bg-white border-black text-nb-muted hover:bg-nb-yellow hover:text-black'
+            }`}>
+            <Icon size={13} />
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {/* ── QUICK START ─────────────────────────────────────── */}
+      {activeTab === 'quickstart' && (
+        <div className="space-y-5">
+          <div className="bg-white border-2 border-black shadow-nb p-5">
+            <h2 className="text-lg font-black mb-1">Get Running in 5 Minutes</h2>
+            <p className="text-sm text-nb-muted">Follow these steps to deploy your first RAG-powered chatbot.</p>
+          </div>
+
+          {[
+            {
+              n: 1, color: 'bg-nb-yellow', icon: Key, title: 'Get a Gemini API Key',
+              content: (
+                <>
+                  <p className="text-sm mb-3">Gemini handles all AI responses and embeddings. The free tier is generous enough for development and small production loads.</p>
+                  <ol className="text-sm space-y-2 mb-3">
+                    <li className="flex gap-2"><ArrowRight size={14} className="mt-0.5 flex-shrink-0 text-nb-muted" /><span>Go to <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="font-bold underline">aistudio.google.com</a> and sign in with your Google account</span></li>
+                    <li className="flex gap-2"><ArrowRight size={14} className="mt-0.5 flex-shrink-0 text-nb-muted" /><span>Click <strong>Create API Key</strong> → select a Google Cloud project (or create one)</span></li>
+                    <li className="flex gap-2"><ArrowRight size={14} className="mt-0.5 flex-shrink-0 text-nb-muted" /><span>Copy the key — it looks like this:</span></li>
+                  </ol>
+                  <CodeBlock code="AIzaSyD-YourActualKeyGoesHere1234567890" id="gemini-key" lang="text" />
+                  <p className="text-xs text-nb-muted mt-2">Free quota: 60 requests/min · 1,500 requests/day for Gemini 1.5 Flash</p>
+                </>
+              ),
+            },
+            {
+              n: 2, color: 'bg-nb-blue', icon: Database, title: 'Create a Pinecone Index',
+              content: (
+                <>
+                  <p className="text-sm mb-3">Pinecone is the vector database that stores your document embeddings for semantic search.</p>
+                  <ol className="text-sm space-y-2 mb-3">
+                    <li className="flex gap-2"><ArrowRight size={14} className="mt-0.5 flex-shrink-0 text-nb-muted" /><span>Sign up at <a href="https://www.pinecone.io/" target="_blank" rel="noopener noreferrer" className="font-bold underline">pinecone.io</a> (free tier available)</span></li>
+                    <li className="flex gap-2"><ArrowRight size={14} className="mt-0.5 flex-shrink-0 text-nb-muted" /><span>Click <strong>Create Index</strong> and set exactly these values:</span></li>
+                  </ol>
+                  <div className="border-2 border-black overflow-hidden mb-3">
+                    <table className="w-full text-xs">
+                      <thead><tr className="bg-nb-blue"><th className="text-left p-2 border-r-2 border-black font-bold">Setting</th><th className="text-left p-2 font-bold">Value</th></tr></thead>
+                      <tbody>
+                        {[['Dimensions','768'],['Metric','cosine'],['Pod type','Starter (free)'],['Cloud','Any available region']].map(([k,v]) => (
+                          <tr key={k} className="border-t-2 border-black"><td className="p-2 border-r-2 border-black font-mono text-nb-muted">{k}</td><td className="p-2 font-bold">{v}</td></tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <ol className="text-sm space-y-2">
+                    <li className="flex gap-2"><ArrowRight size={14} className="mt-0.5 flex-shrink-0 text-nb-muted" /><span>Copy the index name (e.g. <code className="bg-gray-100 px-1 font-mono">my-raghost-index</code>)</span></li>
+                    <li className="flex gap-2"><ArrowRight size={14} className="mt-0.5 flex-shrink-0 text-nb-muted" /><span>Go to <strong>API Keys</strong> in the sidebar and copy your Pinecone API key</span></li>
+                  </ol>
+                </>
+              ),
+            },
+            {
+              n: 3, color: 'bg-nb-pink', icon: Bot, title: 'Create Your First Bot',
+              content: (
+                <>
+                  <p className="text-sm mb-3">Navigate to <strong>My Bots</strong> → <strong>New Bot</strong> and fill in:</p>
+                  <div className="border-2 border-black overflow-hidden">
+                    <table className="w-full text-xs">
+                      <thead><tr className="bg-nb-pink"><th className="text-left p-2 border-r-2 border-black font-bold">Field</th><th className="text-left p-2 font-bold">Description</th></tr></thead>
+                      <tbody>
+                        {[
+                          ['Bot Name','Friendly name shown in the dashboard'],
+                          ['Bot Type','General, Customer Support, or Technical'],
+                          ['Gemini API Key','From Step 1'],
+                          ['Pinecone API Key','From Step 2'],
+                          ['Pinecone Index Name','The index name you created'],
+                          ['Welcome Message','First message users see in the chat widget'],
+                        ].map(([k, v]) => (
+                          <tr key={k} className="border-t-2 border-black"><td className="p-2 border-r-2 border-black font-mono text-nb-muted whitespace-nowrap">{k}</td><td className="p-2">{v}</td></tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
+              ),
+            },
+            {
+              n: 4, color: 'bg-purple-200', icon: Upload, title: 'Upload Knowledge Base Documents',
+              content: (
+                <>
+                  <p className="text-sm mb-3">Go to <strong>My Bots</strong> → click your bot → <strong>Knowledge Base</strong>. Upload any documents you want the bot to answer questions about.</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
+                    {[['PDF','.pdf'],['Text','.txt'],['Word','.docx'],['Markdown','.md']].map(([label, ext]) => (
+                      <div key={ext} className="border-2 border-black p-2 text-center bg-nb-bg">
+                        <FileText size={20} className="mx-auto mb-1" />
+                        <p className="text-xs font-bold">{label}</p>
+                        <p className="text-xs text-nb-muted font-mono">{ext}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-xs text-nb-muted">Max file size: 10 MB per file. Documents are chunked, embedded, and stored in Pinecone automatically.</p>
+                </>
+              ),
+            },
+            {
+              n: 5, color: 'bg-orange-200', icon: Code, title: 'Embed on Your Website',
+              content: (
+                <>
+                  <p className="text-sm mb-3">Go to <strong>My Bots</strong> → your bot → <strong>Embed</strong> to copy the widget code. Paste it anywhere in your HTML:</p>
+                  <CodeBlock code={`<script src="https://raghost.app/widget/widget-loader.js"\n  data-bot-id="your_bot_id_here"\n  data-primary-color="#000000"\n  data-position="bottom-right"\n  async>\n</script>`} id="embed-quick" lang="html" />
+                  <p className="text-xs text-nb-muted mt-2">That's it! The chat widget will appear on your site. No framework required.</p>
+                </>
+              ),
+            },
+          ].map(({ n, color, icon: Icon, title, content }) => (
+            <div key={n} className="bg-white border-2 border-black shadow-nb">
+              <div className={`${color} border-b-2 border-black p-4 flex items-center gap-3`}>
+                <div className="w-9 h-9 border-2 border-black bg-white flex items-center justify-center font-black text-lg flex-shrink-0">{n}</div>
+                <Icon size={18} className="flex-shrink-0" />
+                <h3 className="font-black text-base">{title}</h3>
+              </div>
+              <div className="p-5">{content}</div>
             </div>
           ))}
         </div>
-      </section>
-      <div className="bg-white border-2 border-black shadow-nb p-5 text-center">
-        <h3 className="font-bold mb-3">Official Documentation</h3>
-        <div className="flex gap-3 justify-center flex-wrap">
-          <a href="https://ai.google.dev/docs" target="_blank" rel="noopener noreferrer" className="nb-btn bg-black text-white border-black px-4 py-2 text-xs inline-flex items-center gap-1">Gemini Docs <ExternalLink size={12} /></a>
-          <a href="https://docs.pinecone.io/" target="_blank" rel="noopener noreferrer" className="nb-btn bg-white border-black px-4 py-2 text-xs inline-flex items-center gap-1">Pinecone Docs <ExternalLink size={12} /></a>
+      )}
+
+      {/* ── WIDGET EMBED ─────────────────────────────────────── */}
+      {activeTab === 'widget' && (
+        <div className="space-y-5">
+          <div className="bg-white border-2 border-black shadow-nb p-5">
+            <h2 className="text-lg font-black mb-1">Embedding the Chat Widget</h2>
+            <p className="text-sm text-nb-muted">The RAGhost widget is a self-contained JS bundle. Drop it into any HTML page or frontend framework.</p>
+          </div>
+
+          {/* HTML */}
+          <section className="bg-white border-2 border-black shadow-nb">
+            <div className="border-b-2 border-black p-4 flex items-center gap-2 bg-nb-yellow">
+              <Globe size={16} />
+              <h3 className="font-black">Vanilla HTML</h3>
+            </div>
+            <div className="p-5">
+              <p className="text-sm mb-2">Paste before your closing <code className="bg-gray-100 px-1 font-mono text-xs">&lt;/body&gt;</code> tag:</p>
+              <CodeBlock code={`<!-- RAGhost Widget -->\n<script\n  src="https://raghost.app/widget/widget-loader.js"\n  data-bot-id="YOUR_BOT_ID"\n  data-primary-color="#000000"\n  data-secondary-color="#FFFEF0"\n  data-position="bottom-right"\n  data-welcome-text="Hi! How can I help you?"\n  data-placeholder="Type a message..."\n  async\n></script>`} id="html-embed" lang="html" />
+            </div>
+          </section>
+
+          {/* React */}
+          <section className="bg-white border-2 border-black shadow-nb">
+            <div className="border-b-2 border-black p-4 flex items-center gap-2 bg-nb-blue">
+              <Cpu size={16} />
+              <h3 className="font-black">React / Next.js</h3>
+            </div>
+            <div className="p-5">
+              <p className="text-sm mb-2">Use <code className="bg-gray-100 px-1 font-mono text-xs">useEffect</code> to inject the script after mount:</p>
+              <CodeBlock code={`import { useEffect } from 'react';\n\nexport default function RagHostWidget({ botId }) {\n  useEffect(() => {\n    if (document.querySelector('[data-bot-id]')) return;\n    const script = document.createElement('script');\n    script.src = 'https://raghost.app/widget/widget-loader.js';\n    script.setAttribute('data-bot-id', botId);\n    script.setAttribute('data-primary-color', '#000000');\n    script.setAttribute('data-position', 'bottom-right');\n    script.async = true;\n    document.body.appendChild(script);\n    return () => document.body.removeChild(script);\n  }, [botId]);\n  return null;\n}`} id="react-embed" lang="jsx" />
+              <p className="text-sm mt-3 mb-2">Then use it in any page:</p>
+              <CodeBlock code={`import RagHostWidget from './RagHostWidget';\n\nexport default function MyPage() {\n  return (\n    <main>\n      <h1>My Page</h1>\n      <RagHostWidget botId="your_bot_id_here" />\n    </main>\n  );\n}`} id="react-embed-use" lang="jsx" />
+            </div>
+          </section>
+
+          {/* Vue */}
+          <section className="bg-white border-2 border-black shadow-nb">
+            <div className="border-b-2 border-black p-4 flex items-center gap-2 bg-green-200">
+              <Layers size={16} />
+              <h3 className="font-black">Vue 3</h3>
+            </div>
+            <div className="p-5">
+              <CodeBlock code={`<script setup>\nimport { onMounted, onUnmounted } from 'vue';\n\nconst botId = 'YOUR_BOT_ID';\nlet script;\n\nonMounted(() => {\n  script = document.createElement('script');\n  script.src = 'https://raghost.app/widget/widget-loader.js';\n  script.setAttribute('data-bot-id', botId);\n  script.async = true;\n  document.body.appendChild(script);\n});\n\nonUnmounted(() => script && document.body.removeChild(script));\n</script>\n\n<template><slot /></template>`} id="vue-embed" lang="vue" />
+            </div>
+          </section>
+
+          {/* Config table */}
+          <section className="bg-white border-2 border-black shadow-nb">
+            <div className="border-b-2 border-black p-4 flex items-center gap-2 bg-nb-pink">
+              <Settings size={16} />
+              <h3 className="font-black">Widget Attributes</h3>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs min-w-[520px]">
+                <thead><tr className="bg-gray-50 border-b-2 border-black">
+                  <th className="text-left p-3 border-r-2 border-black font-bold">Attribute</th>
+                  <th className="text-left p-3 border-r-2 border-black font-bold">Default</th>
+                  <th className="text-left p-3 font-bold">Description</th>
+                </tr></thead>
+                <tbody>
+                  {[
+                    ['data-bot-id','required','Your bot\'s unique ID from the dashboard'],
+                    ['data-primary-color','#000000','Main accent color (hex)'],
+                    ['data-secondary-color','#FFFEF0','Background color (hex)'],
+                    ['data-position','bottom-right','bottom-right · bottom-left · top-right · top-left'],
+                    ['data-welcome-text','Hi! How can I help?','Opening message shown to users'],
+                    ['data-placeholder','Type a message...','Input placeholder text'],
+                    ['data-button-text','Chat with us','Floating button label'],
+                    ['data-theme','default','default · minimal · glass · modern-dark'],
+                    ['data-z-index','9999','CSS z-index of the widget'],
+                  ].map(([attr, def, desc]) => (
+                    <tr key={attr} className="border-t-2 border-black">
+                      <td className="p-3 border-r-2 border-black font-mono text-nb-muted">{attr}</td>
+                      <td className="p-3 border-r-2 border-black font-mono">{def}</td>
+                      <td className="p-3">{desc}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
         </div>
-      </div>
+      )}
+
+      {/* ── API REFERENCE ─────────────────────────────────────── */}
+      {activeTab === 'api' && (
+        <div className="space-y-5">
+          <div className="bg-white border-2 border-black shadow-nb p-5">
+            <h2 className="text-lg font-black mb-1">REST API Reference</h2>
+            <p className="text-sm text-nb-muted">Base URL: <code className="bg-gray-100 px-1 font-mono">https://raghost.app/api</code></p>
+          </div>
+
+          {/* Auth */}
+          <section className="bg-white border-2 border-black shadow-nb">
+            <div className="border-b-2 border-black p-4 flex items-center gap-2 bg-nb-yellow">
+              <Shield size={16} />
+              <h3 className="font-black">Authentication</h3>
+            </div>
+            <div className="p-5">
+              <p className="text-sm mb-3">All authenticated endpoints require a Firebase ID token in the Authorization header:</p>
+              <CodeBlock code={`Authorization: Bearer <firebase_id_token>`} id="auth-header" lang="http" />
+              <p className="text-sm mt-3 mb-2">Obtaining a token (frontend):</p>
+              <CodeBlock code={`import { getAuth } from 'firebase/auth';\n\nconst token = await getAuth().currentUser.getIdToken();\n// Use token in your API calls`} id="auth-token" lang="javascript" />
+            </div>
+          </section>
+
+          {/* Bots */}
+          <section className="bg-white border-2 border-black shadow-nb">
+            <div className="border-b-2 border-black p-4 flex items-center gap-2 bg-nb-pink">
+              <Bot size={16} />
+              <h3 className="font-black">Bots</h3>
+            </div>
+            <div className="p-0 space-y-0 divide-y-2 divide-black">
+              <EndpointRow method="GET" path="/bots" desc="List all bots for the authenticated user" />
+              <EndpointRow method="POST" path="/bots" desc="Create a new bot with Gemini + Pinecone credentials" />
+              <EndpointRow method="GET" path="/bots/:id" desc="Get a specific bot's full config including widget settings" />
+              <EndpointRow method="PUT" path="/bots/:id" desc="Update bot name, type, API keys, or welcome message" />
+              <EndpointRow method="DELETE" path="/bots/:id" desc="Permanently delete a bot and all its analytics data" />
+              <EndpointRow method="POST" path="/bots/:id/verify" desc="Re-verify Pinecone and Gemini API key connections" />
+              <EndpointRow method="PUT" path="/bots/:id/settings" desc="Update temperature, maxTokens, systemPrompt" />
+              <EndpointRow method="GET" path="/bots/:id/widget-config" desc="Get the widget's visual configuration" />
+              <EndpointRow method="PUT" path="/bots/:id/widget-config" desc="Save colors, position, theme, and button text" />
+            </div>
+            <div className="p-5 border-t-2 border-black">
+              <p className="text-sm font-bold mb-2">Example — Create Bot:</p>
+              <CodeBlock code={`POST /api/bots\nContent-Type: application/json\nAuthorization: Bearer <token>\n\n{\n  "name": "Support Bot",\n  "type": "customer_support",\n  "geminiApiKey": "AIzaSy...",\n  "pineconeApiKey": "pcsk_...",\n  "pineconeIndexName": "my-index",\n  "welcomeMessage": "Hi! How can I help you today?"\n}`} id="create-bot" lang="json" />
+            </div>
+          </section>
+
+          {/* Chat */}
+          <section className="bg-white border-2 border-black shadow-nb">
+            <div className="border-b-2 border-black p-4 flex items-center gap-2 bg-nb-blue">
+              <MessageSquare size={16} />
+              <h3 className="font-black">Chat</h3>
+            </div>
+            <div className="p-0 space-y-0 divide-y-2 divide-black">
+              <EndpointRow method="POST" path="/chat/:botId" desc="Send a chat message and receive a RAG-powered response" badge="Public" />
+              <EndpointRow method="GET" path="/chat/:botId/sessions" desc="List all chat sessions for a bot (authenticated)" />
+              <EndpointRow method="GET" path="/chat/:botId/sessions/:sessionId" desc="Get full message history for a session (authenticated)" />
+            </div>
+            <div className="p-5 border-t-2 border-black">
+              <p className="text-sm font-bold mb-2">Example — Send a message:</p>
+              <CodeBlock code={`POST /api/chat/YOUR_BOT_ID\nContent-Type: application/json\n\n{\n  "message": "What is your return policy?",\n  "sessionId": "user_session_abc123"   // optional\n}`} id="chat-send" lang="json" />
+              <p className="text-sm font-bold mt-4 mb-2">Response:</p>
+              <CodeBlock code={`{\n  "success": true,\n  "response": "Our return policy allows returns within 30 days...",\n  "sessionId": "user_session_abc123",\n  "sources": [\n    { "text": "...relevant chunk...", "score": 0.94 }\n  ]\n}`} id="chat-resp" lang="json" />
+            </div>
+          </section>
+
+          {/* Knowledge Base */}
+          <section className="bg-white border-2 border-black shadow-nb">
+            <div className="border-b-2 border-black p-4 flex items-center gap-2 bg-purple-200">
+              <Database size={16} />
+              <h3 className="font-black">Knowledge Base</h3>
+            </div>
+            <div className="p-0 space-y-0 divide-y-2 divide-black">
+              <EndpointRow method="GET"    path="/knowledge/:botId"     desc="List all uploaded documents with status" />
+              <EndpointRow method="POST"   path="/knowledge/:botId/upload" desc="Upload a PDF, TXT, DOCX, or MD file (multipart/form-data)" />
+              <EndpointRow method="DELETE" path="/knowledge/:botId/:docId" desc="Remove a document and its vectors from Pinecone" />
+              <EndpointRow method="GET"    path="/knowledge/:botId/jobs"   desc="Get upload job status (chunking + embedding progress)" />
+            </div>
+          </section>
+
+          {/* Analytics */}
+          <section className="bg-white border-2 border-black shadow-nb">
+            <div className="border-b-2 border-black p-4 flex items-center gap-2 bg-orange-200">
+              <BarChart3 size={16} />
+              <h3 className="font-black">Analytics</h3>
+            </div>
+            <div className="p-0 space-y-0 divide-y-2 divide-black">
+              <EndpointRow method="GET" path="/analytics/overview"        desc="Account-level stats: total bots, queries, sessions" />
+              <EndpointRow method="GET" path="/analytics/daily?days=7"    desc="Daily query counts for the past N days" />
+              <EndpointRow method="GET" path="/analytics/bots/:id"        desc="Per-bot analytics: queries, accuracy, top questions" />
+            </div>
+          </section>
+        </div>
+      )}
+
+      {/* ── CONFIGURATION ─────────────────────────────────────── */}
+      {activeTab === 'config' && (
+        <div className="space-y-5">
+          <div className="bg-white border-2 border-black shadow-nb p-5">
+            <h2 className="text-lg font-black mb-1">Bot Configuration Reference</h2>
+            <p className="text-sm text-nb-muted">Advanced settings available via <strong>Edit Bot</strong> → <strong>Settings</strong> tab.</p>
+          </div>
+
+          {/* AI Settings */}
+          <section className="bg-white border-2 border-black shadow-nb">
+            <div className="border-b-2 border-black p-4 flex items-center gap-2 bg-nb-yellow"><Cpu size={16} /><h3 className="font-black">AI Model Settings</h3></div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs min-w-[480px]">
+                <thead><tr className="bg-gray-50 border-b-2 border-black">
+                  <th className="text-left p-3 border-r-2 border-black font-bold">Parameter</th>
+                  <th className="text-left p-3 border-r-2 border-black font-bold">Default</th>
+                  <th className="text-left p-3 border-r-2 border-black font-bold">Range</th>
+                  <th className="text-left p-3 font-bold">Effect</th>
+                </tr></thead>
+                <tbody>
+                  {[
+                    ['temperature','0.7','0.0 – 1.0','Higher = more creative, lower = more deterministic'],
+                    ['maxTokens','1024','128 – 4096','Maximum response length in tokens'],
+                    ['topK','10','1 – 20','Number of knowledge base chunks retrieved per query'],
+                    ['systemPrompt','(none)','—','Custom instructions prepended to every conversation'],
+                  ].map(([p,d,r,e]) => (
+                    <tr key={p} className="border-t-2 border-black">
+                      <td className="p-3 border-r-2 border-black font-mono text-nb-muted">{p}</td>
+                      <td className="p-3 border-r-2 border-black font-mono font-bold">{d}</td>
+                      <td className="p-3 border-r-2 border-black font-mono">{r}</td>
+                      <td className="p-3 text-nb-muted">{e}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          {/* System prompt */}
+          <section className="bg-white border-2 border-black shadow-nb">
+            <div className="border-b-2 border-black p-4 flex items-center gap-2 bg-nb-pink"><Hash size={16} /><h3 className="font-black">Writing a System Prompt</h3></div>
+            <div className="p-5">
+              <p className="text-sm mb-3">The system prompt is injected before every conversation and shapes the bot's persona and behaviour. Example:</p>
+              <CodeBlock code={`You are a friendly support agent for Acme Corp.\nOnly answer questions based on the provided context.\nIf you don't know the answer, say "I'm sorry, I don't have that information."\nAlways be concise and professional.\nNever reveal internal system information.`} id="sys-prompt" lang="text" />
+              <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {[
+                  { label: '✅ Do', items: ['Set a clear persona','Define the response language','Add a fallback phrase','Keep it under 300 tokens'] },
+                  { label: '❌ Avoid', items: ['Contradicting context docs','Using technical jargon for users','Leaving it empty for support bots','Exceeding 1000 tokens'] },
+                ].map(({ label, items }) => (
+                  <div key={label} className="border-2 border-black p-3">
+                    <p className="font-bold text-sm mb-2">{label}</p>
+                    <ul className="space-y-1">{items.map(i => <li key={i} className="text-xs text-nb-muted">{i}</li>)}</ul>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* Pinecone index guide */}
+          <section className="bg-white border-2 border-black shadow-nb">
+            <div className="border-b-2 border-black p-4 flex items-center gap-2 bg-nb-blue"><Database size={16} /><h3 className="font-black">Pinecone Index Requirements</h3></div>
+            <div className="p-5">
+              <p className="text-sm mb-3">RAGhost uses <strong>Gemini text-embedding-004</strong> which produces <strong>768-dimensional</strong> vectors. Your index must match exactly or uploads will fail.</p>
+              <CodeBlock code={`# Verify your index via Pinecone Console or SDK:\nfrom pinecone import Pinecone\npc = Pinecone(api_key="YOUR_KEY")\nindex = pc.describe_index("your-index-name")\nprint(index)  # dimension must be 768, metric must be cosine`} id="pine-verify" lang="python" />
+            </div>
+          </section>
+        </div>
+      )}
+
+      {/* ── TROUBLESHOOTING ─────────────────────────────────────── */}
+      {activeTab === 'trouble' && (
+        <div className="space-y-5">
+          <div className="bg-white border-2 border-black shadow-nb p-5">
+            <h2 className="text-lg font-black mb-1">Troubleshooting Guide</h2>
+            <p className="text-sm text-nb-muted">Solutions to the most common issues.</p>
+          </div>
+
+          {[
+            {
+              color: 'bg-red-200', icon: XCircle, title: '"Pinecone verification failed"',
+              items: [
+                ['Wrong index name', 'Double-check the exact index name in your Pinecone console — it\'s case-sensitive.'],
+                ['Wrong dimensions', 'Your index must use 768 dimensions and cosine metric. Delete and recreate if needed.'],
+                ['API key missing', 'Make sure you copied the Pinecone API key (not the environment name).'],
+                ['Free tier limit', 'The Pinecone free tier only allows 1 index. Delete old indexes if you\'ve hit the limit.'],
+              ],
+            },
+            {
+              color: 'bg-nb-yellow', icon: Zap, title: '"Gemini API key invalid"',
+              items: [
+                ['Billing not enabled', 'For production loads, enable billing in Google Cloud Console even on the free tier.'],
+                ['Wrong project', 'The key must belong to a project with the "Generative Language API" enabled.'],
+                ['Key restrictions', 'If you set IP/referrer restrictions on the key, the RAGhost server IP must be allowed.'],
+                ['Quota exceeded', 'Free tier is 60 req/min. Upgrade or implement request queuing for high traffic.'],
+              ],
+            },
+            {
+              color: 'bg-nb-blue', icon: Upload, title: 'Document upload stuck or fails',
+              items: [
+                ['File too large', 'Maximum file size is 10 MB. Split large PDFs into smaller chunks before uploading.'],
+                ['Scanned PDFs', 'Scanned PDFs without OCR text layers cannot be processed. Use a text-based PDF.'],
+                ['Unsupported format', 'Only PDF, TXT, DOCX, and MD are supported. Convert other formats first.'],
+                ['Pinecone full', 'The Pinecone free tier has a vector limit. Delete old documents to free space.'],
+              ],
+            },
+            {
+              color: 'bg-purple-200', icon: MessageSquare, title: 'Bot gives wrong or empty answers',
+              items: [
+                ['No documents uploaded', 'The bot needs knowledge base documents to answer questions. Upload at least one.'],
+                ['Temperature too high', 'Lower temperature (e.g. 0.3) to get more factual, consistent answers.'],
+                ['System prompt conflict', 'An overly restrictive system prompt can prevent the bot from answering. Review it.'],
+                ['topK too low', 'Increase topK to retrieve more document chunks per query for complex questions.'],
+              ],
+            },
+            {
+              color: 'bg-orange-200', icon: Globe, title: 'Widget not appearing on site',
+              items: [
+                ['Wrong bot ID', 'Copy the bot ID exactly from the Embed modal — it\'s case-sensitive.'],
+                ['CSP blocking scripts', 'Add raghost.app to your Content-Security-Policy script-src and connect-src directives.'],
+                ['Script loaded twice', 'Include the widget script only once per page. Check for duplicate tags.'],
+                ['CORS error', 'If self-hosting the backend, add your domain to the CORS allowlist in server config.'],
+              ],
+            },
+          ].map(({ color, icon: Icon, title, items }) => (
+            <section key={title} className="bg-white border-2 border-black shadow-nb">
+              <div className={`border-b-2 border-black p-4 flex items-center gap-2 ${color}`}>
+                <Icon size={16} />
+                <h3 className="font-black">{title}</h3>
+              </div>
+              <div className="divide-y-2 divide-black">
+                {items.map(([cause, fix]) => (
+                  <div key={cause} className="p-4 flex gap-3">
+                    <div className="w-2 h-2 mt-1.5 bg-black flex-shrink-0" />
+                    <div>
+                      <p className="text-sm font-bold">{cause}</p>
+                      <p className="text-xs text-nb-muted mt-0.5">{fix}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ))}
+
+          {/* Support links */}
+          <div className="bg-black text-white border-2 border-black shadow-nb p-5">
+            <h3 className="font-bold mb-3">Still stuck? Get help:</h3>
+            <div className="flex flex-wrap gap-3">
+              <a href="https://ai.google.dev/docs" target="_blank" rel="noopener noreferrer" className="nb-btn bg-nb-yellow text-black border-nb-yellow px-4 py-2 text-xs inline-flex items-center gap-1">Gemini Docs <ExternalLink size={12} /></a>
+              <a href="https://docs.pinecone.io/" target="_blank" rel="noopener noreferrer" className="nb-btn bg-nb-blue text-black border-nb-blue px-4 py-2 text-xs inline-flex items-center gap-1">Pinecone Docs <ExternalLink size={12} /></a>
+              <a href="https://github.com/pavankumar-vh/RAGHost/issues" target="_blank" rel="noopener noreferrer" className="nb-btn bg-white text-black border-white px-4 py-2 text-xs inline-flex items-center gap-1">Open GitHub Issue <ExternalLink size={12} /></a>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
