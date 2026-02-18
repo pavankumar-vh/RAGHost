@@ -90,7 +90,7 @@ const ConfirmDialog = ({
       className="fixed inset-0 bg-black/60 flex items-center justify-center z-[9999] p-4"
       onClick={handleBackdropClick}
     >
-      <div className="bg-white border-2 border-black shadow-nb-xl w-full max-w-md p-8">
+      <div className="bg-white border-2 border-black shadow-nb-xl w-full max-w-md p-5 sm:p-8">
         <div className="flex justify-end mb-2">
           <button onClick={onClose} className="nb-btn bg-white p-1.5"><X size={18} /></button>
         </div>
@@ -102,9 +102,9 @@ const ConfirmDialog = ({
         </div>
 
         {title && <h2 className="text-xl font-bold text-nb-text text-center mb-3">{title}</h2>}
-        <p className="text-nb-text text-center mb-8 leading-relaxed whitespace-pre-line text-sm">{message}</p>
+        <p className="text-nb-text text-center mb-5 sm:mb-8 leading-relaxed whitespace-pre-line text-sm">{message}</p>
 
-        <div className={`flex gap-3 ${type === 'alert' || type === 'success' || type === 'error' ? 'justify-center' : 'justify-end'}`}>
+        <div className={`flex flex-col xs:flex-row gap-2 sm:gap-3 ${type === 'alert' || type === 'success' || type === 'error' ? 'justify-center' : 'justify-end'}`}>
           {(type === 'confirm' || type === 'warning') && (
             <button onClick={onClose} className="nb-btn bg-white px-5 py-2.5">{cancelText}</button>
           )}

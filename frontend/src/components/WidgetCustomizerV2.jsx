@@ -547,16 +547,16 @@ function sendMsg(){
   const previewWidth = { desktop: '100%', tablet: '768px', mobile: '375px' };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-3">
-      <div className="bg-nb-bg border-2 border-black shadow-[6px_6px_0_0_#000] w-full max-w-[1300px] max-h-[96vh] overflow-hidden flex flex-col">
+    <div className="fixed inset-0 z-50 bg-black/70 flex items-start sm:items-center justify-center p-0 sm:p-3 overflow-y-auto">
+      <div className="bg-nb-bg border-2 border-black shadow-[6px_6px_0_0_#000] w-full sm:max-w-[1300px] h-screen sm:h-auto sm:max-h-[96vh] overflow-hidden flex flex-col">
 
         {/* ── TOP BAR ── */}
-        <div className="flex items-center justify-between px-5 py-3 border-b-2 border-black bg-nb-yellow">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-black text-nb-yellow flex items-center justify-center font-black text-lg">2</div>
-            <div>
-              <h2 className="font-black text-base leading-tight">Widget Customizer v2</h2>
-              <p className="text-xs text-black/60 leading-none">Live preview • {Object.keys(THEME_PRESETS).length} theme presets</p>
+        <div className="flex items-center justify-between px-3 sm:px-5 py-3 border-b-2 border-black bg-nb-yellow flex-shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 flex-shrink-0 bg-black text-nb-yellow flex items-center justify-center font-black text-lg">2</div>
+            <div className="min-w-0">
+              <h2 className="font-black text-sm sm:text-base leading-tight truncate">Widget Customizer v2</h2>
+              <p className="text-xs text-black/60 leading-none hidden sm:block">Live preview • {Object.keys(THEME_PRESETS).length} theme presets</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -576,10 +576,10 @@ function sendMsg(){
         </div>
 
         {/* ── BODY ── */}
-        <div className="flex flex-1 overflow-hidden">
+        <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
 
           {/* ══ LEFT PANEL ══ */}
-          <div className="w-[300px] flex-shrink-0 border-r-2 border-black overflow-y-auto bg-white">
+          <div className="w-full md:w-[285px] lg:w-[300px] flex-shrink-0 border-b-2 md:border-b-0 md:border-r-2 border-black overflow-y-auto bg-white" style={{maxHeight: 'var(--left-panel-height, none)'}}>
 
             {/* Tab nav */}
             <div className="flex border-b-2 border-black">
@@ -876,10 +876,10 @@ function sendMsg(){
           </div>
 
           {/* ══ RIGHT PANEL ══ */}
-          <div className="flex-1 flex flex-col overflow-hidden bg-nb-bg/40">
+          <div className="flex-1 flex flex-col overflow-hidden bg-nb-bg/40 min-h-0">
 
             {/* Preview toolbar */}
-            <div className="flex items-center justify-between px-4 py-2 border-b-2 border-black bg-white">
+            <div className="flex flex-wrap items-center justify-between gap-2 px-3 sm:px-4 py-2 border-b-2 border-black bg-white flex-shrink-0">
               <div className="flex items-center gap-1">
                 {[
                   { id: 'desktop', icon: Monitor, label: 'Desktop' },
@@ -950,7 +950,7 @@ function sendMsg(){
                 <pre className="flex-1 overflow-auto bg-gray-900 text-green-400 font-mono text-xs p-5 border-2 border-black leading-relaxed">
                   <code>{embedCode()}</code>
                 </pre>
-                <div className="grid grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
                   {[
                     { label: 'Paste before', value: '</body>', sublabel: 'closing body tag' },
                     { label: 'Config options', value: `${Object.keys(config).length} props`, sublabel: 'fully configurable' },

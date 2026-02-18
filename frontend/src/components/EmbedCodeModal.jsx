@@ -74,35 +74,35 @@ const EmbedCodeModal = ({ bot, setShowModal }) => {
   };
 
   return (
-    <div onClick={handleBackdropClick} className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 overflow-y-auto">
-      <div className="bg-nb-bg border-2 border-black shadow-nb-xl w-full max-w-4xl my-8">
+    <div onClick={handleBackdropClick} className="fixed inset-0 bg-black/60 flex items-start sm:items-center justify-center z-50 p-2 sm:p-4 overflow-y-auto">
+      <div className="bg-nb-bg border-2 border-black shadow-nb-xl w-full max-w-4xl my-4 sm:my-8">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b-2 border-black bg-nb-blue/30">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 border-2 border-black bg-white flex items-center justify-center"><Code size={20} /></div>
-            <div>
-              <h2 className="text-xl font-bold text-nb-text">Embed Your Bot</h2>
-              <p className="text-sm text-nb-muted">Add {bot?.name} to your website</p>
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b-2 border-black bg-nb-blue/30">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 border-2 border-black bg-white flex items-center justify-center flex-shrink-0"><Code size={18} /></div>
+            <div className="min-w-0">
+              <h2 className="text-lg sm:text-xl font-bold text-nb-text">Embed Your Bot</h2>
+              <p className="text-xs sm:text-sm text-nb-muted truncate">Add {bot?.name} to your website</p>
             </div>
           </div>
           <button onClick={() => setShowModal(false)} className="nb-btn bg-white p-2"><X size={20} /></button>
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b-2 border-black bg-white">
+        <div className="flex border-b-2 border-black bg-white overflow-x-auto">
           {[
-            { id: 'templates', label: 'Widget Templates' },
-            { id: 'customizer', label: '✨ Live Customizer', icon: Sparkles },
-            { id: 'custom', label: 'Custom Embed' },
+            { id: 'templates', label: 'Templates' },
+            { id: 'customizer', label: '✨ Customizer' },
+            { id: 'custom', label: 'Embed Code' },
           ].map(({ id, label }) => (
             <button key={id} onClick={() => setActiveTab(id)}
-              className={`px-5 py-3 font-bold text-sm border-r-2 border-black transition-colors ${activeTab === id ? 'bg-nb-yellow text-black' : 'text-nb-muted hover:bg-gray-50 hover:text-black'}`}>
+              className={`flex-shrink-0 px-3 sm:px-5 py-3 font-bold text-xs sm:text-sm border-r-2 border-black transition-colors whitespace-nowrap ${activeTab === id ? 'bg-nb-yellow text-black' : 'text-nb-muted hover:bg-gray-50 hover:text-black'}`}>
               {label}
             </button>
           ))}
         </div>
 
-        <div className="p-6 max-h-[70vh] overflow-y-auto">
+        <div className="p-3 sm:p-6 max-h-[60vh] sm:max-h-[70vh] overflow-y-auto">
           {/* Templates Tab */}
           {activeTab === 'templates' && <WidgetTemplates bot={bot} />}
 

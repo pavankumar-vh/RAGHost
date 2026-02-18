@@ -74,33 +74,33 @@ const AnalyticsView = ({ bots, loading }) => {
   }
 
   return (
-    <div className="space-y-6 max-w-6xl">
+    <div className="space-y-4 sm:space-y-6 max-w-6xl">
       <div>
-        <h2 className="text-2xl font-bold text-nb-text">Analytics Dashboard</h2>
+        <h2 className="text-xl sm:text-2xl font-bold text-nb-text">Analytics Dashboard</h2>
         <p className="text-nb-muted text-sm mt-0.5">Comprehensive insights into your bot performance</p>
       </div>
 
       {/* Overview Cards */}
       {analytics && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {[
             { icon: MessageSquare, label: 'Total Queries', value: (analytics.totalQueries || 0).toLocaleString(), bg: 'bg-nb-blue' },
             { icon: Target,        label: 'Avg Accuracy',  value: `${analytics.avgAccuracy || 0}%`,              bg: 'bg-nb-pink' },
             { icon: Clock,         label: 'Response Time', value: `${analytics.avgResponseTime || 0}ms`,          bg: 'bg-nb-yellow' },
             { icon: DollarSign,    label: 'Total Cost',    value: `$${(analytics.totalCost || 0).toFixed(2)}`,    bg: 'bg-green-200' },
           ].map(({ icon: Icon, label, value, bg }) => (
-            <div key={label} className={`${bg} border-2 border-black shadow-nb p-5`}>
-              <div className="w-9 h-9 border-2 border-black bg-white flex items-center justify-center mb-3"><Icon size={18} /></div>
-              <p className="text-3xl font-bold text-black">{value}</p>
-              <p className="text-xs font-bold text-black/60 mt-1 uppercase tracking-wide">{label}</p>
+            <div key={label} className={`${bg} border-2 border-black shadow-nb p-3 sm:p-5`}>
+              <div className="w-8 h-8 sm:w-9 sm:h-9 border-2 border-black bg-white flex items-center justify-center mb-2 sm:mb-3"><Icon size={16} /></div>
+              <p className="text-2xl sm:text-3xl font-bold text-black">{value}</p>
+              <p className="text-xs font-bold text-black/60 mt-0.5 sm:mt-1 uppercase tracking-wide">{label}</p>
             </div>
           ))}
         </div>
       )}
 
       {/* Activity Trend Chart */}
-      <div className="bg-white border-2 border-black shadow-nb p-6">
-        <div className="flex items-center justify-between mb-5">
+      <div className="bg-white border-2 border-black shadow-nb p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-5">
           <div>
             <h3 className="text-lg font-bold">Activity Trend</h3>
             <p className="text-xs text-nb-muted">Last 30 days performance</p>
@@ -120,8 +120,8 @@ const AnalyticsView = ({ bots, loading }) => {
       </div>
 
       {/* Top Bots + All Bots */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white border-2 border-black shadow-nb p-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        <div className="bg-white border-2 border-black shadow-nb p-4 sm:p-6">
           <h3 className="text-lg font-bold mb-4">Top Performing Bots</h3>
           {topBots.length > 0 ? (
             <div className="space-y-3">
@@ -161,15 +161,15 @@ const AnalyticsView = ({ bots, loading }) => {
           )}
         </div>
 
-        <div className="bg-white border-2 border-black shadow-nb p-6">
+        <div className="bg-white border-2 border-black shadow-nb p-4 sm:p-6">
           <h3 className="text-lg font-bold mb-4">All Bots Overview</h3>
           <div className="space-y-2 max-h-96 overflow-y-auto">
             {bots.map((bot) => (
-              <div key={bot.id} className="border-2 border-black p-3 bg-nb-bg hover:bg-nb-yellow/20 transition-colors">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 border-2 border-black bg-nb-yellow flex items-center justify-center"><Bot size={14} /></div>
-                    <span className="font-bold text-sm text-nb-text">{bot.name}</span>
+              <div key={bot.id} className="border-2 border-black p-2 sm:p-3 bg-nb-bg hover:bg-nb-yellow/20 transition-colors">
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 border-2 border-black bg-nb-yellow flex items-center justify-center flex-shrink-0"><Bot size={13} /></div>
+                    <span className="font-bold text-sm text-nb-text truncate">{bot.name}</span>
                   </div>
                   <span className={`inline-flex items-center px-2 py-0.5 text-xs font-bold border-2 border-black ${bot.status === 'active' ? 'bg-green-200 text-green-800' : 'bg-gray-100 text-gray-600'}`}>
                     {bot.status}
@@ -275,7 +275,7 @@ const AdvancedActivityChart = ({ dailyStats, metric }) => {
       </div>
 
       {/* Stats Summary */}
-      <div className="grid grid-cols-3 gap-4 pt-4 border-t-2 border-black">
+      <div className="grid grid-cols-3 gap-2 sm:gap-4 pt-4 border-t-2 border-black">
         <div className="bg-nb-blue border-2 border-black shadow-nb-sm p-4 text-center">
           <p className="text-xs font-bold text-black/60 mb-1">TOTAL</p>
           <p className="text-2xl font-bold text-black">{totalValue.toLocaleString()}</p>
