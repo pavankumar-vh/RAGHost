@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Code, Copy, Check, Sparkles } from 'lucide-react';
 import WidgetTemplates from './WidgetTemplates';
-import WidgetCustomizer from './WidgetCustomizer';
+import WidgetCustomizerV2 from './WidgetCustomizerV2';
 
 const EmbedCodeModal = ({ bot, setShowModal }) => {
   const [embedCode, setEmbedCode] = useState('');
@@ -74,192 +74,108 @@ const EmbedCodeModal = ({ bot, setShowModal }) => {
   };
 
   return (
-    <div onClick={handleBackdropClick} className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
-      <div className="bg-[#0A0A0A] border border-gray-800 rounded-2xl p-8 w-full max-w-5xl my-8 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-2xl font-bold flex items-center gap-2">
-              <Code size={28} />
-              Embed Your Bot
-            </h2>
-            <p className="text-gray-500 mt-1">Add {bot?.name} to your website</p>
+    <div onClick={handleBackdropClick} className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 overflow-y-auto">
+      <div className="bg-nb-bg border-2 border-black shadow-nb-xl w-full max-w-4xl my-8">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b-2 border-black bg-nb-blue/30">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 border-2 border-black bg-white flex items-center justify-center"><Code size={20} /></div>
+            <div>
+              <h2 className="text-xl font-bold text-nb-text">Embed Your Bot</h2>
+              <p className="text-sm text-nb-muted">Add {bot?.name} to your website</p>
+            </div>
           </div>
-          <button 
-            onClick={() => setShowModal(false)}
-            className="text-gray-400 hover:text-white hover:bg-gray-800 p-3 rounded-xl transition-all hover:rotate-90 duration-300"
-            aria-label="Close modal"
-          >
-            <X size={24} />
-          </button>
+          <button onClick={() => setShowModal(false)} className="nb-btn bg-white p-2"><X size={20} /></button>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-6 border-b border-gray-800">
-          <button
-            onClick={() => setActiveTab('templates')}
-            className={`px-6 py-3 font-semibold transition-all ${
-              activeTab === 'templates'
-                ? 'text-accent-blue border-b-2 border-accent-blue'
-                : 'text-gray-500 hover:text-white'
-            }`}
-          >
-            Widget Templates
-          </button>
-          <button
-            onClick={() => setActiveTab('customizer')}
-            className={`px-6 py-3 font-semibold transition-all flex items-center gap-2 ${
-              activeTab === 'customizer'
-                ? 'text-purple-400 border-b-2 border-purple-400'
-                : 'text-gray-500 hover:text-white'
-            }`}
-          >
-            <Sparkles size={18} />
-            Live Customizer
-          </button>
-          <button
-            onClick={() => setActiveTab('custom')}
-            className={`px-6 py-3 font-semibold transition-all ${
-              activeTab === 'custom'
-                ? 'text-accent-blue border-b-2 border-accent-blue'
-                : 'text-gray-500 hover:text-white'
-            }`}
-          >
-            Custom Embed
-          </button>
+        <div className="flex border-b-2 border-black bg-white">
+          {[
+            { id: 'templates', label: 'Widget Templates' },
+            { id: 'customizer', label: '✨ Live Customizer', icon: Sparkles },
+            { id: 'custom', label: 'Custom Embed' },
+          ].map(({ id, label }) => (
+            <button key={id} onClick={() => setActiveTab(id)}
+              className={`px-5 py-3 font-bold text-sm border-r-2 border-black transition-colors ${activeTab === id ? 'bg-nb-yellow text-black' : 'text-nb-muted hover:bg-gray-50 hover:text-black'}`}>
+              {label}
+            </button>
+          ))}
         </div>
 
-        {/* Templates Tab */}
-        {activeTab === 'templates' && (
-          <div>
-            <WidgetTemplates bot={bot} />
-          </div>
-        )}
+        <div className="p-6 max-h-[70vh] overflow-y-auto">
+          {/* Templates Tab */}
+          {activeTab === 'templates' && <WidgetTemplates bot={bot} />}
 
-        {/* Live Customizer Tab */}
-        {activeTab === 'customizer' && (
-          <div className="bg-gradient-to-br from-purple-900/20 to-blue-900/20 border border-purple-500/30 rounded-xl p-8 text-center">
-            <Sparkles className="w-16 h-16 text-purple-400 mx-auto mb-4" />
-            <h3 className="text-2xl font-bold mb-2">Build Your Custom Widget</h3>
-            <p className="text-gray-400 mb-6 max-w-2xl mx-auto">
-              Create a fully customized chat widget with our live editor. Adjust colors, sizes, positions, and more with instant preview.
-            </p>
-            <button
-              onClick={() => setShowCustomizer(true)}
-              className="bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold px-8 py-3 rounded-xl hover:from-purple-700 hover:to-blue-700 transition-all transform hover:scale-105"
-            >
-              Open Live Customizer
-            </button>
-          </div>
-        )}
-
-        {/* Custom Embed Tab */}
-        {activeTab === 'custom' && (
-          <div className="space-y-6">
-            {/* Method 1: Script Tag */}
-            <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="text-lg font-bold">Method 1: Script Tag (Recommended)</h3>
-                  <p className="text-sm text-gray-500 mt-1">Add this code before the closing &lt;/body&gt; tag</p>
-                </div>
-                <button
-                  onClick={() => copyToClipboard(embedCode, 'script')}
-                  className="flex items-center gap-2 bg-accent-blue text-black font-semibold px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
-                >
-                  {copied === 'script' ? (
-                    <>
-                      <Check size={18} />
-                      Copied!
-                    </>
-                  ) : (
-                    <>
-                      <Copy size={18} />
-                      Copy Code
-                    </>
-                  )}
-                </button>
+          {/* Live Customizer Tab */}
+          {activeTab === 'customizer' && (
+            <div className="bg-white border-2 border-black shadow-nb p-8 text-center">
+              <div className="w-16 h-16 border-2 border-black bg-nb-yellow mx-auto mb-4 flex items-center justify-center">
+                <Sparkles size={28} />
               </div>
-              <pre className="bg-black border border-gray-800 rounded-lg p-4 overflow-x-auto text-sm">
-                <code className="text-green-400">{embedCode}</code>
-              </pre>
-            </div>
-
-            {/* Method 2: iFrame */}
-            <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="text-lg font-bold">Method 2: iFrame</h3>
-                  <p className="text-sm text-gray-500 mt-1">Simple iframe embed (less customizable)</p>
-                </div>
-                <button
-                  onClick={() => copyToClipboard(iframeCode, 'iframe')}
-                  className="flex items-center gap-2 bg-accent-pink text-black font-semibold px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
-                >
-                  {copied === 'iframe' ? (
-                    <>
-                      <Check size={18} />
-                      Copied!
-                    </>
-                  ) : (
-                    <>
-                      <Copy size={18} />
-                      Copy Code
-                    </>
-                  )}
-                </button>
+              <h3 className="text-xl font-bold mb-2">Widget Customizer v2</h3>
+              <p className="text-nb-muted text-sm mb-2 max-w-md mx-auto">8 theme presets, 20+ color controls, typography, animations, suggested replies, undo history and live viewport switching.</p>
+              <div className="flex flex-wrap justify-center gap-2 mb-6 text-xs font-bold">
+                {['8 Presets','Color Picker','Undo/Redo','Mobile Preview','Embed Code','Config Export'].map(f => (
+                  <span key={f} className="px-2 py-1 border-2 border-black bg-nb-bg">{f}</span>
+                ))}
               </div>
-              <pre className="bg-black border border-gray-800 rounded-lg p-4 overflow-x-auto text-sm">
-                <code className="text-blue-400">{iframeCode}</code>
-              </pre>
+              <button onClick={() => setShowCustomizer(true)} className="nb-btn bg-black text-white border-black px-6 py-3 font-black">
+                Open Customizer v2 →
+              </button>
             </div>
+          )}
 
-            {/* Preview */}
-            <div className="bg-gradient-to-r from-accent-blue/10 via-accent-pink/10 to-accent-yellow/10 border border-accent-blue/30 rounded-xl p-6">
-              <h3 className="text-lg font-bold mb-3">📱 Preview</h3>
-              <p className="text-sm text-gray-400 mb-4">
-                The chat widget will appear in the bottom-right corner of your website
-              </p>
-              <div className="flex items-center gap-4">
-                <div className={`w-16 h-16 rounded-full bg-accent-${bot?.color} flex items-center justify-center text-3xl shadow-lg`}>
-                  💬
+          {/* Custom Embed Tab */}
+          {activeTab === 'custom' && (
+            <div className="space-y-5">
+              {/* Method 1 */}
+              <div className="bg-white border-2 border-black shadow-nb-sm p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h3 className="font-bold">Method 1: Script Tag (Recommended)</h3>
+                    <p className="text-xs text-nb-muted mt-0.5">Add before the closing &lt;/body&gt; tag</p>
+                  </div>
+                  <button onClick={() => copyToClipboard(embedCode, 'script')}
+                    className={`nb-btn px-3 py-1.5 text-xs ${copied === 'script' ? 'bg-green-200 border-green-600' : 'bg-nb-yellow border-black'}`}>
+                    {copied === 'script' ? <><Check size={13} />Copied!</> : <><Copy size={13} />Copy</>}
+                  </button>
                 </div>
-                <div>
-                  <p className="font-semibold">{bot?.name}</p>
-                  <p className="text-xs text-gray-500">{bot?.type} Bot</p>
+                <pre className="border-2 border-black bg-gray-900 text-green-400 font-mono text-xs p-4 overflow-x-auto"><code>{embedCode}</code></pre>
+              </div>
+
+              {/* Method 2 */}
+              <div className="bg-white border-2 border-black shadow-nb-sm p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h3 className="font-bold">Method 2: iFrame</h3>
+                    <p className="text-xs text-nb-muted mt-0.5">Simple iframe embed</p>
+                  </div>
+                  <button onClick={() => copyToClipboard(iframeCode, 'iframe')}
+                    className={`nb-btn px-3 py-1.5 text-xs ${copied === 'iframe' ? 'bg-green-200 border-green-600' : 'bg-nb-pink border-black'}`}>
+                    {copied === 'iframe' ? <><Check size={13} />Copied!</> : <><Copy size={13} />Copy</>}
+                  </button>
                 </div>
+                <pre className="border-2 border-black bg-gray-900 text-blue-400 font-mono text-xs p-4 overflow-x-auto"><code>{iframeCode}</code></pre>
+              </div>
+
+              {/* Instructions */}
+              <div className="bg-white border-2 border-black shadow-nb-sm p-5">
+                <h3 className="font-bold mb-3">Setup Instructions</h3>
+                <ol className="space-y-2 text-sm text-nb-text">
+                  {['Copy the embed code above', "Paste it into your website's HTML, before </body>", 'Save and publish your changes', 'The chat widget will appear on your site!'].map((s, i) => (
+                    <li key={i} className="flex gap-3">
+                      <div className="w-6 h-6 border-2 border-black bg-nb-yellow flex items-center justify-center font-bold text-xs flex-shrink-0">{i+1}</div>
+                      <span className="pt-0.5">{s}</span>
+                    </li>
+                  ))}
+                </ol>
               </div>
             </div>
-
-            {/* Instructions */}
-            <div className="border border-gray-800 rounded-xl p-6">
-              <h3 className="text-lg font-bold mb-3">📋 Setup Instructions</h3>
-              <ol className="space-y-2 text-sm text-gray-400">
-                <li className="flex gap-2">
-                  <span className="font-bold text-white">1.</span>
-                  <span>Copy the embed code above (Method 1 or 2)</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="font-bold text-white">2.</span>
-                  <span>Paste it into your website's HTML, before the closing &lt;/body&gt; tag</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="font-bold text-white">3.</span>
-                  <span>Save and publish your changes</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="font-bold text-white">4.</span>
-                  <span>The chat widget will automatically appear on your site!</span>
-                </li>
-              </ol>
-            </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
-      {/* Customizer Modal */}
-      {showCustomizer && (
-        <WidgetCustomizer bot={bot} onClose={() => setShowCustomizer(false)} />
-      )}
+      {showCustomizer && <WidgetCustomizerV2 bot={bot} onClose={() => setShowCustomizer(false)} />}
     </div>
   );
 };

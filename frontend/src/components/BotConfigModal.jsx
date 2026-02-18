@@ -186,80 +186,54 @@ const BotConfigModal = ({ setShowModal, onSave }) => {
   };
 
   return (
-    <div 
-      className="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-end animate-fadeIn"
+    <div
+      className="fixed inset-0 bg-black/60 z-50 flex items-center justify-end"
       onClick={handleBackdropClick}
-      style={{ willChange: 'opacity' }}
     >
-      <div 
-        className={`relative bg-gradient-to-br from-gray-900 to-black border-l border-gray-700 w-full max-w-2xl h-full overflow-y-auto shadow-2xl transition-transform duration-300 ${
-          isClosing ? 'translate-x-full' : 'translate-x-0'
-        }`}
+      <div
+        className={`relative bg-nb-bg border-l-2 border-black w-full max-w-2xl h-full overflow-y-auto shadow-nb-xl transition-transform duration-300 ${isClosing ? 'translate-x-full' : 'translate-x-0'}`}
         onClick={(e) => e.stopPropagation()}
-        style={{ 
-          willChange: isClosing ? 'auto' : 'transform',
+        style={{
           transform: isClosing ? 'translate3d(100%, 0, 0)' : 'translate3d(0, 0, 0)'
         }}
       >
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-accent-blue/5 via-transparent to-accent-pink/5 pointer-events-none"></div>
-        
-        <div className="relative z-10 p-8">
+        <div className="p-6">
           {/* Sticky Header */}
-          <div className="sticky top-0 -mx-8 px-8 py-4 bg-gray-900/95 backdrop-blur-lg border-b border-gray-800/50 mb-6 z-20">
+          <div className="sticky top-0 -mx-6 px-6 py-4 bg-nb-bg border-b-2 border-black mb-6 z-20">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-3xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
-                  Create New Bot
-                </h2>
-                <p className="text-gray-400 text-sm mt-1">Configure your AI assistant</p>
+                <h2 className="text-2xl font-bold text-nb-text">Create New Bot</h2>
+                <p className="text-nb-muted text-sm mt-0.5">Configure your AI assistant</p>
               </div>
-              <button 
-                onClick={handleClose}
-                className="text-gray-500 hover:text-white hover:bg-gray-800 p-2 rounded-lg transition-all hover:rotate-90 duration-300"
-              >
-                <X size={24} />
-              </button>
+              <button onClick={handleClose} className="nb-btn bg-white p-2"><X size={20} /></button>
             </div>
           </div>
 
           {error && (
-            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm flex items-center gap-2 animate-fadeIn">
-              <XCircle size={18} className="flex-shrink-0" />
+            <div className="mb-5 p-4 bg-red-50 border-2 border-red-500 text-red-700 text-sm flex items-center gap-2">
+              <XCircle size={16} className="flex-shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Bot Details */}
-            <div className="space-y-4 p-6 bg-black/20 rounded-2xl border border-gray-800/50">
-              <h3 className="text-lg font-bold flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent-blue/20 to-accent-blue/10 flex items-center justify-center">
-                  🤖
-                </div>
+            <div className="space-y-4 p-5 bg-white border-2 border-black shadow-nb-sm">
+              <h3 className="text-base font-bold flex items-center gap-2">
+                <div className="w-7 h-7 border-2 border-black bg-nb-yellow flex items-center justify-center text-sm">🤖</div>
                 Bot Details
               </h3>
 
               <div>
-                <label className="block text-sm font-medium mb-2 text-gray-300">Bot Name *</label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="e.g., Customer Support Bot"
-                  className="w-full bg-black/50 border border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:border-accent-blue focus:ring-2 focus:ring-accent-blue/20 transition-all"
-                  required
-                />
+                <label className="block text-sm font-bold mb-1 text-nb-text">Bot Name *</label>
+                <input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} placeholder="e.g., Customer Support Bot" className="nb-input" required />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-300">Bot Type *</label>
-                  <select
-                    value={formData.type}
-                    onChange={(e) => handleTypeChange(e.target.value)}
-                    className="w-full bg-black/50 border border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:border-accent-blue focus:ring-2 focus:ring-accent-blue/20 transition-all cursor-pointer"
-                  >
+                  <label className="block text-sm font-bold mb-1 text-nb-text">Bot Type *</label>
+                  <select value={formData.type} onChange={(e) => handleTypeChange(e.target.value)}
+                    className="nb-input cursor-pointer">
                     <option value="Support">🎧 Customer Support</option>
                     <option value="Sales">💼 Sales Assistant</option>
                     <option value="Docs">📚 Documentation</option>
@@ -275,192 +249,90 @@ const BotConfigModal = ({ setShowModal, onSave }) => {
                     <option value="General">🤖 General Purpose</option>
                     <option value="Custom">⚙️ Custom Bot</option>
                   </select>
-                  <p className="text-xs text-gray-400 mt-2">
-                    💡 Selecting a template auto-fills name, description & prompt
-                  </p>
+                  <p className="text-xs text-nb-muted mt-1">💡 Selecting a template auto-fills fields</p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-300">Color Theme</label>
-                  <div className="flex gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setFormData({ ...formData, color: 'pink' })}
-                      className={`relative w-12 h-12 rounded-xl transition-all duration-300 hover:scale-110 ${
-                        formData.color === 'pink' ? 'ring-4 ring-white/30 scale-110 shadow-xl' : 'opacity-70 hover:opacity-100'
-                      }`}
-                      style={{ backgroundColor: '#FF6B9D' }}
-                    >
-                      {formData.color === 'pink' && (
-                        <div className="absolute inset-0 rounded-xl bg-white/20"></div>
-                      )}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setFormData({ ...formData, color: 'yellow' })}
-                      className={`relative w-12 h-12 rounded-xl transition-all duration-300 hover:scale-110 ${
-                        formData.color === 'yellow' ? 'ring-4 ring-white/30 scale-110 shadow-xl' : 'opacity-70 hover:opacity-100'
-                      }`}
-                      style={{ backgroundColor: '#FEC84B' }}
-                    >
-                      {formData.color === 'yellow' && (
-                        <div className="absolute inset-0 rounded-xl bg-white/20"></div>
-                      )}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setFormData({ ...formData, color: 'blue' })}
-                      className={`relative w-12 h-12 rounded-xl transition-all duration-300 hover:scale-110 ${
-                        formData.color === 'blue' ? 'ring-4 ring-white/30 scale-110 shadow-xl' : 'opacity-70 hover:opacity-100'
-                      }`}
-                      style={{ backgroundColor: '#7DD3FC' }}
-                    >
-                      {formData.color === 'blue' && (
-                        <div className="absolute inset-0 rounded-xl bg-white/20"></div>
-                      )}
-                    </button>
+                  <label className="block text-sm font-bold mb-1 text-nb-text">Color Theme</label>
+                  <div className="flex gap-2">
+                    {[{c:'pink',bg:'#FF6B9D'},{c:'yellow',bg:'#FFE500'},{c:'blue',bg:'#4D9FFF'}].map(({c,bg}) => (
+                      <button key={c} type="button" onClick={() => setFormData({...formData, color: c})}
+                        className={`w-10 h-10 border-2 transition-all ${formData.color === c ? 'border-black shadow-nb-sm scale-110' : 'border-gray-300 hover:border-black'}`}
+                        style={{backgroundColor: bg}} />
+                    ))}
                   </div>
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2 text-gray-300">Description (Optional)</label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Brief description of what this bot does..."
-                  rows={3}
-                  className="w-full bg-black/50 border border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:border-accent-blue focus:ring-2 focus:ring-accent-blue/20 transition-all resize-none"
-                />
+                <label className="block text-sm font-bold mb-1 text-nb-text">Description (Optional)</label>
+                <textarea value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} placeholder="Brief description of what this bot does..." rows={2} className="nb-input resize-none" />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2 text-gray-300">
-                  System Prompt (Optional) 🎯
-                </label>
-                <textarea
-                  value={formData.systemPrompt}
-                  onChange={(e) => setFormData({ ...formData, systemPrompt: e.target.value })}
-                  placeholder="Define how your bot should behave and respond. Example: You are a friendly customer support agent who helps users with technical issues. Always be polite and provide step-by-step solutions."
-                  rows={4}
-                  className="w-full bg-black/50 border border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:border-accent-blue focus:ring-2 focus:ring-accent-blue/20 transition-all resize-none"
-                />
-                <p className="text-xs text-gray-400 mt-2">
-                  💡 This controls how your bot responds. Leave empty to use default behavior based on bot type.
-                </p>
+                <label className="block text-sm font-bold mb-1 text-nb-text">System Prompt (Optional)</label>
+                <textarea value={formData.systemPrompt} onChange={(e) => setFormData({...formData, systemPrompt: e.target.value})} placeholder="Define how your bot should behave..." rows={3} className="nb-input resize-none" />
+                <p className="text-xs text-nb-muted mt-1">💡 Leave empty to use default behavior based on bot type.</p>
               </div>
             </div>
 
             {/* Pinecone Configuration */}
-            <div className="space-y-4 p-6 bg-black/20 rounded-2xl border border-gray-800/50">
+            <div className="space-y-4 p-5 bg-white border-2 border-black shadow-nb-sm">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent-blue/20 to-accent-blue/10 flex items-center justify-center shadow-lg shadow-accent-blue/10">
-                  <Database size={24} className="text-accent-blue" />
-                </div>
+                <div className="w-9 h-9 border-2 border-black bg-nb-blue flex items-center justify-center"><Database size={18} /></div>
                 <div>
-                  <h3 className="text-lg font-bold">Pinecone Configuration *</h3>
-                  <p className="text-xs text-gray-400">Each bot needs its own Pinecone index for its knowledge base</p>
+                  <h3 className="text-base font-bold">Pinecone Configuration *</h3>
+                  <p className="text-xs text-nb-muted">Each bot needs its own Pinecone index</p>
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2 text-gray-300">API Key *</label>
+                <label className="block text-sm font-bold mb-1 text-nb-text">API Key *</label>
                 <div className="relative">
-                  <input
-                    type={showKeys.pinecone ? "text" : "password"}
-                    value={formData.pineconeKey}
-                    onChange={(e) => setFormData({ ...formData, pineconeKey: e.target.value })}
-                    placeholder="pcsk_xxxxx..."
-                    className="w-full bg-black/50 border border-gray-700 rounded-xl px-4 py-3 pr-12 focus:outline-none focus:border-accent-blue focus:ring-2 focus:ring-accent-blue/20 transition-all font-mono text-sm"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowKeys({ ...showKeys, pinecone: !showKeys.pinecone })}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-accent-blue p-1 rounded transition-colors"
-                  >
-                    {showKeys.pinecone ? <EyeOff size={18} /> : <Eye size={18} />}
+                  <input type={showKeys.pinecone ? 'text' : 'password'} value={formData.pineconeKey} onChange={(e) => setFormData({...formData, pineconeKey: e.target.value})} placeholder="pcsk_xxxxx..." className="nb-input pr-12 font-mono text-sm" required />
+                  <button type="button" onClick={() => setShowKeys({...showKeys, pinecone: !showKeys.pinecone})} className="absolute right-3 top-1/2 -translate-y-1/2 text-nb-muted hover:text-black p-1">
+                    {showKeys.pinecone ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
               </div>
 
-            <div className="grid grid-cols-1 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Pinecone Host URL *</label>
-                <input
-                  type="text"
-                  value={formData.pineconeEnvironment}
-                  onChange={(e) => setFormData({ ...formData, pineconeEnvironment: e.target.value })}
-                  placeholder="https://test-le0abl6.svc.aped-4627-b74a.pinecone.io"
-                  className="w-full bg-black border border-gray-800 rounded-xl px-4 py-3 focus:outline-none focus:border-accent-blue transition-colors font-mono text-sm"
-                  required
-                />
-                <p className="text-xs text-gray-500 mt-1">Copy the full host URL from your Pinecone dashboard</p>
+                <label className="block text-sm font-bold mb-1 text-nb-text">Pinecone Host URL *</label>
+                <input type="text" value={formData.pineconeEnvironment} onChange={(e) => setFormData({...formData, pineconeEnvironment: e.target.value})} placeholder="https://test-le0abl6.svc.aped-4627-b74a.pinecone.io" className="nb-input font-mono text-sm" required />
+                <p className="text-xs text-nb-muted mt-1">Copy the full host URL from your Pinecone dashboard</p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Index Name *</label>
-                <input
-                  type="text"
-                  value={formData.pineconeIndexName}
-                  onChange={(e) => setFormData({ ...formData, pineconeIndexName: e.target.value })}
-                  placeholder="test"
-                  className="w-full bg-black border border-gray-800 rounded-xl px-4 py-3 focus:outline-none focus:border-accent-blue transition-colors"
-                  required
-                />
-                <p className="text-xs text-gray-500 mt-1">The name of your Pinecone index</p>
+                <label className="block text-sm font-bold mb-1 text-nb-text">Index Name *</label>
+                <input type="text" value={formData.pineconeIndexName} onChange={(e) => setFormData({...formData, pineconeIndexName: e.target.value})} placeholder="my-index" className="nb-input" required />
+                <p className="text-xs text-nb-muted mt-1">The name of your Pinecone index</p>
               </div>
             </div>
-          </div>
 
-          {/* Gemini Configuration */}
-          <div className="space-y-4 border-t border-gray-800 pt-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-accent-pink/20 flex items-center justify-center">
-                <Zap size={20} className="text-accent-pink" />
+            {/* Gemini Configuration */}
+            <div className="space-y-4 p-5 bg-white border-2 border-black shadow-nb-sm">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 border-2 border-black bg-nb-pink flex items-center justify-center"><Zap size={18} /></div>
+                <div>
+                  <h3 className="text-base font-bold">Gemini AI Configuration *</h3>
+                  <p className="text-xs text-nb-muted">Each bot needs its own Gemini API key</p>
+                </div>
               </div>
+
               <div>
-                <h3 className="text-lg font-bold">Gemini AI Configuration *</h3>
-                <p className="text-xs text-gray-500">Each bot needs its own Gemini API key</p>
+                <label className="block text-sm font-bold mb-1 text-nb-text">Gemini API Key *</label>
+                <div className="relative">
+                  <input type={showKeys.gemini ? 'text' : 'password'} value={formData.geminiKey} onChange={(e) => setFormData({...formData, geminiKey: e.target.value})} placeholder="AIzaSy..." className="nb-input pr-12" required />
+                  <button type="button" onClick={() => setShowKeys({...showKeys, gemini: !showKeys.gemini})} className="absolute right-3 top-1/2 -translate-y-1/2 text-nb-muted hover:text-black p-1">
+                    {showKeys.gemini ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-2">Gemini API Key *</label>
-              <div className="relative">
-                <input
-                  type={showKeys.gemini ? "text" : "password"}
-                  value={formData.geminiKey}
-                  onChange={(e) => setFormData({ ...formData, geminiKey: e.target.value })}
-                  placeholder="AIzaSy..."
-                  className="w-full bg-black border border-gray-800 rounded-xl px-4 py-3 pr-12 focus:outline-none focus:border-accent-pink transition-colors"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowKeys({ ...showKeys, gemini: !showKeys.gemini })}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-white"
-                >
-                  {showKeys.gemini ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
-              </div>
-            </div>
-          </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="group relative w-full bg-gradient-to-r from-accent-blue to-accent-blue/80 text-black font-bold py-4 rounded-xl overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-accent-blue/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              {loading ? (
-                <>
-                  <Loader2 size={20} className="animate-spin relative z-10" />
-                  <span className="relative z-10">Creating Bot...</span>
-                </>
-              ) : (
-                <span className="relative z-10">Create Bot 🚀</span>
-              )}
+            <button type="submit" disabled={loading}
+              className="nb-btn w-full bg-black text-white border-black hover:bg-gray-900 py-3 justify-center text-base disabled:opacity-50 disabled:shadow-none disabled:translate-x-0 disabled:translate-y-0">
+              {loading ? <><Loader2 size={18} className="animate-spin" />Creating Bot...</> : 'Create Bot 🚀'}
             </button>
           </form>
         </div>

@@ -317,182 +317,111 @@ const KnowledgeBaseModal = ({ bot, setShowModal }) => {
   };
 
   return (
-    <div 
-      className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-50 p-4 overflow-y-auto animate-fadeIn"
+    <div
+      className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 overflow-y-auto"
       onClick={handleBackdropClick}
     >
-      <div className="relative bg-gradient-to-br from-gray-900 to-black border border-gray-700 rounded-3xl p-8 w-full max-w-4xl my-8 shadow-2xl">
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-accent-blue/5 via-transparent to-accent-pink/5 rounded-3xl pointer-events-none"></div>
-        
-        <div className="relative z-10">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-8">
+      <div className="bg-nb-bg border-2 border-black shadow-nb-xl w-full max-w-3xl my-8">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b-2 border-black bg-nb-yellow">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 border-2 border-black bg-white flex items-center justify-center"><Database size={20} /></div>
             <div>
-              <h2 className="text-3xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent flex items-center gap-3">
-                <Database size={32} className="text-accent-blue" />
-                Knowledge Base
-              </h2>
-              <p className="text-gray-400 text-sm mt-1">Upload documents for {bot.name}</p>
+              <h2 className="text-xl font-bold text-nb-text">Knowledge Base</h2>
+              <p className="text-sm text-black/60">Upload documents for {bot.name}</p>
             </div>
-            <button 
-              onClick={() => setShowModal(false)}
-              className="text-gray-400 hover:text-white hover:bg-gray-800 p-3 rounded-xl transition-all hover:rotate-90 duration-300"
-              aria-label="Close modal"
-            >
-              <X size={24} />
-            </button>
           </div>
+          <button onClick={() => setShowModal(false)} className="nb-btn bg-white p-2"><X size={20} /></button>
+        </div>
 
+        <div className="p-6 space-y-6">
           {/* Alerts */}
           {error && (
-            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm flex items-center gap-2 animate-fadeIn">
-              <XCircle size={18} />
-              <span>{error}</span>
+            <div className="p-4 bg-red-50 border-2 border-red-500 text-red-700 text-sm flex items-center gap-2">
+              <XCircle size={16} className="flex-shrink-0" /><span>{error}</span>
             </div>
           )}
-
           {success && (
-            <div className="mb-6 p-4 bg-green-500/10 border border-green-500/30 rounded-xl text-green-400 text-sm flex items-center gap-2 animate-fadeIn">
-              <CheckCircle2 size={18} />
-              <span>{success}</span>
+            <div className="p-4 bg-green-50 border-2 border-green-500 text-green-700 text-sm flex items-center gap-2">
+              <CheckCircle2 size={16} className="flex-shrink-0" /><span>{success}</span>
             </div>
           )}
 
           {/* Active Upload Jobs */}
           {uploadJobs.length > 0 && (
-            <div className="mb-6">
-              <h3 className="text-sm font-semibold text-gray-400 mb-3">Processing Documents</h3>
-              {uploadJobs.map((job) => {
-                console.log('🎨 Rendering progress bar for job:', job);
-                return <UploadProgressBar key={job.jobId} job={job} />;
-              })}
+            <div>
+              <h3 className="text-sm font-bold text-nb-text mb-3">Processing Documents</h3>
+              {uploadJobs.map((job) => <UploadProgressBar key={job.jobId} job={job} />)}
             </div>
           )}
-          {uploadJobs.length === 0 && console.log('⚠️ No upload jobs to display')}
 
           {/* Upload Section */}
-          <div className="mb-8 p-6 bg-black/20 rounded-2xl border border-gray-800/50">
-            <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-              <Upload size={20} className="text-accent-blue" />
-              Upload Document
+          <div className="bg-white border-2 border-black shadow-nb-sm p-5">
+            <h3 className="text-base font-bold mb-4 flex items-center gap-2">
+              <Upload size={18} />Upload Document
             </h3>
-
-            {/* Drag & Drop Zone */}
             <div
-              className={`border-2 border-dashed rounded-xl p-8 text-center transition-all ${
-                dragActive
-                  ? 'border-accent-blue bg-accent-blue/10'
-                  : 'border-gray-700 hover:border-gray-600'
-              }`}
-              onDragEnter={handleDrag}
-              onDragLeave={handleDrag}
-              onDragOver={handleDrag}
-              onDrop={handleDrop}
+              className={`border-2 border-dashed p-8 text-center transition-all ${dragActive ? 'border-black bg-nb-yellow/30' : 'border-gray-400 hover:border-black hover:bg-gray-50'}`}
+              onDragEnter={handleDrag} onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={handleDrop}
             >
               {selectedFile ? (
                 <div className="space-y-4">
-                  <div className="text-6xl">{getFileIcon(selectedFile.name.split('.').pop())}</div>
+                  <div className="text-5xl">{getFileIcon(selectedFile.name.split('.').pop())}</div>
                   <div>
-                    <p className="text-white font-semibold">{selectedFile.name}</p>
-                    <p className="text-gray-400 text-sm">{formatFileSize(selectedFile.size)}</p>
+                    <p className="font-bold text-nb-text">{selectedFile.name}</p>
+                    <p className="text-nb-muted text-sm">{formatFileSize(selectedFile.size)}</p>
                   </div>
                   <div className="flex gap-3 justify-center">
-                    <button
-                      onClick={handleUpload}
-                      disabled={uploading}
-                      className="bg-accent-blue text-black font-semibold px-6 py-2 rounded-lg hover:opacity-90 transition-all disabled:opacity-50 flex items-center gap-2"
-                    >
-                      {uploading ? (
-                        <>
-                          <Loader2 size={16} className="animate-spin" />
-                          Uploading...
-                        </>
-                      ) : (
-                        <>
-                          <Upload size={16} />
-                          Upload
-                        </>
-                      )}
+                    <button onClick={handleUpload} disabled={uploading}
+                      className="nb-btn bg-black text-white border-black px-5 py-2 disabled:opacity-50 disabled:shadow-none disabled:translate-x-0 disabled:translate-y-0">
+                      {uploading ? <><Loader2 size={14} className="animate-spin" />Uploading...</> : <><Upload size={14} />Upload</>}
                     </button>
-                    <button
-                      onClick={() => setSelectedFile(null)}
-                      className="bg-gray-800 text-white px-6 py-2 rounded-lg hover:bg-gray-700 transition-all"
-                    >
-                      Cancel
-                    </button>
+                    <button onClick={() => setSelectedFile(null)} className="nb-btn bg-white px-5 py-2">Cancel</button>
                   </div>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  <Upload size={48} className="mx-auto text-gray-600" />
-                  <div>
-                    <p className="text-white font-semibold mb-2">
-                      Drag & drop your document here
-                    </p>
-                    <p className="text-gray-400 text-sm mb-4">
-                      or click to browse
-                    </p>
-                    <label className="cursor-pointer">
-                      <input
-                        type="file"
-                        className="hidden"
-                        accept=".pdf,.txt,.docx,.csv,.md"
-                        onChange={handleFileSelect}
-                      />
-                      <span className="bg-accent-blue/20 text-accent-blue px-6 py-2 rounded-lg hover:bg-accent-blue/30 transition-all inline-block">
-                        Choose File
-                      </span>
-                    </label>
-                  </div>
-                  <p className="text-xs text-gray-500">
-                    Supported: PDF, TXT, DOCX, CSV, MD (Max 10MB)
-                  </p>
+                <div className="space-y-3">
+                  <Upload size={36} className="mx-auto text-gray-400" />
+                  <p className="font-bold text-nb-text">Drag & drop your document here</p>
+                  <p className="text-nb-muted text-sm">or click to browse</p>
+                  <label className="cursor-pointer inline-block">
+                    <input type="file" className="hidden" accept=".pdf,.txt,.docx,.csv,.md" onChange={handleFileSelect} />
+                    <span className="nb-btn bg-nb-yellow border-black px-5 py-2 inline-flex items-center gap-2 font-bold text-sm">Choose File</span>
+                  </label>
+                  <p className="text-xs text-nb-muted">PDF, TXT, DOCX, CSV, MD (Max 50MB)</p>
                 </div>
               )}
             </div>
           </div>
 
           {/* Documents List */}
-          <div className="p-6 bg-black/20 rounded-2xl border border-gray-800/50">
-            <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-              <FileText size={20} className="text-accent-pink" />
-              Uploaded Documents ({documents.length})
+          <div className="bg-white border-2 border-black shadow-nb-sm p-5">
+            <h3 className="text-base font-bold mb-4 flex items-center gap-2">
+              <FileText size={18} />Uploaded Documents ({documents.length})
             </h3>
-
             {loading ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 size={32} className="animate-spin text-accent-blue" />
+              <div className="flex items-center justify-center py-10">
+                <div className="w-8 h-8 border-4 border-black border-t-nb-yellow animate-spin" />
               </div>
             ) : documents.length === 0 ? (
-              <div className="text-center py-8">
-                <FileIcon size={48} className="mx-auto text-gray-600 mb-3" />
-                <p className="text-gray-400">No documents uploaded yet</p>
+              <div className="text-center py-10">
+                <FileIcon size={36} className="mx-auto text-gray-300 mb-3" />
+                <p className="text-nb-muted font-medium">No documents uploaded yet</p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {documents.map((doc) => (
-                  <div
-                    key={doc._id}
-                    className="flex items-center justify-between p-4 bg-black/30 rounded-xl border border-gray-800/50 hover:border-gray-700 transition-all"
-                  >
-                    <div className="flex items-center gap-3 flex-1">
-                      <div className="text-3xl">{getFileIcon(doc.fileType)}</div>
+                  <div key={doc._id} className="flex items-center justify-between p-3 border-2 border-black bg-nb-bg hover:bg-nb-yellow/20 transition-colors">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className="text-2xl">{getFileIcon(doc.fileType)}</div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-white font-semibold truncate">
-                          {doc.originalName}
-                        </p>
-                        <p className="text-gray-400 text-sm">
-                          {doc.chunkCount} chunks • {new Date(doc.uploadedAt).toLocaleDateString()}
-                        </p>
+                        <p className="font-bold text-nb-text truncate text-sm">{doc.originalName}</p>
+                        <p className="text-nb-muted text-xs">{doc.chunkCount} chunks · {new Date(doc.uploadedAt).toLocaleDateString()}</p>
                       </div>
                     </div>
-                    <button
-                      onClick={() => setConfirmDialog({ isOpen: true, documentId: doc._id })}
-                      className="p-2 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
-                      title="Delete document"
-                    >
-                      <Trash2 size={18} />
+                    <button onClick={() => setConfirmDialog({ isOpen: true, documentId: doc._id })}
+                      className="nb-btn bg-white p-2 hover:bg-red-100 hover:border-red-500 hover:text-red-600">
+                      <Trash2 size={14} />
                     </button>
                   </div>
                 ))}
@@ -502,17 +431,13 @@ const KnowledgeBaseModal = ({ bot, setShowModal }) => {
         </div>
       </div>
 
-      {/* Confirm Delete Dialog */}
       <ConfirmDialog
         isOpen={confirmDialog.isOpen}
         onClose={() => setConfirmDialog({ isOpen: false, documentId: null })}
         onConfirm={() => handleDelete(confirmDialog.documentId)}
         title="Delete Document?"
         message="Are you sure you want to delete this document? This will permanently remove it from your knowledge base and delete all associated vectors from Pinecone."
-        confirmText="Delete"
-        cancelText="Cancel"
-        type="warning"
-        danger={true}
+        confirmText="Delete" cancelText="Cancel" type="warning" danger={true}
       />
     </div>
   );

@@ -1,8 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { analyticsService, setAuthToken } from '../services/api';
-import { LineChart } from '@mui/x-charts/LineChart';
-import { BarChart } from '@mui/x-charts/BarChart';
+import {
+  Chart as ChartJS,
+  CategoryScale, LinearScale, PointElement, LineElement,
+  Filler, Tooltip, Legend
+} from 'chart.js';
+import { Line } from 'react-chartjs-2';
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, Tooltip, Legend);
 import {
   BarChart3,
   Bot,
@@ -51,104 +56,62 @@ const AnalyticsView = ({ bots, loading }) => {
 
   if (loading || analyticsLoading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 size={48} className="animate-spin text-accent-blue" />
+      <div className="flex flex-col items-center justify-center py-24 gap-3">
+        <div className="w-10 h-10 border-4 border-black border-t-nb-yellow animate-spin" />
+        <p className="text-sm font-bold text-nb-muted">Loading analytics...</p>
       </div>
     );
   }
 
   if (bots.length === 0) {
     return (
-      <div className="bg-[#0A0A0A] border border-gray-800 rounded-2xl p-12 text-center">
-        <BarChart3 size={48} className="text-gray-600 mx-auto mb-4" />
+      <div className="bg-white border-2 border-black shadow-nb p-12 text-center max-w-lg mx-auto">
+        <div className="w-16 h-16 border-2 border-black bg-nb-yellow mx-auto mb-4 flex items-center justify-center"><BarChart3 size={32} /></div>
         <h3 className="text-xl font-bold mb-2">No Analytics Data</h3>
-        <p className="text-gray-500">Create bots to see analytics</p>
+        <p className="text-nb-muted">Create bots to see analytics</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-6xl">
       <div>
-        <h2 className="text-2xl font-bold">Analytics Dashboard</h2>
-        <p className="text-gray-500 mt-1">Comprehensive insights into your bot performance</p>
+        <h2 className="text-2xl font-bold text-nb-text">Analytics Dashboard</h2>
+        <p className="text-nb-muted text-sm mt-0.5">Comprehensive insights into your bot performance</p>
       </div>
 
       {/* Overview Cards */}
       {analytics && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-gradient-to-br from-accent-blue/20 to-accent-blue/10 border border-accent-blue/30 rounded-2xl p-6 hover:scale-105 transition-transform duration-300">
-            <div className="flex items-center justify-between mb-3">
-              <MessageSquare size={24} className="text-accent-blue" />
-              <div className="px-2 py-1 bg-accent-blue/20 rounded-lg text-xs font-bold text-accent-blue">
-                +{analytics.totalQueries || 0}
-              </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            { icon: MessageSquare, label: 'Total Queries', value: (analytics.totalQueries || 0).toLocaleString(), bg: 'bg-nb-blue' },
+            { icon: Target,        label: 'Avg Accuracy',  value: `${analytics.avgAccuracy || 0}%`,              bg: 'bg-nb-pink' },
+            { icon: Clock,         label: 'Response Time', value: `${analytics.avgResponseTime || 0}ms`,          bg: 'bg-nb-yellow' },
+            { icon: DollarSign,    label: 'Total Cost',    value: `$${(analytics.totalCost || 0).toFixed(2)}`,    bg: 'bg-green-200' },
+          ].map(({ icon: Icon, label, value, bg }) => (
+            <div key={label} className={`${bg} border-2 border-black shadow-nb p-5`}>
+              <div className="w-9 h-9 border-2 border-black bg-white flex items-center justify-center mb-3"><Icon size={18} /></div>
+              <p className="text-3xl font-bold text-black">{value}</p>
+              <p className="text-xs font-bold text-black/60 mt-1 uppercase tracking-wide">{label}</p>
             </div>
-            <p className="text-3xl font-bold mb-1">{(analytics.totalQueries || 0).toLocaleString()}</p>
-            <p className="text-sm text-gray-400">Total Queries</p>
-          </div>
-
-          <div className="bg-gradient-to-br from-accent-pink/20 to-accent-pink/10 border border-accent-pink/30 rounded-2xl p-6 hover:scale-105 transition-transform duration-300">
-            <div className="flex items-center justify-between mb-3">
-              <Target size={24} className="text-accent-pink" />
-              <div className="px-2 py-1 bg-accent-pink/20 rounded-lg text-xs font-bold text-accent-pink">
-                {analytics.avgAccuracy || 0}%
-              </div>
-            </div>
-            <p className="text-3xl font-bold mb-1">{analytics.avgAccuracy || 0}%</p>
-            <p className="text-sm text-gray-400">Avg Accuracy</p>
-          </div>
-
-          <div className="bg-gradient-to-br from-accent-yellow/20 to-accent-yellow/10 border border-accent-yellow/30 rounded-2xl p-6 hover:scale-105 transition-transform duration-300">
-            <div className="flex items-center justify-between mb-3">
-              <Clock size={24} className="text-accent-yellow" />
-              <div className="px-2 py-1 bg-accent-yellow/20 rounded-lg text-xs font-bold text-accent-yellow">
-                AVG
-              </div>
-            </div>
-            <p className="text-3xl font-bold mb-1">{analytics.avgResponseTime || 0}ms</p>
-            <p className="text-sm text-gray-400">Response Time</p>
-          </div>
-
-          <div className="bg-gradient-to-br from-green-500/20 to-green-500/10 border border-green-500/30 rounded-2xl p-6 hover:scale-105 transition-transform duration-300">
-            <div className="flex items-center justify-between mb-3">
-              <DollarSign size={24} className="text-green-400" />
-              <div className="px-2 py-1 bg-green-500/20 rounded-lg text-xs font-bold text-green-400">
-                COST
-              </div>
-            </div>
-            <p className="text-3xl font-bold mb-1">${(analytics.totalCost || 0).toFixed(2)}</p>
-            <p className="text-sm text-gray-400">Total Cost</p>
-          </div>
+          ))}
         </div>
       )}
 
-      {/* Activity Chart - 30 Days */}
-      <div className="bg-[#0A0A0A] border border-gray-800 rounded-2xl p-6">
-        <div className="flex items-center justify-between mb-6">
+      {/* Activity Trend Chart */}
+      <div className="bg-white border-2 border-black shadow-nb p-6">
+        <div className="flex items-center justify-between mb-5">
           <div>
-            <h3 className="text-xl font-bold">Activity Trend</h3>
-            <p className="text-sm text-gray-500">Last 30 days performance</p>
+            <h3 className="text-lg font-bold">Activity Trend</h3>
+            <p className="text-xs text-nb-muted">Last 30 days performance</p>
           </div>
           <div className="flex gap-2">
-            <button
-              onClick={() => setSelectedMetric('queries')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                selectedMetric === 'queries'
-                  ? 'bg-accent-blue text-black'
-                  : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-              }`}
-            >
+            <button onClick={() => setSelectedMetric('queries')}
+              className={`nb-btn px-3 py-1.5 text-xs ${selectedMetric === 'queries' ? 'bg-nb-blue border-black' : 'bg-white border-black text-nb-muted'}`}>
               Queries
             </button>
-            <button
-              onClick={() => setSelectedMetric('tokens')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                selectedMetric === 'tokens'
-                  ? 'bg-accent-pink text-black'
-                  : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-              }`}
-            >
+            <button onClick={() => setSelectedMetric('tokens')}
+              className={`nb-btn px-3 py-1.5 text-xs ${selectedMetric === 'tokens' ? 'bg-nb-pink border-black' : 'bg-white border-black text-nb-muted'}`}>
               Tokens
             </button>
           </div>
@@ -156,103 +119,69 @@ const AnalyticsView = ({ bots, loading }) => {
         <AdvancedActivityChart dailyStats={dailyStats} metric={selectedMetric} />
       </div>
 
-      {/* Top Performing Bots */}
+      {/* Top Bots + All Bots */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-[#0A0A0A] border border-gray-800 rounded-2xl p-6">
-          <h3 className="text-xl font-bold mb-4">Top Performing Bots</h3>
+        <div className="bg-white border-2 border-black shadow-nb p-6">
+          <h3 className="text-lg font-bold mb-4">Top Performing Bots</h3>
           {topBots.length > 0 ? (
             <div className="space-y-3">
-              {topBots.map((bot, index) => (
-                <div
-                  key={bot._id}
-                  className="bg-gray-900/50 rounded-xl p-4 hover:bg-gray-900 transition-all duration-200 group"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="text-2xl font-bold text-gray-600 group-hover:text-accent-blue transition-colors">
-                      #{index + 1}
+              {topBots.map((bot, index) => {
+                const accents = ['bg-nb-yellow','bg-nb-pink','bg-nb-blue','bg-purple-200','bg-orange-200'];
+                return (
+                  <div key={bot._id} className={`border-2 border-black p-4 ${accents[index % accents.length]}`}>
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl font-bold text-black/40">#{index + 1}</span>
+                      <div className="w-9 h-9 border-2 border-black bg-white flex items-center justify-center flex-shrink-0"><Bot size={18} /></div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold truncate text-nb-text">{bot.name}</p>
+                        <p className="text-xs text-black/60">{bot.type}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-lg font-bold text-black">{selectedMetric === 'queries' ? bot.totalQueries : bot.totalTokensUsed?.toLocaleString()}</p>
+                        <p className="text-xs text-black/60">{selectedMetric === 'queries' ? 'queries' : 'tokens'}</p>
+                      </div>
                     </div>
-                    <div className={`w-10 h-10 rounded-lg bg-accent-${bot.color}/20 flex items-center justify-center flex-shrink-0`}>
-                      <Bot size={20} className={`text-accent-${bot.color}`} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold truncate">{bot.name}</p>
-                      <p className="text-xs text-gray-500">{bot.type}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-lg font-bold text-accent-blue">
-                        {selectedMetric === 'queries' ? bot.totalQueries : bot.totalTokensUsed?.toLocaleString()}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {selectedMetric === 'queries' ? 'queries' : 'tokens'}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
-                    <div className="bg-black/30 rounded-lg p-2">
-                      <p className="text-gray-500">Accuracy</p>
-                      <p className="font-bold text-accent-pink">{bot.accuracy || 0}%</p>
-                    </div>
-                    <div className="bg-black/30 rounded-lg p-2">
-                      <p className="text-gray-500">Response</p>
-                      <p className="font-bold text-accent-yellow">{bot.avgResponseTime || 0}ms</p>
-                    </div>
-                    <div className="bg-black/30 rounded-lg p-2">
-                      <p className="text-gray-500">Cost</p>
-                      <p className="font-bold text-green-400">${(bot.estimatedCost || 0).toFixed(2)}</p>
+                    <div className="grid grid-cols-3 gap-2 mt-3">
+                      {[{l:'Accuracy',v:`${bot.accuracy||0}%`},{l:'Response',v:`${bot.avgResponseTime||0}ms`},{l:'Cost',v:`$${(bot.estimatedCost||0).toFixed(2)}`}].map(({l,v}) => (
+                        <div key={l} className="bg-white/70 border border-black/20 p-2 text-center">
+                          <p className="text-xs text-black/50">{l}</p>
+                          <p className="font-bold text-xs text-nb-text">{v}</p>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
-            <div className="text-center py-8 text-gray-500">
-              <BarChart3 size={32} className="mx-auto mb-2 opacity-50" />
-              <p>No performance data yet</p>
+            <div className="text-center py-10 text-nb-muted">
+              <BarChart3 size={32} className="mx-auto mb-2 opacity-30" />
+              <p className="text-sm">No performance data yet</p>
             </div>
           )}
         </div>
 
-        {/* Bot Performance Breakdown */}
-        <div className="bg-[#0A0A0A] border border-gray-800 rounded-2xl p-6">
-          <h3 className="text-xl font-bold mb-4">All Bots Overview</h3>
-          <div className="space-y-2 max-h-96 overflow-y-auto custom-scrollbar">
+        <div className="bg-white border-2 border-black shadow-nb p-6">
+          <h3 className="text-lg font-bold mb-4">All Bots Overview</h3>
+          <div className="space-y-2 max-h-96 overflow-y-auto">
             {bots.map((bot) => (
-              <div
-                key={bot.id}
-                className="bg-gray-900/30 rounded-lg p-3 hover:bg-gray-900/50 transition-all"
-              >
+              <div key={bot.id} className="border-2 border-black p-3 bg-nb-bg hover:bg-nb-yellow/20 transition-colors">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
-                    <div className={`w-8 h-8 rounded-lg bg-accent-${bot.color}/20 flex items-center justify-center`}>
-                      <Bot size={16} className={`text-accent-${bot.color}`} />
-                    </div>
-                    <span className="font-semibold text-sm">{bot.name}</span>
+                    <div className="w-8 h-8 border-2 border-black bg-nb-yellow flex items-center justify-center"><Bot size={14} /></div>
+                    <span className="font-bold text-sm text-nb-text">{bot.name}</span>
                   </div>
-                  <span className={`px-2 py-1 rounded text-xs font-medium ${
-                    bot.status === 'active'
-                      ? 'bg-green-500/20 text-green-400'
-                      : 'bg-gray-500/20 text-gray-400'
-                  }`}>
+                  <span className={`inline-flex items-center px-2 py-0.5 text-xs font-bold border-2 border-black ${bot.status === 'active' ? 'bg-green-200 text-green-800' : 'bg-gray-100 text-gray-600'}`}>
                     {bot.status}
                   </span>
                 </div>
                 <div className="grid grid-cols-4 gap-2 text-xs">
-                  <div>
-                    <p className="text-gray-500">Queries</p>
-                    <p className="font-bold">{bot.totalQueries || 0}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500">Tokens</p>
-                    <p className="font-bold">{(bot.totalTokensUsed || 0).toLocaleString()}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500">Accuracy</p>
-                    <p className="font-bold">{bot.accuracy || 0}%</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500">Cost</p>
-                    <p className="font-bold">${(bot.estimatedCost || 0).toFixed(2)}</p>
-                  </div>
+                  {[{l:'Queries',v:bot.totalQueries||0},{l:'Tokens',v:(bot.totalTokensUsed||0).toLocaleString()},{l:'Accuracy',v:`${bot.accuracy||0}%`},{l:'Cost',v:`$${(bot.estimatedCost||0).toFixed(2)}`}].map(({l,v}) => (
+                    <div key={l}>
+                      <p className="text-nb-muted">{l}</p>
+                      <p className="font-bold text-nb-text">{v}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
             ))}
@@ -267,97 +196,97 @@ const AnalyticsView = ({ bots, loading }) => {
 const AdvancedActivityChart = ({ dailyStats, metric }) => {
   if (!dailyStats || dailyStats.length === 0) {
     return (
-      <div className="flex items-center justify-center h-64 bg-gray-900/30 rounded-xl">
+      <div className="flex items-center justify-center h-64 border-2 border-dashed border-gray-300 bg-nb-bg">
         <div className="text-center">
-          <Activity size={48} className="mx-auto mb-3 text-gray-600" />
-          <p className="text-gray-500">No activity data yet</p>
+          <Activity size={32} className="mx-auto mb-3 text-nb-muted opacity-40" />
+          <p className="text-nb-muted text-sm">No activity data yet</p>
         </div>
       </div>
     );
   }
 
-  const data = dailyStats.map(stat => ({
-    value: metric === 'queries' ? (stat.queries || 0) : (stat.tokens || 0),
-    date: new Date(stat.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-    fullDate: stat.date
-  }));
+  const values = dailyStats.map(s => metric === 'queries' ? (s.queries || 0) : (s.tokens || 0));
+  const labels = dailyStats.map(s => new Date(s.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
 
-  const avgValue = data.reduce((sum, d) => sum + d.value, 0) / data.length;
-  const maxValue = Math.max(...data.map(d => d.value), 1);
-  const totalValue = data.reduce((sum, item) => sum + item.value, 0);
+  const totalValue = values.reduce((a, b) => a + b, 0);
+  const avgValue   = values.length ? totalValue / values.length : 0;
+  const maxValue   = Math.max(...values, 1);
 
-  const chartColor = metric === 'queries' ? '#3b82f6' : '#ec4899';
+  const isQueries = metric === 'queries';
+  const color  = isQueries ? '#4D9FFF' : '#FF6B9D';
+  const fillBg = isQueries ? 'rgba(77,159,255,0.12)' : 'rgba(255,107,157,0.12)';
+
+  const chartData = {
+    labels,
+    datasets: [{
+      label: isQueries ? 'Queries' : 'Tokens',
+      data: values,
+      borderColor: color,
+      backgroundColor: fillBg,
+      borderWidth: 2.5,
+      pointBackgroundColor: color,
+      pointBorderColor: '#000',
+      pointBorderWidth: 1.5,
+      pointRadius: 4,
+      pointHoverRadius: 6,
+      fill: true,
+      tension: 0.4,
+    }],
+  };
+
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#fff',
+        borderColor: '#000',
+        borderWidth: 2,
+        titleColor: '#0D0D0D',
+        bodyColor: '#0D0D0D',
+        padding: 10,
+        cornerRadius: 0,
+        callbacks: {
+          label: ctx => ` ${ctx.parsed.y.toLocaleString()} ${isQueries ? 'queries' : 'tokens'}`,
+        },
+      },
+    },
+    scales: {
+      x: {
+        grid: { color: '#e5e5e5', drawTicks: false },
+        border: { color: '#000', width: 2 },
+        ticks: { color: '#6B6B6B', font: { size: 11, family: 'Space Grotesk' }, maxRotation: 0 },
+      },
+      y: {
+        grid: { color: '#e5e5e5', drawTicks: false },
+        border: { color: '#000', width: 2 },
+        ticks: { color: '#6B6B6B', font: { size: 11, family: 'Space Grotesk' }, callback: v => v.toLocaleString() },
+        beginAtZero: true,
+      },
+    },
+  };
 
   return (
     <div className="space-y-4">
       <div className="h-72 w-full">
-        <LineChart
-          xAxis={[{
-            scaleType: 'point',
-            data: data.map(d => d.date),
-          }]}
-          series={[
-            {
-              data: data.map(d => d.value),
-              label: metric === 'queries' ? 'Queries' : 'Tokens',
-              color: chartColor,
-              area: true,
-              showMark: true,
-            },
-          ]}
-          height={280}
-          margin={{ top: 20, bottom: 40, left: 60, right: 20 }}
-          grid={{ vertical: true, horizontal: true }}
-          sx={{
-            '& .MuiChartsAxis-line': {
-              stroke: 'rgba(255, 255, 255, 0.1)',
-            },
-            '& .MuiChartsAxis-tick': {
-              stroke: 'rgba(255, 255, 255, 0.1)',
-            },
-            '& .MuiChartsAxis-tickLabel': {
-              fill: 'rgba(255, 255, 255, 0.5)',
-              fontSize: '11px',
-            },
-            '& .MuiChartsGrid-line': {
-              stroke: 'rgba(255, 255, 255, 0.05)',
-            },
-            '& .MuiChartsLegend-label': {
-              fill: 'rgba(255, 255, 255, 0.7)',
-              fontSize: '12px',
-            },
-            '& .MuiLineElement-root': {
-              strokeWidth: 2,
-            },
-            '& .MuiAreaElement-root': {
-              fillOpacity: 0.3,
-            },
-          }}
-          slotProps={{
-            legend: { hidden: false, position: { vertical: 'top', horizontal: 'right' } }
-          }}
-        />
+        <Line data={chartData} options={options} />
       </div>
 
       {/* Stats Summary */}
-      <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-800">
-        <div className="text-center bg-gradient-to-br from-blue-500/10 to-blue-500/5 border border-blue-500/20 rounded-xl p-4">
-          <p className="text-sm text-gray-400 mb-1">Total</p>
-          <p className="text-2xl font-bold text-blue-400">
-            {totalValue.toLocaleString()}
-          </p>
+      <div className="grid grid-cols-3 gap-4 pt-4 border-t-2 border-black">
+        <div className="bg-nb-blue border-2 border-black shadow-nb-sm p-4 text-center">
+          <p className="text-xs font-bold text-black/60 mb-1">TOTAL</p>
+          <p className="text-2xl font-bold text-black">{totalValue.toLocaleString()}</p>
         </div>
-        <div className="text-center bg-gradient-to-br from-pink-500/10 to-pink-500/5 border border-pink-500/20 rounded-xl p-4">
-          <p className="text-sm text-gray-400 mb-1">Average</p>
-          <p className="text-2xl font-bold text-pink-400">
-            {Math.round(avgValue).toLocaleString()}
-          </p>
+        <div className="bg-nb-pink border-2 border-black shadow-nb-sm p-4 text-center">
+          <p className="text-xs font-bold text-black/60 mb-1">AVERAGE</p>
+          <p className="text-2xl font-bold text-black">{Math.round(avgValue).toLocaleString()}</p>
         </div>
-        <div className="text-center bg-gradient-to-br from-yellow-500/10 to-yellow-500/5 border border-yellow-500/20 rounded-xl p-4">
-          <p className="text-sm text-gray-400 mb-1">Peak</p>
-          <p className="text-2xl font-bold text-yellow-400">
-            {maxValue.toLocaleString()}
-          </p>
+        <div className="bg-nb-yellow border-2 border-black shadow-nb-sm p-4 text-center">
+          <p className="text-xs font-bold text-black/60 mb-1">PEAK</p>
+          <p className="text-2xl font-bold text-black">{maxValue.toLocaleString()}</p>
         </div>
       </div>
     </div>

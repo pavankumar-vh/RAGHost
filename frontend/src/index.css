@@ -2,6 +2,125 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: #FFFEF0;
+    color: #0D0D0D;
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #f0efe0;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #000;
+    border-radius: 0;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #333;
+  }
+}
+
+@layer components {
+  /* Neo-brutalism base button */
+  .nb-btn {
+    @apply inline-flex items-center justify-center gap-2 font-bold border-2 border-black shadow-nb transition-all duration-150 cursor-pointer select-none;
+    @apply hover:shadow-nb-hover hover:-translate-y-px hover:-translate-x-px;
+    @apply active:shadow-none active:translate-x-0 active:translate-y-0;
+  }
+
+  .nb-btn-sm {
+    @apply px-3 py-1.5 text-sm rounded;
+  }
+
+  .nb-btn-md {
+    @apply px-5 py-2.5 text-sm rounded;
+  }
+
+  .nb-btn-lg {
+    @apply px-6 py-3 text-base rounded;
+  }
+
+  /* Yellow primary button */
+  .nb-btn-yellow {
+    @apply nb-btn bg-nb-yellow text-black;
+  }
+
+  /* Black primary button */
+  .nb-btn-black {
+    @apply nb-btn bg-black text-white;
+    @apply hover:shadow-nb-hover;
+  }
+
+  /* White outlined button */
+  .nb-btn-white {
+    @apply nb-btn bg-white text-black;
+  }
+
+  /* Pink button */
+  .nb-btn-pink {
+    @apply nb-btn bg-nb-pink text-white;
+    @apply hover:shadow-nb-pink;
+  }
+
+  /* Neo card */
+  .nb-card {
+    @apply bg-white border-2 border-black shadow-nb rounded;
+  }
+
+  /* Neo input */
+  .nb-input {
+    @apply w-full px-3 py-2.5 bg-white border-2 border-black rounded font-medium text-black placeholder-gray-400;
+    @apply focus:outline-none focus:ring-2 focus:ring-nb-yellow focus:ring-offset-0;
+    @apply transition-shadow duration-150;
+  }
+
+  .nb-input:focus {
+    box-shadow: 3px 3px 0px 0px #FFE500;
+  }
+
+  /* Neo badge */
+  .nb-badge {
+    @apply inline-flex items-center px-2 py-0.5 text-xs font-bold border-2 border-black rounded;
+  }
+
+  /* Animated underline */
+  .nb-link {
+    @apply font-bold underline underline-offset-2 decoration-2 hover:decoration-nb-yellow transition-colors;
+  }
+}
+
+/* Page transition */
+.page-enter {
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+.page-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 250ms ease-out, transform 250ms ease-out;
+}
+
+
 /* Performance Optimizations for 60fps */
 * {
   /* Hardware acceleration for all transforms */
@@ -16,9 +135,9 @@
 }
 
 body {
-  font-family: 'Poppins', sans-serif;
-  background-color: #1F1F1F;
-  color: #FFFFFF;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  background-color: #FFFEF0;
+  color: #0D0D0D;
   margin: 0;
   padding: 0;
   /* Enable GPU acceleration */
