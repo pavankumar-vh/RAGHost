@@ -691,9 +691,9 @@ const DocumentationView = () => {
   ];
 
   return (
-    <div className="w-full max-w-4xl">
+    <div className="w-full">
       {/* ── HERO ── */}
-      <div className="bg-black text-white border-2 border-black shadow-nb p-6 sm:p-8 mb-1 relative overflow-hidden">
+      <div className="bg-black text-white border-2 border-black shadow-nb p-6 sm:p-8 mb-0 relative overflow-hidden">
         <div className="absolute inset-0 opacity-5" style={{ backgroundImage:'linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px)', backgroundSize:'32px 32px' }} />
         <div className="absolute top-0 right-0 w-40 h-40 bg-nb-yellow/20 blur-3xl rounded-full" />
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center gap-4">
@@ -719,7 +719,7 @@ const DocumentationView = () => {
       </div>
 
       {/* ── TABS ── */}
-      <div className="flex overflow-x-auto border-b-2 border-black mb-6 bg-white">
+      <div className="flex overflow-x-auto border-2 border-black border-t-0 mb-6 bg-white">
         {tabs.map(({ id, label, icon: Icon, color }) => (
           <button key={id} onClick={() => setActiveTab(id)}
             className={`flex items-center gap-1.5 px-4 py-3 font-bold text-xs sm:text-sm border-r-2 border-black whitespace-nowrap flex-shrink-0 transition-all ${
