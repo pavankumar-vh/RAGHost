@@ -321,9 +321,9 @@ const KnowledgeBaseModal = ({ bot, setShowModal }) => {
       className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 overflow-y-auto"
       onClick={handleBackdropClick}
     >
-      <div className="bg-nb-bg border-2 border-black shadow-nb-xl w-full max-w-3xl my-2 sm:my-8">
+      <div className="bg-nb-bg border-2 border-black shadow-nb-xl w-full max-w-3xl my-8">
         {/* Header */}
-          <div className="flex items-center justify-between p-4 sm:p-6 border-b-2 border-black bg-nb-yellow">
+        <div className="flex items-center justify-between p-6 border-b-2 border-black bg-nb-yellow">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 border-2 border-black bg-white flex items-center justify-center"><Database size={20} /></div>
             <div>
@@ -334,7 +334,7 @@ const KnowledgeBaseModal = ({ bot, setShowModal }) => {
           <button onClick={() => setShowModal(false)} className="nb-btn bg-white p-2"><X size={20} /></button>
         </div>
 
-        <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+        <div className="p-6 space-y-6">
           {/* Alerts */}
           {error && (
             <div className="p-4 bg-red-50 border-2 border-red-500 text-red-700 text-sm flex items-center gap-2">

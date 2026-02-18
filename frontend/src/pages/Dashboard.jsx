@@ -8,18 +8,12 @@ import EmbedCodeModal from '../components/EmbedCodeModal';
 import KnowledgeBaseModal from '../components/KnowledgeBaseModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import AnalyticsView from '../components/AnalyticsView';
-import {
-  Chart as ChartJS,
-  CategoryScale, LinearScale, PointElement, LineElement,
-  Filler, Tooltip
-} from 'chart.js';
-import { Line } from 'react-chartjs-2';
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, Tooltip);
+import ProfileView from '../components/ProfileView';
+import { LineChart } from '@mui/x-charts/LineChart';
 import {
   Bot, Key, BarChart3, Home, LogOut, BookOpen, Plus, Search, TrendingUp,
   Activity, Zap, Database, MessageSquare, Loader2, Trash2, Edit, Code,
-  CheckCircle2, XCircle, Copy, Check, ExternalLink, Menu, X,
-  ChevronLeft, ChevronRight,
+  CheckCircle2, XCircle, Copy, Check, ExternalLink, Menu, X, UserCircle,
 } from 'lucide-react';
 
 const Dashboard = () => {
@@ -39,7 +33,6 @@ const Dashboard = () => {
   const [dialogState, setDialogState] = useState({ isOpen: false, type: 'alert', title: '', message: '', onConfirm: null });
   const [deleteBotId, setDeleteBotId] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   useEffect(() => {
     fetchBots();
@@ -127,26 +120,25 @@ const Dashboard = () => {
         currentUser={currentUser}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
-        isCollapsed={sidebarCollapsed}
-        onToggleCollapse={() => setSidebarCollapsed(c => !c)}
       />
-      <main className={`flex-1 min-h-screen flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'}`}>
-        <header className="sticky top-0 z-10 bg-nb-bg border-b-2 border-black px-3 sm:px-4 lg:px-8 py-3 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <button className="lg:hidden nb-btn bg-white p-2 flex-shrink-0" onClick={() => setSidebarOpen(true)}><Menu size={18} /></button>
-            <h1 className="text-base sm:text-xl font-bold text-nb-text truncate">{activePage}</h1>
+      <main className="flex-1 lg:ml-64 min-h-screen flex flex-col">
+        <header className="sticky top-0 z-10 bg-nb-bg border-b-2 border-black px-4 lg:px-8 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button className="lg:hidden nb-btn bg-white p-2" onClick={() => setSidebarOpen(true)}><Menu size={18} /></button>
+            <h1 className="text-xl font-bold text-nb-text">{activePage}</h1>
           </div>
-          <div className="relative flex-shrink-0">
+          <div className="relative hidden sm:block">
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input type="text" placeholder="Search..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="nb-input pl-9 py-2 w-32 sm:w-44 md:w-52 text-sm" />
+            <input type="text" placeholder="Search bots..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="nb-input pl-9 py-2 w-52 text-sm" />
           </div>
         </header>
-        <div className="flex-1 p-3 sm:p-4 lg:p-8">
+        <div className="flex-1 p-4 lg:p-8">
           {activePage === 'Dashboard' && <DashboardView stats={stats} bots={bots} setShowBotModal={setShowBotModal} loading={loading} dailyStats={dailyStats} />}
           {activePage === 'My Bots' && <MyBotsView bots={bots} setShowBotModal={setShowBotModal} setSelectedBot={setSelectedBot} setShowKnowledgeModal={setShowKnowledgeModal} onEdit={bot => { setSelectedBot(bot); setShowEditModal(true); }} onDelete={id => setDeleteBotId(id)} onShowEmbed={bot => { setSelectedBot(bot); setShowEmbedModal(true); }} loading={loading} searchQuery={searchQuery} />}
           {activePage === 'API Keys' && <ApiKeysView bots={bots} loading={loading} fetchBots={fetchBots} onEdit={bot => { setSelectedBot(bot); setShowEditModal(true); }} />}
           {activePage === 'Analytics' && <AnalyticsView bots={bots} loading={loading} />}
           {activePage === 'Documentation' && <DocumentationView />}
+          {activePage === 'Profile' && <ProfileView bots={bots} />}
         </div>
       </main>
       {showBotModal && <BotConfigModal setShowModal={setShowBotModal} onSave={handleCreateBot} />}
@@ -160,89 +152,28 @@ const Dashboard = () => {
 };
 
 /* ─────────────────── SIDEBAR ─────────────────── */
-const Sidebar = ({ activePage, setActivePage, handleLogout, currentUser, isOpen, onClose, isCollapsed, onToggleCollapse }) => {
+const Sidebar = ({ activePage, setActivePage, handleLogout, currentUser, isOpen, onClose }) => {
   const menuItems = [
-    { name: 'Dashboard',     icon: Home,      accent: 'bg-nb-yellow',  dot: '#FFE500' },
-    { name: 'My Bots',       icon: Bot,       accent: 'bg-nb-pink',    dot: '#FF6B9D' },
-    { name: 'API Keys',      icon: Key,       accent: 'bg-nb-blue',    dot: '#4D9FFF' },
-    { name: 'Analytics',     icon: BarChart3, accent: 'bg-purple-300', dot: '#c084fc' },
-    { name: 'Documentation', icon: BookOpen,  accent: 'bg-orange-300', dot: '#fb923c' },
+    { name: 'Dashboard',     icon: Home,     accent: 'bg-nb-yellow' },
+    { name: 'My Bots',       icon: Bot,      accent: 'bg-nb-pink' },
+    { name: 'API Keys',      icon: Key,      accent: 'bg-nb-blue' },
+    { name: 'Analytics',     icon: BarChart3, accent: 'bg-purple-300' },
+    { name: 'Documentation', icon: BookOpen,   accent: 'bg-orange-300' },
+    { name: 'Profile',        icon: UserCircle, accent: 'bg-green-300' },
   ];
 
   return (
-    <aside
-      className={`fixed top-0 left-0 h-full bg-white border-r-2 border-black flex flex-col z-30 transition-all duration-300 ease-out
-        w-64 ${isCollapsed ? 'lg:w-[4.5rem]' : 'lg:w-64'}
-        ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}
-    >
-      {/* ─ Logo / Brand ─ */}
-      <div className={`border-b-2 border-black flex items-center gap-2 flex-shrink-0 ${
-        isCollapsed ? 'lg:justify-center lg:px-0 px-4 py-3.5' : 'px-4 py-3.5 justify-between'
-      }`}>
+    <aside className={`fixed top-0 left-0 h-full w-64 bg-white border-r-2 border-black flex flex-col z-30 transition-transform duration-300 ease-out ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
+      <div className="p-5 border-b-2 border-black flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-nb-yellow border-2 border-black flex items-center justify-center flex-shrink-0">
-            <Bot size={16} />
-          </div>
-          <span className={`text-xl font-black tracking-tight transition-all duration-200 ${
-            isCollapsed ? 'lg:hidden' : ''
-          }`}>RAGhost</span>
+          <div className="w-8 h-8 bg-nb-yellow border-2 border-black flex items-center justify-center"><Bot size={16} /></div>
+          <span className="text-xl font-bold tracking-tight">RAGhost</span>
         </div>
-        {/* Mobile close */}
-        <button className="lg:hidden p-1.5 border-2 border-transparent hover:border-black transition-colors rounded-sm" onClick={onClose}>
-          <X size={16} />
-        </button>
-        {/* Desktop collapse toggle ─ only visible when expanded */}
-        {!isCollapsed && (
-          <button
-            onClick={onToggleCollapse}
-            className="hidden lg:flex p-1.5 border-2 border-transparent hover:border-black hover:bg-gray-100 transition-colors"
-            title="Collapse sidebar"
-          >
-            <ChevronLeft size={15} />
-          </button>
-        )}
+        <button className="lg:hidden p-1 border-2 border-transparent hover:border-black transition-colors" onClick={onClose}><X size={16} /></button>
       </div>
-
-      {/* Expand button when collapsed ─ desktop only */}
-      {isCollapsed && (
-        <button
-          onClick={onToggleCollapse}
-          className="hidden lg:flex justify-center items-center py-2.5 border-b-2 border-black hover:bg-gray-50 transition-colors"
-          title="Expand sidebar"
-        >
-          <ChevronRight size={15} />
-        </button>
-      )}
-
-      {/* ─ User avatar ─ */}
-      <div className={`border-b-2 border-black flex-shrink-0 ${
-        isCollapsed ? 'lg:flex lg:justify-center lg:py-3 hidden' : 'block px-4 py-3 bg-nb-yellow/20'
-      }`}>
-        {!isCollapsed ? (
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 border-2 border-black bg-nb-yellow flex items-center justify-center font-bold text-black text-sm flex-shrink-0">
-              {currentUser?.email?.[0]?.toUpperCase() || 'U'}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold truncate">{currentUser?.email?.split('@')[0] || 'User'}</p>
-              <p className="text-xs text-nb-muted truncate">{currentUser?.email}</p>
-            </div>
-          </div>
-        ) : (
-          <div
-            className="w-8 h-8 border-2 border-black bg-nb-yellow flex items-center justify-center font-bold text-black text-xs"
-            title={currentUser?.email}
-          >
-            {currentUser?.email?.[0]?.toUpperCase() || 'U'}
-          </div>
-        )}
-      </div>
-      {/* Mobile user section (always shown) */}
-      <div className={`lg:hidden border-b-2 border-black px-4 py-3 bg-nb-yellow/20 ${
-        isCollapsed ? 'block' : 'hidden'
-      }`}>
+      <div className="px-4 py-3 border-b-2 border-black bg-nb-yellow/20">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 border-2 border-black bg-nb-yellow flex items-center justify-center font-bold text-black text-sm flex-shrink-0">
+          <div className="w-9 h-9 border-2 border-black bg-nb-yellow flex items-center justify-center font-bold text-black text-sm">
             {currentUser?.email?.[0]?.toUpperCase() || 'U'}
           </div>
           <div className="flex-1 min-w-0">
@@ -251,47 +182,20 @@ const Sidebar = ({ activePage, setActivePage, handleLogout, currentUser, isOpen,
           </div>
         </div>
       </div>
-
-      {/* ─ Nav items ─ */}
-      <nav className="flex-1 p-2 space-y-1 overflow-y-auto">
+      <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
         {menuItems.map(({ name, icon: Icon, accent }) => {
           const active = activePage === name;
           return (
-            <button
-              key={name}
-              onClick={() => setActivePage(name)}
-              title={isCollapsed ? name : undefined}
-              className={`w-full flex items-center font-bold text-sm border-2 transition-all duration-150 group relative
-                ${isCollapsed ? 'lg:justify-center lg:px-0 lg:py-3.5 px-3 py-3 gap-3' : 'gap-3 px-3 py-3'}
-                ${active
-                  ? `${accent} border-black shadow-[2px_2px_0_0_#000] text-black`
-                  : 'border-transparent text-nb-muted hover:border-black hover:bg-gray-50 hover:text-black'
-                }`}
-            >
-              {/* Active left bar */}
-              {active && !isCollapsed && (
-                <span className="absolute left-0 top-1 bottom-1 w-1 bg-black" />
-              )}
-              <Icon size={17} className="flex-shrink-0" />
-              <span className={`transition-all duration-200 ${
-                isCollapsed ? 'lg:hidden' : ''
-              }`}>{name}</span>
+            <button key={name} onClick={() => setActivePage(name)}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 font-bold text-sm border-2 transition-all duration-150 ${active ? `${accent} border-black shadow-nb-sm text-black` : 'border-transparent text-nb-muted hover:border-black hover:bg-gray-50 hover:text-black'}`}>
+              <Icon size={18} />{name}
             </button>
           );
         })}
       </nav>
-
-      {/* ─ Footer: Sign out ─ */}
-      <div className="p-2 border-t-2 border-black flex-shrink-0">
-        <button
-          onClick={handleLogout}
-          title={isCollapsed ? 'Sign Out' : undefined}
-          className={`w-full flex items-center gap-3 font-bold text-sm border-2 border-transparent text-nb-muted
-            hover:border-red-500 hover:bg-red-50 hover:text-red-600 transition-all duration-150
-            ${isCollapsed ? 'lg:justify-center lg:px-0 lg:py-3.5 px-3 py-3' : 'px-3 py-3'}`}
-        >
-          <LogOut size={17} className="flex-shrink-0" />
-          <span className={isCollapsed ? 'lg:hidden' : ''}>Sign Out</span>
+      <div className="p-3 border-t-2 border-black">
+        <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2.5 font-bold text-sm border-2 border-transparent text-nb-muted hover:border-red-500 hover:bg-red-50 hover:text-red-600 transition-all duration-150">
+          <LogOut size={18} />Sign Out
         </button>
       </div>
     </aside>
@@ -310,10 +214,10 @@ const DashboardView = ({ stats, bots, setShowBotModal, loading, dailyStats }) =>
   ];
 
   return (
-    <div className="space-y-6 w-full">
+    <div className="space-y-6 max-w-6xl">
       {bots.length === 0 && (
-        <div className="bg-nb-yellow border-2 border-black shadow-nb p-4 sm:p-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+        <div className="bg-nb-yellow border-2 border-black shadow-nb p-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div className="w-12 h-12 border-2 border-black bg-white flex items-center justify-center flex-shrink-0"><Bot size={24} /></div>
             <div className="flex-1">
               <h3 className="text-lg font-bold text-black">Welcome to RAGhost! 🎉</h3>
@@ -325,16 +229,16 @@ const DashboardView = ({ stats, bots, setShowBotModal, loading, dailyStats }) =>
           </div>
         </div>
       )}
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map(({ title, value, icon: Icon, bg }) => (
-          <div key={title} className={`${bg} border-2 border-black shadow-nb p-3 sm:p-5`}>
-            <div className="w-8 h-8 sm:w-9 sm:h-9 border-2 border-black bg-white flex items-center justify-center mb-2 sm:mb-3"><Icon size={16} /></div>
-            <p className="text-2xl sm:text-3xl font-bold text-black">{value}</p>
-            <p className="text-xs font-bold text-black/60 mt-0.5 sm:mt-1 uppercase tracking-wide">{title}</p>
+          <div key={title} className={`${bg} border-2 border-black shadow-nb p-5`}>
+            <div className="w-9 h-9 border-2 border-black bg-white flex items-center justify-center mb-3"><Icon size={18} /></div>
+            <p className="text-3xl font-bold text-black">{value}</p>
+            <p className="text-xs font-bold text-black/60 mt-1 uppercase tracking-wide">{title}</p>
           </div>
         ))}
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 bg-white border-2 border-black shadow-nb p-6">
           <div className="flex items-center justify-between mb-4">
             <div><h3 className="font-bold text-lg">Query Activity</h3><p className="text-xs text-nb-muted">Last 7 days</p></div>
@@ -379,11 +283,11 @@ const DashboardView = ({ stats, bots, setShowBotModal, loading, dailyStats }) =>
 };
 
 const ActivityChart = ({ dailyStats }) => {
-  const raw = (dailyStats || []).slice(-7);
-  const values = raw.map(s => s.queries || 0);
-  const labels = raw.map(s => new Date(s.date).toLocaleDateString('en-US', { weekday: 'short' }));
-  const hasData = values.some(v => v > 0);
-
+  const data = (dailyStats || []).slice(-7).map(s => ({
+    value: s.queries || 0,
+    day: new Date(s.date).toLocaleDateString('en-US', { weekday: 'short' }),
+  }));
+  const hasData = data.some(d => d.value > 0);
   if (!hasData) return (
     <div className="h-48 flex items-center justify-center border-2 border-dashed border-gray-200">
       <div className="text-center text-nb-muted">
@@ -392,57 +296,22 @@ const ActivityChart = ({ dailyStats }) => {
       </div>
     </div>
   );
-
-  const chartData = {
-    labels,
-    datasets: [{
-      data: values,
-      borderColor: '#000000',
-      backgroundColor: 'rgba(0,0,0,0.06)',
-      borderWidth: 2,
-      pointRadius: 3,
-      pointBackgroundColor: '#FFE500',
-      pointBorderColor: '#000',
-      pointBorderWidth: 1.5,
-      fill: true,
-      tension: 0.4,
-    }],
-  };
-
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { display: false },
-      tooltip: {
-        backgroundColor: '#fff',
-        borderColor: '#000',
-        borderWidth: 2,
-        titleColor: '#0D0D0D',
-        bodyColor: '#0D0D0D',
-        cornerRadius: 0,
-        padding: 8,
-        callbacks: { label: ctx => ` ${ctx.parsed.y} queries` },
-      },
-    },
-    scales: {
-      x: {
-        grid: { display: false },
-        border: { display: false },
-        ticks: { color: '#6B6B6B', font: { size: 11, family: 'Space Grotesk' } },
-      },
-      y: {
-        grid: { color: '#e5e5e5', drawTicks: false },
-        border: { display: false },
-        ticks: { color: '#6B6B6B', font: { size: 11, family: 'Space Grotesk' }, maxTicksLimit: 5 },
-        beginAtZero: true,
-      },
-    },
-  };
-
   return (
     <div className="h-52">
-      <Line data={chartData} options={options} />
+      <LineChart
+        xAxis={[{ scaleType: 'point', data: data.map(d => d.day), disableLine: true, disableTicks: true }]}
+        yAxis={[{ disableLine: true, disableTicks: true }]}
+        series={[{ data: data.map(d => d.value), color: '#000000', area: true, showMark: false, curve: 'monotoneX' }]}
+        height={200}
+        margin={{ top: 10, bottom: 30, left: 40, right: 10 }}
+        sx={{
+          '& .MuiChartsAxis-tickLabel': { fill: '#6B6B6B', fontSize: '11px' },
+          '& .MuiChartsGrid-line': { stroke: '#e5e5e5', strokeDasharray: '3 3' },
+          '& .MuiLineElement-root': { strokeWidth: 2 },
+          '& .MuiAreaElement-root': { fillOpacity: 0.08 },
+        }}
+        slotProps={{ legend: { hidden: true } }}
+      />
     </div>
   );
 };
@@ -468,10 +337,10 @@ const MyBotsView = ({ bots, setShowBotModal, setSelectedBot, setShowKnowledgeMod
   const filtered = bots.filter(b => !searchQuery || b.name?.toLowerCase().includes(searchQuery.toLowerCase()));
   const accents = ['bg-nb-yellow', 'bg-nb-pink', 'bg-nb-blue', 'bg-purple-200', 'bg-orange-200', 'bg-green-200'];
   return (
-      <div className="space-y-4 sm:space-y-6 w-full">
-      <div className="flex items-center justify-between gap-3">
+    <div className="space-y-6 max-w-6xl">
+      <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold">My Bots</h2>
+          <h2 className="text-2xl font-bold">My Bots</h2>
           <p className="text-nb-muted text-sm mt-0.5">{bots.length} bot{bots.length !== 1 ? 's' : ''} configured</p>
         </div>
         <button onClick={() => setShowBotModal(true)} className="nb-btn bg-black text-white border-black hover:bg-gray-900 px-4 py-2 flex items-center gap-2">
@@ -527,11 +396,11 @@ const MyBotsView = ({ bots, setShowBotModal, setSelectedBot, setShowKnowledgeMod
                     <span className="text-nb-muted">Gemini</span>
                   </div>
                 </div>
-                <div className="flex gap-1 sm:gap-1.5 border-t-2 border-black pt-3 sm:pt-4">
-                  <button onClick={() => { setSelectedBot(bot); setShowKnowledgeModal(true); }} className="flex-1 nb-btn bg-white px-1.5 sm:px-2 py-1.5 justify-center text-xs"><Database size={13} /><span className="hidden sm:inline">Docs</span></button>
-                  <button onClick={() => onShowEmbed(bot)} className="flex-1 nb-btn bg-nb-blue px-1.5 sm:px-2 py-1.5 justify-center text-xs"><Code size={13} /><span className="hidden sm:inline">Embed</span></button>
-                  <button onClick={() => onEdit(bot)} className="flex-1 nb-btn bg-nb-yellow px-1.5 sm:px-2 py-1.5 justify-center text-xs"><Edit size={13} /><span className="hidden sm:inline">Edit</span></button>
-                  <button onClick={() => onDelete(bot.id)} className="nb-btn bg-white px-1.5 sm:px-2 py-1.5 hover:bg-red-100 hover:border-red-500 hover:text-red-600 justify-center"><Trash2 size={13} /></button>
+                <div className="flex gap-1.5 border-t-2 border-black pt-4">
+                  <button onClick={() => { setSelectedBot(bot); setShowKnowledgeModal(true); }} className="flex-1 nb-btn bg-white px-2 py-1.5 justify-center text-xs"><Database size={14} />Docs</button>
+                  <button onClick={() => onShowEmbed(bot)} className="flex-1 nb-btn bg-nb-blue px-2 py-1.5 justify-center text-xs"><Code size={14} />Embed</button>
+                  <button onClick={() => onEdit(bot)} className="flex-1 nb-btn bg-nb-yellow px-2 py-1.5 justify-center text-xs"><Edit size={14} />Edit</button>
+                  <button onClick={() => onDelete(bot.id)} className="nb-btn bg-white px-2 py-1.5 hover:bg-red-100 hover:border-red-500 hover:text-red-600 justify-center"><Trash2 size={14} /></button>
                 </div>
               </div>
             </div>
@@ -565,9 +434,9 @@ const ApiKeysView = ({ bots, loading, onEdit, fetchBots }) => {
   if (loading) return <LoadingSpinner />;
 
   return (
-    <div className="space-y-4 sm:space-y-6 w-full">
+    <div className="space-y-6 max-w-5xl">
       <div>
-        <h2 className="text-xl sm:text-2xl font-bold">API Keys</h2>
+        <h2 className="text-2xl font-bold">API Keys</h2>
         <p className="text-nb-muted text-sm mt-0.5">Monitor and test per-bot API connections</p>
       </div>
       <div className="bg-nb-blue/30 border-2 border-black shadow-nb p-5">
@@ -582,20 +451,20 @@ const ApiKeysView = ({ bots, loading, onEdit, fetchBots }) => {
       {bots.length === 0 ? (
         <div className="bg-white border-2 border-black shadow-nb p-12 text-center"><Bot size={40} className="text-gray-300 mx-auto mb-3" /><h3 className="font-bold">No Bots Yet</h3></div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           {bots.map(bot => {
             const r = testResults[bot.id];
             const isTesting = testingBotId === bot.id;
             return (
-              <div key={bot.id} className="bg-white border-2 border-black shadow-nb p-4 sm:p-5">
-                <div className="flex items-center justify-between gap-2 mb-4">
-                  <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                    <div className="w-9 h-9 bg-nb-yellow border-2 border-black flex items-center justify-center flex-shrink-0"><Bot size={18} /></div>
-                    <div className="min-w-0"><h3 className="font-bold truncate">{bot.name}</h3><p className="text-xs text-nb-muted">{bot.type}</p></div>
+              <div key={bot.id} className="bg-white border-2 border-black shadow-nb p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 bg-nb-yellow border-2 border-black flex items-center justify-center"><Bot size={18} /></div>
+                    <div><h3 className="font-bold">{bot.name}</h3><p className="text-xs text-nb-muted">{bot.type}</p></div>
                   </div>
-                  <div className="flex gap-1.5 flex-shrink-0">
-                    <button onClick={() => onEdit(bot)} className="nb-btn bg-nb-yellow px-2 sm:px-3 py-1.5 text-xs"><Edit size={13} /><span className="hidden sm:inline">Edit Keys</span></button>
-                    <button onClick={() => handleTest(bot.id)} disabled={isTesting} className="nb-btn bg-black text-white border-black px-2 sm:px-3 py-1.5 text-xs disabled:opacity-50 disabled:shadow-none disabled:translate-x-0 disabled:translate-y-0">
+                  <div className="flex gap-2">
+                    <button onClick={() => onEdit(bot)} className="nb-btn bg-nb-yellow px-3 py-1.5 text-xs"><Edit size={13} />Edit Keys</button>
+                    <button onClick={() => handleTest(bot.id)} disabled={isTesting} className="nb-btn bg-black text-white border-black px-3 py-1.5 text-xs disabled:opacity-50 disabled:shadow-none disabled:translate-x-0 disabled:translate-y-0">
                       {isTesting ? <><Loader2 size={13} className="animate-spin" />Testing…</> : <><Activity size={13} />Test</>}
                     </button>
                   </div>
@@ -643,7 +512,7 @@ const DocumentationView = () => {
   );
 
   return (
-    <div className="space-y-8 w-full">
+    <div className="space-y-8 max-w-4xl">
       <div className="bg-nb-yellow border-2 border-black shadow-nb p-6">
         <div className="flex items-center gap-3"><BookOpen size={28} /><div><h1 className="text-3xl font-bold">Documentation</h1><p className="text-black/60 text-sm">Get your API keys and deploy your first bot</p></div></div>
       </div>

@@ -118,11 +118,11 @@ const EditBotModal = ({ bot, setShowModal, onSave }) => {
       onClick={handleBackdropClick}
     >
       <div
-        className={`relative bg-nb-bg border-l-0 sm:border-l-2 border-black h-full w-full sm:max-w-2xl shadow-nb-xl overflow-y-auto transition-transform duration-300 ${isClosing ? 'translate-x-full' : 'translate-x-0'}`}
+        className={`relative bg-nb-bg border-l-2 border-black h-full w-full max-w-2xl shadow-nb-xl overflow-y-auto transition-transform duration-300 ${isClosing ? 'translate-x-full' : 'translate-x-0'}`}
         style={{ willChange: isClosing ? 'auto' : 'transform', transform: isClosing ? 'translate3d(100%, 0, 0)' : 'translate3d(0, 0, 0)' }}
       >
-        <div className="p-4 sm:p-6">
-          <div className="sticky top-0 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 sm:py-4 bg-nb-bg border-b-2 border-black mb-4 sm:mb-6 z-20 flex items-center justify-between">
+        <div className="p-6">
+          <div className="sticky top-0 -mx-6 px-6 py-4 bg-nb-bg border-b-2 border-black mb-6 z-20 flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold text-nb-text">Edit Bot</h2>
               <p className="text-nb-muted text-sm mt-0.5">Update your AI assistant configuration</p>

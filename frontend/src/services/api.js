@@ -166,6 +166,33 @@ export const analyticsService = {
   },
 };
 
+// User profile endpoints
+export const userService = {
+  // Get profile from MongoDB
+  getProfile: async () => {
+    const response = await api.get('/api/users/profile');
+    return response.data;
+  },
+
+  // Update displayName / photoURL in MongoDB
+  updateProfile: async (data) => {
+    const response = await api.put('/api/users/profile', data);
+    return response.data;
+  },
+
+  // Get aggregate stats
+  getStats: async () => {
+    const response = await api.get('/api/users/stats');
+    return response.data;
+  },
+
+  // Delete all MongoDB data (call BEFORE Firebase deleteUser)
+  deleteAccount: async () => {
+    const response = await api.delete('/api/users/account');
+    return response.data;
+  },
+};
+
 // Knowledge Base endpoints
 export const knowledgeService = {
   // Upload document
