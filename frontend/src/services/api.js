@@ -153,6 +153,7 @@ export const botsService = {
     const response = await api.put(`/api/bots/${botId}/widget-config`, config);
     return response.data;
   },
+};
 
 // Analytics endpoints
 export const analyticsService = {
