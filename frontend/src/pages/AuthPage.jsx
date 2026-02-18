@@ -87,15 +87,15 @@ const AuthPage = () => {
         <div className="absolute bottom-20 left-10 w-32 h-32 bg-nb-pink rounded-full opacity-20 blur-3xl" />
 
         <div className="relative z-10">
-          <div className="inline-flex items-center gap-2 bg-nb-yellow text-black font-bold px-3 py-1 border-2 border-white text-sm mb-8">
+          <div className="inline-flex items-center gap-2 bg-nb-yellow text-black font-bold px-3 py-1 border-2 border-white text-sm mb-6 lg:mb-8">
             <Bot size={16} />
             RAGhost Platform
           </div>
-          <h1 className="text-6xl font-bold leading-tight tracking-tight">
+          <h1 className="text-4xl xl:text-6xl font-bold leading-tight tracking-tight">
             Bot Hosting.<br />
             <span className="text-nb-yellow">Simplified.</span>
           </h1>
-          <p className="text-gray-400 mt-4 text-lg leading-relaxed max-w-sm">
+          <p className="text-gray-400 mt-4 text-base lg:text-lg leading-relaxed max-w-sm">
             Deploy intelligent AI chatbots with your own knowledge base in minutes.
           </p>
         </div>
@@ -117,7 +117,7 @@ const AuthPage = () => {
       </div>
 
       {/* Right Panel - Auth Form */}
-      <div className="flex-1 flex items-center justify-center p-6 lg:p-12">
+      <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-12">
         <div className="w-full max-w-md animate-fade-in">
 
           {/* Mobile logo */}
@@ -130,10 +130,10 @@ const AuthPage = () => {
           </div>
 
           {/* Card */}
-          <div className="nb-card p-8">
+          <div className="nb-card p-5 sm:p-8">
             {/* Header */}
-            <div className="mb-7">
-              <h2 className="text-3xl font-bold text-nb-text tracking-tight">
+            <div className="mb-5 sm:mb-7">
+              <h2 className="text-2xl sm:text-3xl font-bold text-nb-text tracking-tight">
                 {showForgotPassword ? 'Reset Password' : isLogin ? 'Welcome back' : 'Create account'}
               </h2>
               <p className="text-nb-muted mt-1 text-sm">
