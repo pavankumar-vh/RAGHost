@@ -88,7 +88,7 @@
 
   /* Neo input */
   .nb-input {
-    @apply w-full px-3 py-2.5 bg-white border-2 border-black rounded font-medium text-black placeholder-gray-400;
+    @apply w-full h-11 px-3 py-2.5 bg-white border-2 border-black rounded font-medium text-black placeholder-gray-400;
     @apply focus:outline-none focus:ring-2 focus:ring-nb-yellow focus:ring-offset-0;
     @apply transition-shadow duration-150;
   }

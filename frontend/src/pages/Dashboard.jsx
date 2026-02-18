@@ -692,42 +692,45 @@ const DocumentationView = () => {
 
   return (
     <div className="w-full">
-      {/* ── HERO ── */}
-      <div className="bg-black text-white border-2 border-black shadow-nb p-6 sm:p-8 mb-0 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-5" style={{ backgroundImage:'linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px)', backgroundSize:'32px 32px' }} />
-        <div className="absolute top-0 right-0 w-40 h-40 bg-nb-yellow/20 blur-3xl rounded-full" />
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center gap-4">
-          <div className="w-14 h-14 bg-nb-yellow border-2 border-nb-yellow flex items-center justify-center flex-shrink-0">
-            <BookOpen size={26} className="text-black" />
-          </div>
-          <div className="flex-1">
-            <div className="flex flex-wrap items-center gap-2 mb-2">
-              <h1 className="text-2xl sm:text-3xl font-black tracking-tight">RAGhost Documentation</h1>
-              <span className="text-xs font-bold bg-nb-yellow text-black px-2 py-0.5 border border-nb-yellow">v2.0</span>
+      {/* ── HERO + TABS shell ── */}
+      <div className="border-2 border-black shadow-nb mb-6 overflow-hidden">
+        {/* Hero */}
+        <div className="bg-black text-white p-6 sm:p-8 relative overflow-hidden">
+          <div className="absolute inset-0 opacity-5" style={{ backgroundImage:'linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px)', backgroundSize:'32px 32px' }} />
+          <div className="absolute top-0 right-0 w-40 h-40 bg-nb-yellow/20 blur-3xl rounded-full" />
+          <div className="relative z-10 flex flex-col sm:flex-row sm:items-center gap-4">
+            <div className="w-14 h-14 bg-nb-yellow border-2 border-nb-yellow flex items-center justify-center flex-shrink-0">
+              <BookOpen size={26} className="text-black" />
             </div>
-            <p className="text-white/60 text-sm">Everything you need to build, deploy, and scale AI chatbots — with code examples you can paste straight in.</p>
+            <div className="flex-1">
+              <div className="flex flex-wrap items-center gap-2 mb-2">
+                <h1 className="text-2xl sm:text-3xl font-black tracking-tight">RAGhost Documentation</h1>
+                <span className="text-xs font-bold bg-nb-yellow text-black px-2 py-0.5 border border-nb-yellow">v2.0</span>
+              </div>
+              <p className="text-white/60 text-sm">Everything you need to build, deploy, and scale AI chatbots — with code examples you can paste straight in.</p>
+            </div>
+          </div>
+          <div className="relative z-10 flex flex-wrap gap-3 mt-5">
+            {[['5 min','Quick Setup'],['REST API','Full Reference'],['10+ examples','Copy-paste Code'],['5 frameworks','Integration Guides']].map(([v,l]) => (
+              <div key={l} className="border border-white/20 px-3 py-1.5 text-xs">
+                <span className="font-black text-nb-yellow">{v}</span>
+                <span className="text-white/50 ml-1.5">{l}</span>
+              </div>
+            ))}
           </div>
         </div>
-        <div className="relative z-10 flex flex-wrap gap-3 mt-5">
-          {[['5 min','Quick Setup'],['REST API','Full Reference'],['10+ examples','Copy-paste Code'],['5 frameworks','Integration Guides']].map(([v,l]) => (
-            <div key={l} className="border border-white/20 px-3 py-1.5 text-xs">
-              <span className="font-black text-nb-yellow">{v}</span>
-              <span className="text-white/50 ml-1.5">{l}</span>
-            </div>
+
+        {/* ── TABS ── */}
+        <div className="flex overflow-x-auto border-t-2 border-black bg-white">
+          {tabs.map(({ id, label, icon: Icon, color }) => (
+            <button key={id} onClick={() => setActiveTab(id)}
+              className={`flex items-center gap-1.5 px-4 py-3 font-bold text-xs sm:text-sm border-r-2 border-black whitespace-nowrap flex-shrink-0 transition-all ${
+                activeTab === id ? `${color} text-black` : 'bg-white text-nb-muted hover:bg-gray-50 hover:text-black'
+              }`}>
+              <Icon size={13} />{label}
+            </button>
           ))}
         </div>
-      </div>
-
-      {/* ── TABS ── */}
-      <div className="flex overflow-x-auto border-2 border-black border-t-0 mb-6 bg-white">
-        {tabs.map(({ id, label, icon: Icon, color }) => (
-          <button key={id} onClick={() => setActiveTab(id)}
-            className={`flex items-center gap-1.5 px-4 py-3 font-bold text-xs sm:text-sm border-r-2 border-black whitespace-nowrap flex-shrink-0 transition-all ${
-              activeTab === id ? `${color} text-black border-b-2 border-b-transparent` : 'bg-white text-nb-muted hover:bg-gray-50 hover:text-black'
-            }`}>
-            <Icon size={13} />{label}
-          </button>
-        ))}
       </div>
 
       {/* ══════════════════════════════════════════════ */}
