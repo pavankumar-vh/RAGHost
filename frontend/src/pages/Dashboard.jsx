@@ -14,6 +14,7 @@ import {
   Bot, Key, BarChart3, Home, LogOut, BookOpen, Plus, Search, TrendingUp,
   Activity, Zap, Database, MessageSquare, Loader2, Trash2, Edit, Code,
   CheckCircle2, XCircle, Copy, Check, ExternalLink, Menu, X, UserCircle,
+  ChevronLeft, ChevronRight,
 } from 'lucide-react';
 
 const Dashboard = () => {
@@ -33,6 +34,9 @@ const Dashboard = () => {
   const [dialogState, setDialogState] = useState({ isOpen: false, type: 'alert', title: '', message: '', onConfirm: null });
   const [deleteBotId, setDeleteBotId] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    try { return localStorage.getItem('raghost_sidebar_collapsed') === 'true'; } catch { return false; }
+  });
 
   useEffect(() => {
     fetchBots();
@@ -108,6 +112,12 @@ const Dashboard = () => {
     try { await logout(); navigate('/auth'); } catch (e) { /* silent */ }
   };
 
+  const toggleSidebar = () => {
+    const next = !sidebarCollapsed;
+    setSidebarCollapsed(next);
+    try { localStorage.setItem('raghost_sidebar_collapsed', String(next)); } catch {}
+  };
+
   return (
     <div className="min-h-screen bg-nb-bg font-sans flex">
       {sidebarOpen && (
@@ -120,19 +130,38 @@ const Dashboard = () => {
         currentUser={currentUser}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
+        collapsed={sidebarCollapsed}
+        onToggleCollapse={toggleSidebar}
       />
-      <main className="flex-1 lg:ml-64 min-h-screen flex flex-col">
-        <header className="sticky top-0 z-10 bg-nb-bg border-b-2 border-black px-4 lg:px-8 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button className="lg:hidden nb-btn bg-white p-2" onClick={() => setSidebarOpen(true)}><Menu size={18} /></button>
-            <h1 className="text-xl font-bold text-nb-text">{activePage}</h1>
+      <main className={`flex-1 min-h-screen flex flex-col transition-all duration-300 ease-out ${
+        sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'
+      }`}>
+        <header className="sticky top-0 z-10 bg-nb-bg border-b-2 border-black px-3 sm:px-6 py-3 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <button className="lg:hidden nb-btn bg-white p-2 flex-shrink-0" onClick={() => setSidebarOpen(true)}><Menu size={18} /></button>
+            <h1 className="text-base sm:text-xl font-bold text-nb-text truncate">{activePage}</h1>
           </div>
-          <div className="relative hidden sm:block">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input type="text" placeholder="Search bots..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="nb-input pl-9 py-2 w-52 text-sm" />
+          <div className="flex items-center gap-2">
+            <div className="relative hidden sm:block">
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input type="text" placeholder="Search bots..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="nb-input pl-9 py-2 w-40 md:w-52 text-sm" />
+            </div>
+            {/* Profile avatar button */}
+            <button
+              onClick={() => setActivePage('Profile')}
+              className={`w-9 h-9 border-2 flex items-center justify-center font-bold text-sm flex-shrink-0 transition-all ${
+                activePage === 'Profile' ? 'border-black bg-nb-yellow shadow-nb-sm' : 'border-black bg-white hover:bg-nb-yellow'
+              }`}
+              title="Profile"
+            >
+              {currentUser?.displayName
+                ? currentUser.displayName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
+                : currentUser?.email?.[0]?.toUpperCase() || 'U'
+              }
+            </button>
           </div>
         </header>
-        <div className="flex-1 p-4 lg:p-8">
+        <div className="flex-1 p-3 sm:p-5 lg:p-8">
           {activePage === 'Dashboard' && <DashboardView stats={stats} bots={bots} setShowBotModal={setShowBotModal} loading={loading} dailyStats={dailyStats} />}
           {activePage === 'My Bots' && <MyBotsView bots={bots} setShowBotModal={setShowBotModal} setSelectedBot={setSelectedBot} setShowKnowledgeModal={setShowKnowledgeModal} onEdit={bot => { setSelectedBot(bot); setShowEditModal(true); }} onDelete={id => setDeleteBotId(id)} onShowEmbed={bot => { setSelectedBot(bot); setShowEmbedModal(true); }} loading={loading} searchQuery={searchQuery} />}
           {activePage === 'API Keys' && <ApiKeysView bots={bots} loading={loading} fetchBots={fetchBots} onEdit={bot => { setSelectedBot(bot); setShowEditModal(true); }} />}
@@ -152,50 +181,84 @@ const Dashboard = () => {
 };
 
 /* ─────────────────── SIDEBAR ─────────────────── */
-const Sidebar = ({ activePage, setActivePage, handleLogout, currentUser, isOpen, onClose }) => {
+const Sidebar = ({ activePage, setActivePage, handleLogout, currentUser, isOpen, onClose, collapsed, onToggleCollapse }) => {
   const menuItems = [
     { name: 'Dashboard',     icon: Home,     accent: 'bg-nb-yellow' },
     { name: 'My Bots',       icon: Bot,      accent: 'bg-nb-pink' },
     { name: 'API Keys',      icon: Key,      accent: 'bg-nb-blue' },
     { name: 'Analytics',     icon: BarChart3, accent: 'bg-purple-300' },
-    { name: 'Documentation', icon: BookOpen,   accent: 'bg-orange-300' },
-    { name: 'Profile',        icon: UserCircle, accent: 'bg-green-300' },
+    { name: 'Documentation', icon: BookOpen,  accent: 'bg-orange-300' },
   ];
 
+  const initials = (currentUser?.displayName || currentUser?.email || 'U')
+    .split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+
   return (
-    <aside className={`fixed top-0 left-0 h-full w-64 bg-white border-r-2 border-black flex flex-col z-30 transition-transform duration-300 ease-out ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
-      <div className="p-5 border-b-2 border-black flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-nb-yellow border-2 border-black flex items-center justify-center"><Bot size={16} /></div>
-          <span className="text-xl font-bold tracking-tight">RAGhost</span>
-        </div>
-        <button className="lg:hidden p-1 border-2 border-transparent hover:border-black transition-colors" onClick={onClose}><X size={16} /></button>
-      </div>
-      <div className="px-4 py-3 border-b-2 border-black bg-nb-yellow/20">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 border-2 border-black bg-nb-yellow flex items-center justify-center font-bold text-black text-sm">
-            {currentUser?.email?.[0]?.toUpperCase() || 'U'}
+    <aside className={`fixed top-0 left-0 h-full bg-white border-r-2 border-black flex flex-col z-30
+      transition-all duration-300 ease-in-out
+      ${ isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0
+      ${ collapsed ? 'w-16' : 'w-64' }`}>
+
+      {/* Logo row */}
+      <div className={`border-b-2 border-black flex items-center flex-shrink-0 h-14 ${ collapsed ? 'justify-center px-0' : 'px-4 justify-between' }`}>
+        {!collapsed && (
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-nb-yellow border-2 border-black flex items-center justify-center flex-shrink-0"><Bot size={16} /></div>
+            <span className="text-lg font-black tracking-tight">RAGhost</span>
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold truncate">{currentUser?.email?.split('@')[0] || 'User'}</p>
-            <p className="text-xs text-nb-muted truncate">{currentUser?.email}</p>
+        )}
+        {collapsed && <div className="w-8 h-8 bg-nb-yellow border-2 border-black flex items-center justify-center"><Bot size={16} /></div>}
+        <button className="lg:hidden p-1 border-2 border-transparent hover:border-black" onClick={onClose}>
+          <X size={16} />
+        </button>
+      </div>
+
+      {/* User info */}
+      {!collapsed && (
+        <div className="px-3 py-3 border-b-2 border-black bg-nb-yellow/20 flex-shrink-0">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 border-2 border-black bg-nb-yellow flex items-center justify-center font-bold text-xs flex-shrink-0">
+              {initials}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold truncate">{currentUser?.displayName || currentUser?.email?.split('@')[0] || 'User'}</p>
+              <p className="text-[11px] text-nb-muted truncate">{currentUser?.email}</p>
+            </div>
           </div>
         </div>
-      </div>
-      <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+      )}
+
+      {/* Nav items */}
+      <nav className="flex-1 p-2 space-y-0.5 overflow-y-auto">
         {menuItems.map(({ name, icon: Icon, accent }) => {
           const active = activePage === name;
           return (
-            <button key={name} onClick={() => setActivePage(name)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 font-bold text-sm border-2 transition-all duration-150 ${active ? `${accent} border-black shadow-nb-sm text-black` : 'border-transparent text-nb-muted hover:border-black hover:bg-gray-50 hover:text-black'}`}>
-              <Icon size={18} />{name}
+            <button key={name} onClick={() => setActivePage(name)} title={collapsed ? name : undefined}
+              className={`w-full flex items-center gap-3 font-bold text-sm border-2 transition-all duration-150
+                ${ collapsed ? 'justify-center px-0 py-3' : 'px-3 py-2.5' }
+                ${ active ? `${accent} border-black shadow-nb-sm text-black` : 'border-transparent text-nb-muted hover:border-black hover:bg-gray-50 hover:text-black' }`}>
+              <Icon size={18} className="flex-shrink-0" />
+              {!collapsed && <span className="truncate">{name}</span>}
             </button>
           );
         })}
       </nav>
-      <div className="p-3 border-t-2 border-black">
-        <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2.5 font-bold text-sm border-2 border-transparent text-nb-muted hover:border-red-500 hover:bg-red-50 hover:text-red-600 transition-all duration-150">
-          <LogOut size={18} />Sign Out
+
+      {/* Collapse toggle + Logout */}
+      <div className="p-2 border-t-2 border-black flex-shrink-0 space-y-0.5">
+        {/* Sign out */}
+        <button onClick={handleLogout} title={collapsed ? 'Sign Out' : undefined}
+          className={`w-full flex items-center gap-3 font-bold text-sm border-2 border-transparent text-nb-muted hover:border-red-500 hover:bg-red-50 hover:text-red-600 transition-all duration-150
+            ${ collapsed ? 'justify-center px-0 py-3' : 'px-3 py-2.5' }`}>
+          <LogOut size={18} className="flex-shrink-0" />
+          {!collapsed && <span>Sign Out</span>}
+        </button>
+        {/* Collapse toggle — desktop only */}
+        <button onClick={onToggleCollapse} title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          className={`hidden lg:flex w-full items-center gap-3 font-bold text-sm border-2 border-transparent text-nb-muted hover:border-black hover:bg-gray-50 hover:text-black transition-all duration-150
+            ${ collapsed ? 'justify-center px-0 py-2.5' : 'px-3 py-2.5' }`}>
+          {collapsed ? <ChevronRight size={16} className="flex-shrink-0" /> : <ChevronLeft size={16} className="flex-shrink-0" />}
+          {!collapsed && <span className="text-xs">Collapse</span>}
         </button>
       </div>
     </aside>
@@ -214,9 +277,9 @@ const DashboardView = ({ stats, bots, setShowBotModal, loading, dailyStats }) =>
   ];
 
   return (
-    <div className="space-y-6 max-w-6xl">
+    <div className="space-y-5 w-full">
       {bots.length === 0 && (
-        <div className="bg-nb-yellow border-2 border-black shadow-nb p-6">
+        <div className="bg-nb-yellow border-2 border-black shadow-nb p-5">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div className="w-12 h-12 border-2 border-black bg-white flex items-center justify-center flex-shrink-0"><Bot size={24} /></div>
             <div className="flex-1">
@@ -229,7 +292,7 @@ const DashboardView = ({ stats, bots, setShowBotModal, loading, dailyStats }) =>
           </div>
         </div>
       )}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {statCards.map(({ title, value, icon: Icon, bg }) => (
           <div key={title} className={`${bg} border-2 border-black shadow-nb p-5`}>
             <div className="w-9 h-9 border-2 border-black bg-white flex items-center justify-center mb-3"><Icon size={18} /></div>
@@ -238,7 +301,7 @@ const DashboardView = ({ stats, bots, setShowBotModal, loading, dailyStats }) =>
           </div>
         ))}
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         <div className="lg:col-span-2 bg-white border-2 border-black shadow-nb p-6">
           <div className="flex items-center justify-between mb-4">
             <div><h3 className="font-bold text-lg">Query Activity</h3><p className="text-xs text-nb-muted">Last 7 days</p></div>
@@ -337,10 +400,10 @@ const MyBotsView = ({ bots, setShowBotModal, setSelectedBot, setShowKnowledgeMod
   const filtered = bots.filter(b => !searchQuery || b.name?.toLowerCase().includes(searchQuery.toLowerCase()));
   const accents = ['bg-nb-yellow', 'bg-nb-pink', 'bg-nb-blue', 'bg-purple-200', 'bg-orange-200', 'bg-green-200'];
   return (
-    <div className="space-y-6 max-w-6xl">
+    <div className="space-y-5 w-full">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">My Bots</h2>
+          <h2 className="text-xl sm:text-2xl font-bold">My Bots</h2>
           <p className="text-nb-muted text-sm mt-0.5">{bots.length} bot{bots.length !== 1 ? 's' : ''} configured</p>
         </div>
         <button onClick={() => setShowBotModal(true)} className="nb-btn bg-black text-white border-black hover:bg-gray-900 px-4 py-2 flex items-center gap-2">
@@ -434,9 +497,9 @@ const ApiKeysView = ({ bots, loading, onEdit, fetchBots }) => {
   if (loading) return <LoadingSpinner />;
 
   return (
-    <div className="space-y-6 max-w-5xl">
+    <div className="space-y-6 w-full">
       <div>
-        <h2 className="text-2xl font-bold">API Keys</h2>
+        <h2 className="text-xl sm:text-2xl font-bold">API Keys</h2>
         <p className="text-nb-muted text-sm mt-0.5">Monitor and test per-bot API connections</p>
       </div>
       <div className="bg-nb-blue/30 border-2 border-black shadow-nb p-5">
@@ -512,7 +575,7 @@ const DocumentationView = () => {
   );
 
   return (
-    <div className="space-y-8 max-w-4xl">
+    <div className="space-y-8 w-full max-w-4xl">
       <div className="bg-nb-yellow border-2 border-black shadow-nb p-6">
         <div className="flex items-center gap-3"><BookOpen size={28} /><div><h1 className="text-3xl font-bold">Documentation</h1><p className="text-black/60 text-sm">Get your API keys and deploy your first bot</p></div></div>
       </div>
