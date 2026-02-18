@@ -9,13 +9,20 @@ import KnowledgeBaseModal from '../components/KnowledgeBaseModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import AnalyticsView from '../components/AnalyticsView';
 import ProfileView from '../components/ProfileView';
-import { LineChart } from '@mui/x-charts/LineChart';
+import { Line } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  LineElement, PointElement, LinearScale, CategoryScale,
+  Filler, Tooltip,
+} from 'chart.js';
 import {
   Bot, Key, BarChart3, Home, LogOut, BookOpen, Plus, Search, TrendingUp,
   Activity, Zap, Database, MessageSquare, Loader2, Trash2, Edit, Code,
   CheckCircle2, XCircle, Copy, Check, ExternalLink, Menu, X, UserCircle,
   ChevronLeft, ChevronRight,
 } from 'lucide-react';
+
+ChartJS.register(LineElement, PointElement, LinearScale, CategoryScale, Filler, Tooltip);
 
 const Dashboard = () => {
   const { currentUser, logout, getIdToken } = useAuth();
@@ -346,11 +353,11 @@ const DashboardView = ({ stats, bots, setShowBotModal, loading, dailyStats }) =>
 };
 
 const ActivityChart = ({ dailyStats }) => {
-  const data = (dailyStats || []).slice(-7).map(s => ({
-    value: s.queries || 0,
-    day: new Date(s.date).toLocaleDateString('en-US', { weekday: 'short' }),
-  }));
-  const hasData = data.some(d => d.value > 0);
+  const raw = (dailyStats || []).slice(-7);
+  const labels = raw.map(s => new Date(s.date).toLocaleDateString('en-US', { weekday: 'short' }));
+  const values = raw.map(s => s.queries || 0);
+  const hasData = values.some(v => v > 0);
+
   if (!hasData) return (
     <div className="h-48 flex items-center justify-center border-2 border-dashed border-gray-200">
       <div className="text-center text-nb-muted">
@@ -359,22 +366,58 @@ const ActivityChart = ({ dailyStats }) => {
       </div>
     </div>
   );
+
+  const chartData = {
+    labels,
+    datasets: [{
+      data: values,
+      borderColor: '#000000',
+      backgroundColor: 'rgba(0,0,0,0.07)',
+      borderWidth: 2,
+      fill: true,
+      tension: 0.4,
+      pointRadius: 4,
+      pointBackgroundColor: '#000000',
+      pointBorderColor: '#ffffff',
+      pointBorderWidth: 2,
+      pointHoverRadius: 6,
+    }],
+  };
+
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#000',
+        titleColor: '#fff',
+        bodyColor: '#fff',
+        borderColor: '#000',
+        borderWidth: 2,
+        padding: 8,
+        displayColors: false,
+        callbacks: { title: items => items[0].label, label: item => `${item.parsed.y} queries` },
+      },
+    },
+    scales: {
+      x: {
+        grid: { display: false },
+        border: { display: false },
+        ticks: { color: '#6B6B6B', font: { size: 11, weight: '600' } },
+      },
+      y: {
+        grid: { color: '#e5e5e5', drawBorder: false },
+        border: { display: false, dash: [3, 3] },
+        ticks: { color: '#6B6B6B', font: { size: 11 }, maxTicksLimit: 5 },
+        beginAtZero: true,
+      },
+    },
+  };
+
   return (
     <div className="h-52">
-      <LineChart
-        xAxis={[{ scaleType: 'point', data: data.map(d => d.day), disableLine: true, disableTicks: true }]}
-        yAxis={[{ disableLine: true, disableTicks: true }]}
-        series={[{ data: data.map(d => d.value), color: '#000000', area: true, showMark: false, curve: 'monotoneX' }]}
-        height={200}
-        margin={{ top: 10, bottom: 30, left: 40, right: 10 }}
-        sx={{
-          '& .MuiChartsAxis-tickLabel': { fill: '#6B6B6B', fontSize: '11px' },
-          '& .MuiChartsGrid-line': { stroke: '#e5e5e5', strokeDasharray: '3 3' },
-          '& .MuiLineElement-root': { strokeWidth: 2 },
-          '& .MuiAreaElement-root': { fillOpacity: 0.08 },
-        }}
-        slotProps={{ legend: { hidden: true } }}
-      />
+      <Line data={chartData} options={options} />
     </div>
   );
 };
