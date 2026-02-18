@@ -19,6 +19,7 @@ import {
   Bot, Key, BarChart3, Home, LogOut, BookOpen, Plus, Search, TrendingUp,
   Activity, Zap, Database, MessageSquare, Loader2, Trash2, Edit, Code,
   CheckCircle2, XCircle, Copy, Check, ExternalLink, Menu, X,
+  ChevronLeft, ChevronRight,
 } from 'lucide-react';
 
 const Dashboard = () => {
@@ -38,6 +39,7 @@ const Dashboard = () => {
   const [dialogState, setDialogState] = useState({ isOpen: false, type: 'alert', title: '', message: '', onConfirm: null });
   const [deleteBotId, setDeleteBotId] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   useEffect(() => {
     fetchBots();
@@ -125,8 +127,10 @@ const Dashboard = () => {
         currentUser={currentUser}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
+        isCollapsed={sidebarCollapsed}
+        onToggleCollapse={() => setSidebarCollapsed(c => !c)}
       />
-      <main className="flex-1 lg:ml-64 min-h-screen flex flex-col">
+      <main className={`flex-1 min-h-screen flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'}`}>
         <header className="sticky top-0 z-10 bg-nb-bg border-b-2 border-black px-3 sm:px-4 lg:px-8 py-3 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <button className="lg:hidden nb-btn bg-white p-2 flex-shrink-0" onClick={() => setSidebarOpen(true)}><Menu size={18} /></button>
@@ -156,27 +160,89 @@ const Dashboard = () => {
 };
 
 /* ─────────────────── SIDEBAR ─────────────────── */
-const Sidebar = ({ activePage, setActivePage, handleLogout, currentUser, isOpen, onClose }) => {
+const Sidebar = ({ activePage, setActivePage, handleLogout, currentUser, isOpen, onClose, isCollapsed, onToggleCollapse }) => {
   const menuItems = [
-    { name: 'Dashboard',     icon: Home,     accent: 'bg-nb-yellow' },
-    { name: 'My Bots',       icon: Bot,      accent: 'bg-nb-pink' },
-    { name: 'API Keys',      icon: Key,      accent: 'bg-nb-blue' },
-    { name: 'Analytics',     icon: BarChart3, accent: 'bg-purple-300' },
-    { name: 'Documentation', icon: BookOpen, accent: 'bg-orange-300' },
+    { name: 'Dashboard',     icon: Home,      accent: 'bg-nb-yellow',  dot: '#FFE500' },
+    { name: 'My Bots',       icon: Bot,       accent: 'bg-nb-pink',    dot: '#FF6B9D' },
+    { name: 'API Keys',      icon: Key,       accent: 'bg-nb-blue',    dot: '#4D9FFF' },
+    { name: 'Analytics',     icon: BarChart3, accent: 'bg-purple-300', dot: '#c084fc' },
+    { name: 'Documentation', icon: BookOpen,  accent: 'bg-orange-300', dot: '#fb923c' },
   ];
 
   return (
-    <aside className={`fixed top-0 left-0 h-full w-64 bg-white border-r-2 border-black flex flex-col z-30 transition-transform duration-300 ease-out ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
-      <div className="p-5 border-b-2 border-black flex items-center justify-between">
+    <aside
+      className={`fixed top-0 left-0 h-full bg-white border-r-2 border-black flex flex-col z-30 transition-all duration-300 ease-out
+        w-64 ${isCollapsed ? 'lg:w-[4.5rem]' : 'lg:w-64'}
+        ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}
+    >
+      {/* ─ Logo / Brand ─ */}
+      <div className={`border-b-2 border-black flex items-center gap-2 flex-shrink-0 ${
+        isCollapsed ? 'lg:justify-center lg:px-0 px-4 py-3.5' : 'px-4 py-3.5 justify-between'
+      }`}>
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-nb-yellow border-2 border-black flex items-center justify-center"><Bot size={16} /></div>
-          <span className="text-xl font-bold tracking-tight">RAGhost</span>
+          <div className="w-8 h-8 bg-nb-yellow border-2 border-black flex items-center justify-center flex-shrink-0">
+            <Bot size={16} />
+          </div>
+          <span className={`text-xl font-black tracking-tight transition-all duration-200 ${
+            isCollapsed ? 'lg:hidden' : ''
+          }`}>RAGhost</span>
         </div>
-        <button className="lg:hidden p-1 border-2 border-transparent hover:border-black transition-colors" onClick={onClose}><X size={16} /></button>
+        {/* Mobile close */}
+        <button className="lg:hidden p-1.5 border-2 border-transparent hover:border-black transition-colors rounded-sm" onClick={onClose}>
+          <X size={16} />
+        </button>
+        {/* Desktop collapse toggle ─ only visible when expanded */}
+        {!isCollapsed && (
+          <button
+            onClick={onToggleCollapse}
+            className="hidden lg:flex p-1.5 border-2 border-transparent hover:border-black hover:bg-gray-100 transition-colors"
+            title="Collapse sidebar"
+          >
+            <ChevronLeft size={15} />
+          </button>
+        )}
       </div>
-      <div className="px-4 py-3 border-b-2 border-black bg-nb-yellow/20">
+
+      {/* Expand button when collapsed ─ desktop only */}
+      {isCollapsed && (
+        <button
+          onClick={onToggleCollapse}
+          className="hidden lg:flex justify-center items-center py-2.5 border-b-2 border-black hover:bg-gray-50 transition-colors"
+          title="Expand sidebar"
+        >
+          <ChevronRight size={15} />
+        </button>
+      )}
+
+      {/* ─ User avatar ─ */}
+      <div className={`border-b-2 border-black flex-shrink-0 ${
+        isCollapsed ? 'lg:flex lg:justify-center lg:py-3 hidden' : 'block px-4 py-3 bg-nb-yellow/20'
+      }`}>
+        {!isCollapsed ? (
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 border-2 border-black bg-nb-yellow flex items-center justify-center font-bold text-black text-sm flex-shrink-0">
+              {currentUser?.email?.[0]?.toUpperCase() || 'U'}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold truncate">{currentUser?.email?.split('@')[0] || 'User'}</p>
+              <p className="text-xs text-nb-muted truncate">{currentUser?.email}</p>
+            </div>
+          </div>
+        ) : (
+          <div
+            className="w-8 h-8 border-2 border-black bg-nb-yellow flex items-center justify-center font-bold text-black text-xs"
+            title={currentUser?.email}
+          >
+            {currentUser?.email?.[0]?.toUpperCase() || 'U'}
+          </div>
+        )}
+      </div>
+      {/* Mobile user section (always shown) */}
+      <div className={`lg:hidden border-b-2 border-black px-4 py-3 bg-nb-yellow/20 ${
+        isCollapsed ? 'block' : 'hidden'
+      }`}>
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 border-2 border-black bg-nb-yellow flex items-center justify-center font-bold text-black text-sm">
+          <div className="w-9 h-9 border-2 border-black bg-nb-yellow flex items-center justify-center font-bold text-black text-sm flex-shrink-0">
             {currentUser?.email?.[0]?.toUpperCase() || 'U'}
           </div>
           <div className="flex-1 min-w-0">
@@ -185,20 +251,47 @@ const Sidebar = ({ activePage, setActivePage, handleLogout, currentUser, isOpen,
           </div>
         </div>
       </div>
-      <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+
+      {/* ─ Nav items ─ */}
+      <nav className="flex-1 p-2 space-y-0.5 overflow-y-auto">
         {menuItems.map(({ name, icon: Icon, accent }) => {
           const active = activePage === name;
           return (
-            <button key={name} onClick={() => setActivePage(name)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 font-bold text-sm border-2 transition-all duration-150 ${active ? `${accent} border-black shadow-nb-sm text-black` : 'border-transparent text-nb-muted hover:border-black hover:bg-gray-50 hover:text-black'}`}>
-              <Icon size={18} />{name}
+            <button
+              key={name}
+              onClick={() => setActivePage(name)}
+              title={isCollapsed ? name : undefined}
+              className={`w-full flex items-center font-bold text-sm border-2 transition-all duration-150 group relative
+                ${isCollapsed ? 'lg:justify-center lg:px-0 lg:py-3 px-3 py-2.5 gap-3' : 'gap-3 px-3 py-2.5'}
+                ${active
+                  ? `${accent} border-black shadow-[2px_2px_0_0_#000] text-black`
+                  : 'border-transparent text-nb-muted hover:border-black hover:bg-gray-50 hover:text-black'
+                }`}
+            >
+              {/* Active left bar */}
+              {active && !isCollapsed && (
+                <span className="absolute left-0 top-1 bottom-1 w-1 bg-black" />
+              )}
+              <Icon size={17} className="flex-shrink-0" />
+              <span className={`transition-all duration-200 ${
+                isCollapsed ? 'lg:hidden' : ''
+              }`}>{name}</span>
             </button>
           );
         })}
       </nav>
-      <div className="p-3 border-t-2 border-black">
-        <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2.5 font-bold text-sm border-2 border-transparent text-nb-muted hover:border-red-500 hover:bg-red-50 hover:text-red-600 transition-all duration-150">
-          <LogOut size={18} />Sign Out
+
+      {/* ─ Footer: Sign out ─ */}
+      <div className="p-2 border-t-2 border-black flex-shrink-0">
+        <button
+          onClick={handleLogout}
+          title={isCollapsed ? 'Sign Out' : undefined}
+          className={`w-full flex items-center gap-3 font-bold text-sm border-2 border-transparent text-nb-muted
+            hover:border-red-500 hover:bg-red-50 hover:text-red-600 transition-all duration-150
+            ${isCollapsed ? 'lg:justify-center lg:px-0 lg:py-3 px-3 py-2.5' : 'px-3 py-2.5'}`}
+        >
+          <LogOut size={17} className="flex-shrink-0" />
+          <span className={isCollapsed ? 'lg:hidden' : ''}>Sign Out</span>
         </button>
       </div>
     </aside>
