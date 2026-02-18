@@ -1,5 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import { X, Eye, EyeOff, Loader2, Database, Zap, XCircle } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, Eye, EyeOff, Loader2, Database, Zap, XCircle, ChevronDown, Check } from 'lucide-react';
+
+/* ── Reusable row for the bot-type dropdown ── */
+const BotTypeOption = ({ opt, selected, onSelect }) => (
+  <button
+    type="button"
+    onClick={onSelect}
+    className={`w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors border-b border-black/5 last:border-b-0 ${
+      selected ? 'bg-nb-yellow' : 'hover:bg-gray-50'
+    }`}
+  >
+    <span className="text-xl leading-none w-7 flex-shrink-0 text-center">{opt.emoji}</span>
+    <span className="flex-1 min-w-0">
+      <span className="flex items-center gap-1.5 flex-wrap">
+        <span className="text-sm font-bold text-nb-text">{opt.label}</span>
+        {opt.tag && (
+          <span className={`text-[10px] font-bold px-1.5 py-0.5 border border-black/30 ${opt.tagColor}`}>
+            {opt.tag}
+          </span>
+        )}
+      </span>
+      <span className="text-xs text-nb-muted block leading-tight mt-0.5">{opt.hint}</span>
+    </span>
+    {selected && <Check size={14} className="flex-shrink-0 text-black" />}
+  </button>
+);
 
 const BotConfigModal = ({ setShowModal, onSave }) => {
   const [isClosing, setIsClosing] = useState(false);
@@ -20,6 +45,19 @@ const BotConfigModal = ({ setShowModal, onSave }) => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [botTypeOpen, setBotTypeOpen] = useState(false);
+  const botTypeRef = useRef(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e) => {
+      if (botTypeRef.current && !botTypeRef.current.contains(e.target)) {
+        setBotTypeOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   const handleClose = () => {
     setIsClosing(true);
@@ -130,6 +168,24 @@ const BotConfigModal = ({ setShowModal, onSave }) => {
     }
   };
 
+  // Enriched metadata for the custom dropdown UI
+  const botTypeOptions = [
+    { value: 'Support',    emoji: '🎧', label: 'Customer Support',   hint: 'Resolve tickets & technical issues',     tag: 'Popular',   tagColor: 'bg-nb-yellow' },
+    { value: 'Sales',      emoji: '💼', label: 'Sales Assistant',     hint: 'Qualify leads & pitch products',          tag: 'Popular',   tagColor: 'bg-nb-yellow' },
+    { value: 'Docs',       emoji: '📚', label: 'Documentation',       hint: 'Guide users through docs & APIs',          tag: null,        tagColor: '' },
+    { value: 'HR',         emoji: '👥', label: 'HR Assistant',         hint: 'Policies, leave & onboarding queries',     tag: null,        tagColor: '' },
+    { value: 'Ecommerce',  emoji: '🛒', label: 'E-commerce',           hint: 'Help customers shop & checkout',           tag: 'Popular',   tagColor: 'bg-nb-yellow' },
+    { value: 'Education',  emoji: '🎓', label: 'Educational Tutor',    hint: 'Teach concepts & assist with homework',    tag: null,        tagColor: '' },
+    { value: 'Healthcare', emoji: '🏥', label: 'Healthcare Info',      hint: 'General health info & appointments',       tag: 'Regulated', tagColor: 'bg-red-200' },
+    { value: 'Finance',    emoji: '💰', label: 'Financial Advisory',   hint: 'Banking, budgeting & finance queries',     tag: 'Regulated', tagColor: 'bg-red-200' },
+    { value: 'Travel',     emoji: '✈️', label: 'Travel Planning',      hint: 'Trips, hotels & local recommendations',    tag: null,        tagColor: '' },
+    { value: 'Restaurant', emoji: '🍽️', label: 'Restaurant Booking',   hint: 'Reservations, menu & dietary requests',    tag: null,        tagColor: '' },
+    { value: 'Legal',      emoji: '⚖️', label: 'Legal Information',    hint: 'General legal info — not legal advice',    tag: 'Regulated', tagColor: 'bg-red-200' },
+    { value: 'RealEstate', emoji: '🏠', label: 'Real Estate',          hint: 'Property search & listings assistance',    tag: null,        tagColor: '' },
+    { value: 'General',    emoji: '🤖', label: 'General Purpose',      hint: 'All-round versatile assistant',            tag: null,        tagColor: '' },
+    { value: 'Custom',     emoji: '⚙️', label: 'Custom Bot',           hint: 'Start from scratch with a blank prompt',   tag: 'Advanced',  tagColor: 'bg-purple-200' },
+  ];
+
   // Handle bot type change and auto-fill template
   const handleTypeChange = (type) => {
     const template = botTemplates[type];
@@ -230,26 +286,64 @@ const BotConfigModal = ({ setShowModal, onSave }) => {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
+                {/* ── Bot Type Custom Dropdown ── */}
+                <div ref={botTypeRef} className="relative">
                   <label className="block text-sm font-bold mb-1 text-nb-text">Bot Type *</label>
-                  <select value={formData.type} onChange={(e) => handleTypeChange(e.target.value)}
-                    className="nb-input cursor-pointer">
-                    <option value="Support">🎧 Customer Support</option>
-                    <option value="Sales">💼 Sales Assistant</option>
-                    <option value="Docs">📚 Documentation</option>
-                    <option value="HR">👥 HR Assistant</option>
-                    <option value="Ecommerce">🛒 E-commerce Shopping</option>
-                    <option value="Education">🎓 Educational Tutor</option>
-                    <option value="Healthcare">🏥 Healthcare Info</option>
-                    <option value="Finance">💰 Financial Advisory</option>
-                    <option value="Travel">✈️ Travel Planning</option>
-                    <option value="Restaurant">🍽️ Restaurant Booking</option>
-                    <option value="Legal">⚖️ Legal Information</option>
-                    <option value="RealEstate">🏠 Real Estate</option>
-                    <option value="General">🤖 General Purpose</option>
-                    <option value="Custom">⚙️ Custom Bot</option>
-                  </select>
-                  <p className="text-xs text-nb-muted mt-1">💡 Selecting a template auto-fills fields</p>
+                  {/* Trigger button */}
+                  <button
+                    type="button"
+                    onClick={() => setBotTypeOpen((o) => !o)}
+                    className="nb-input w-full flex items-center justify-between gap-2 cursor-pointer text-left"
+                  >
+                    <span className="flex items-center gap-2 min-w-0">
+                      <span className="text-lg leading-none flex-shrink-0">
+                        {botTypeOptions.find((o) => o.value === formData.type)?.emoji}
+                      </span>
+                      <span className="font-semibold text-sm truncate">
+                        {botTypeOptions.find((o) => o.value === formData.type)?.label}
+                      </span>
+                      {botTypeOptions.find((o) => o.value === formData.type)?.tag && (
+                        <span className={`text-[10px] font-bold px-1.5 py-0.5 border border-black flex-shrink-0 ${
+                          botTypeOptions.find((o) => o.value === formData.type)?.tagColor
+                        }`}>
+                          {botTypeOptions.find((o) => o.value === formData.type)?.tag}
+                        </span>
+                      )}
+                    </span>
+                    <ChevronDown size={15} className={`flex-shrink-0 transition-transform duration-200 ${botTypeOpen ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {/* Dropdown panel */}
+                  {botTypeOpen && (
+                    <div className="absolute z-30 mt-1 left-0 right-0 max-h-[340px] overflow-y-auto bg-white border-2 border-black shadow-[4px_4px_0_0_#000]">
+                      {/* Group: Popular */}
+                      <div className="px-3 pt-2 pb-1">
+                        <p className="text-[10px] font-black text-nb-muted uppercase tracking-widest">Popular Templates</p>
+                      </div>
+                      {botTypeOptions.filter((o) => o.tag === 'Popular').map((opt) => (
+                        <BotTypeOption key={opt.value} opt={opt} selected={formData.type === opt.value}
+                          onSelect={() => { handleTypeChange(opt.value); setBotTypeOpen(false); }} />
+                      ))}
+                      {/* Group: Regulated */}
+                      <div className="px-3 pt-3 pb-1 border-t border-black/10">
+                        <p className="text-[10px] font-black text-nb-muted uppercase tracking-widest">Regulated Industries</p>
+                      </div>
+                      {botTypeOptions.filter((o) => o.tag === 'Regulated').map((opt) => (
+                        <BotTypeOption key={opt.value} opt={opt} selected={formData.type === opt.value}
+                          onSelect={() => { handleTypeChange(opt.value); setBotTypeOpen(false); }} />
+                      ))}
+                      {/* Group: All others */}
+                      <div className="px-3 pt-3 pb-1 border-t border-black/10">
+                        <p className="text-[10px] font-black text-nb-muted uppercase tracking-widest">All Types</p>
+                      </div>
+                      {botTypeOptions.filter((o) => !o.tag || o.tag === 'Advanced').map((opt) => (
+                        <BotTypeOption key={opt.value} opt={opt} selected={formData.type === opt.value}
+                          onSelect={() => { handleTypeChange(opt.value); setBotTypeOpen(false); }} />
+                      ))}
+                    </div>
+                  )}
+
+                  <p className="text-xs text-nb-muted mt-1">💡 Selecting a type auto-fills name, description &amp; prompt</p>
                 </div>
 
                 <div>
