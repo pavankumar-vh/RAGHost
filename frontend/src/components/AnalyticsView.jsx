@@ -20,6 +20,8 @@ import {
 
 ChartJS.register(LineElement, PointElement, LinearScale, CategoryScale, Filler, Tooltip);
 
+const botColorClass = (c) => ({ pink: 'bg-nb-pink', yellow: 'bg-nb-yellow', blue: 'bg-nb-blue' }[c] || 'bg-nb-yellow');
+
 // Analytics View Component
 const AnalyticsView = ({ bots, loading }) => {
   const [selectedMetric, setSelectedMetric] = useState('queries');
@@ -169,7 +171,7 @@ const AnalyticsView = ({ bots, loading }) => {
               <div key={bot.id} className="border-2 border-black p-3 bg-nb-bg hover:bg-nb-yellow/20 transition-colors">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 border-2 border-black bg-nb-yellow flex items-center justify-center"><Bot size={14} /></div>
+                    <div className={`w-8 h-8 border-2 border-black ${botColorClass(bot.color)} flex items-center justify-center`}><Bot size={14} /></div>
                     <span className="font-bold text-sm text-nb-text">{bot.name}</span>
                   </div>
                   <span className={`inline-flex items-center px-2 py-0.5 text-xs font-bold border-2 border-black ${bot.status === 'active' ? 'bg-green-200 text-green-800' : 'bg-gray-100 text-gray-600'}`}>

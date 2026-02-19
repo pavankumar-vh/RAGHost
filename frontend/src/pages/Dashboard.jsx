@@ -426,7 +426,7 @@ const ActivityChart = ({ dailyStats }) => {
 const SmallBotCard = ({ bot }) => (
   <div className="border-2 border-black p-4 shadow-nb-sm hover:shadow-nb hover:-translate-y-px hover:-translate-x-px transition-all duration-150 bg-white">
     <div className="flex items-center gap-3 mb-2">
-      <div className="w-8 h-8 border-2 border-black bg-nb-yellow flex items-center justify-center"><Bot size={14} /></div>
+      <div className={`w-8 h-8 border-2 border-black ${botColorClass(bot.color)} flex items-center justify-center`}><Bot size={14} /></div>
       <span className="font-bold text-sm truncate">{bot.name}</span>
     </div>
     <div className="flex items-center justify-between text-xs">
@@ -439,10 +439,11 @@ const SmallBotCard = ({ bot }) => (
 );
 
 /* ─────────────────── MY BOTS VIEW ─────────────────── */
+const botColorClass = (c) => ({ pink: 'bg-nb-pink', yellow: 'bg-nb-yellow', blue: 'bg-nb-blue' }[c] || 'bg-nb-yellow');
+
 const MyBotsView = ({ bots, setShowBotModal, setSelectedBot, setShowKnowledgeModal, onEdit, onDelete, onShowEmbed, loading, searchQuery }) => {
   if (loading) return <LoadingSpinner />;
   const filtered = bots.filter(b => !searchQuery || b.name?.toLowerCase().includes(searchQuery.toLowerCase()));
-  const accents = ['bg-nb-yellow', 'bg-nb-pink', 'bg-nb-blue', 'bg-purple-200', 'bg-orange-200', 'bg-green-200'];
   return (
     <div className="space-y-5 w-full">
       <div className="flex items-center justify-between">
@@ -469,11 +470,11 @@ const MyBotsView = ({ bots, setShowBotModal, setSelectedBot, setShowKnowledgeMod
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           {filtered.map((bot, i) => (
             <div key={bot.id} className="bg-white border-2 border-black shadow-nb hover:shadow-nb-lg hover:-translate-x-0.5 hover:-translate-y-0.5 transition-all duration-150 overflow-hidden">
-              <div className={`h-2 ${accents[i % accents.length]}`} />
+              <div className={`h-2 ${botColorClass(bot.color)}`} />
               <div className="p-5">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 border-2 border-black ${accents[i % accents.length]} flex items-center justify-center`}><Bot size={20} /></div>
+                    <div className={`w-10 h-10 border-2 border-black ${botColorClass(bot.color)} flex items-center justify-center`}><Bot size={20} /></div>
                     <div>
                       <h3 className="font-bold text-base leading-tight">{bot.name}</h3>
                       <p className="text-xs text-nb-muted">{bot.type}</p>
