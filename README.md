@@ -4,7 +4,7 @@
 
 **Production-ready RAG chatbot platform — build, embed, and manage AI-powered bots with your own knowledge base.**
 
-Battle-tested infrastructure: **Redis (Upstash)** for session caching, shared rate-limit state, and Bull job queues that keep the platform responsive under high concurrency. AES-256 encrypted key storage, Firebase JWT auth, and a full neo-brutalism dashboard — ready to deploy to Vercel + Render in under 10 minutes.
+Optional **Redis (Upstash)** integration ships out of the box — set `REDIS_URL` and three Bull queues (chat, embedding, analytics) start automatically alongside `getCachedData` / `setCachedData` caching helpers. No Redis? The app runs fully synchronously, nothing breaks. AES-256 encrypted key storage, Firebase JWT auth, and a full neo-brutalism dashboard — ready to deploy to Vercel + Render in under 10 minutes.
 
 [![MIT License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/Node.js-18%2B-green)](https://nodejs.org)
@@ -80,7 +80,7 @@ RAGHost is a full-stack platform for building and deploying Retrieval-Augmented 
 
 **No infra management required** — deploy the frontend to Vercel and the backend to Render with the included config files.
 
-**Built for production scale** — Redis (Upstash) powers session caching, shared rate-limit counters, and async Bull job queues so the platform handles large teams and high-concurrency workloads without hitting MongoDB on every request. Free-tier Upstash Redis is enough for most deployments; swap in a dedicated instance as you grow.
+**Redis support built-in (optional)** — `backend/config/redis.js` exposes `getCachedData` / `setCachedData` / `deleteCachedData` helpers with exponential-backoff reconnect. When `REDIS_URL` is set, three Bull queues (chat-processing, embedding-processing, analytics-processing) initialise automatically for background job offloading. Without it the app falls back to synchronous processing with zero config — add a free [Upstash](https://upstash.com/) instance whenever you need the async layer.
 
 ---
 
@@ -114,9 +114,10 @@ RAGHost is a full-stack platform for building and deploying Retrieval-Augmented 
 - Danger zone — full account deletion
 
 ### Performance & Scaling
-- **Redis (Upstash)** caches frequent query results and stores shared rate-limit counters — scales to hundreds of concurrent users without bottlenecking MongoDB
-- **Bull job queues** (backed by Redis) handle document uploads asynchronously; workers can be scaled horizontally across multiple server instances
-- MongoDB connection pooling (2–50 connections), gzip/brotli compression, and code-split React bundles (~200 KB gzipped)
+- **Redis caching layer** (`config/redis.js`) — `getCachedData` / `setCachedData` / `deleteCachedData` / `deleteCachedPattern` helpers; graceful fallback when Redis is unavailable so the rest of the app is unaffected
+- **Three Bull queues** initialised on startup when `REDIS_URL` is present: `chat-processing` (50 jobs/s, 3 retries), `embedding-processing` (async document embedding), `analytics-processing` (non-blocking metric writes)
+- Both features are **opt-in** — omit `REDIS_URL` to run fully synchronously; set it to unlock the async layer
+- MongoDB connection pooling (2–50 connections), gzip/brotli compression, code-split React bundles (~200 KB gzipped)
 - Configurable low-memory mode (`ENABLE_LOW_MEMORY=true`) for 512 MB Render free tier
 
 ### Security & Auth
@@ -248,6 +249,11 @@ RATE_LIMIT_MAX_REQUESTS=100
 
 ENABLE_COMPRESSION=true
 ENABLE_LOW_MEMORY=false
+
+# Redis (optional) — enables Bull queues + caching helpers when set
+# Get a free URL from https://upstash.com/ (format: rediss://default:<pw>@<host>:<port>)
+# Omit entirely to run synchronously without cache
+REDIS_URL=
 ```
 
 #### Generate encryption key
