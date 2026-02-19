@@ -112,20 +112,56 @@ const botSchema = new mongoose.Schema(
       default: 'Hi! How can I help you today? 👋',
     },
 
-    // Widget Customizer Config
+    // Widget Customizer Config v2
     widgetConfig: {
-      primaryColor:    { type: String, default: '#667eea' },
-      secondaryColor:  { type: String, default: '#764ba2' },
-      backgroundColor: { type: String, default: '#ffffff' },
-      textColor:       { type: String, default: '#000000' },
-      width:           { type: Number, default: 400 },
-      height:          { type: Number, default: 600 },
-      position:        { type: String, default: 'bottom-right' },
-      borderRadius:    { type: Number, default: 16 },
-      buttonSize:      { type: Number, default: 60 },
-      buttonStyle:     { type: String, default: 'circle' },
-      fontFamily:      { type: String, default: 'Inter, sans-serif' },
-      animationSpeed:  { type: String, default: 'normal' },
+      // Colors
+      primaryColor:          { type: String, default: '#667eea' },
+      secondaryColor:        { type: String, default: '#764ba2' },
+      gradientAngle:         { type: Number, default: 135 },
+      backgroundColor:       { type: String, default: '#ffffff' },
+      textColor:             { type: String, default: '#1a1a2e' },
+      userBubbleColor:       { type: String, default: '#667eea' },
+      botBubbleColor:        { type: String, default: '#f0f0ff' },
+      botBubbleTextColor:    { type: String, default: '#1a1a2e' },
+      // Layout
+      width:                 { type: Number, default: 400 },
+      height:                { type: Number, default: 600 },
+      position:              { type: String, default: 'bottom-right' },
+      borderRadius:          { type: Number, default: 16 },
+      shadowIntensity:       { type: Number, default: 2 },
+      edgePadding:           { type: Number, default: 24 },
+      // Button
+      buttonSize:            { type: Number, default: 60 },
+      buttonStyle:           { type: String, default: 'circle' },
+      buttonIcon:            { type: String, default: 'chat' },
+      buttonPulse:           { type: Boolean, default: false },
+      buttonLabel:           { type: String, default: '' },
+      // Header
+      avatarEmoji:           { type: String, default: '🤖' },
+      headerBotName:         { type: String, default: '' },
+      headerStatus:          { type: String, default: 'Online' },
+      showAvatar:            { type: Boolean, default: true },
+      showStatusDot:         { type: Boolean, default: true },
+      // Messages
+      bubbleRadius:          { type: Number, default: 16 },
+      showTimestamps:        { type: Boolean, default: false },
+      showUserAvatar:        { type: Boolean, default: false },
+      showBotAvatar:         { type: Boolean, default: true },
+      messageSpacing:        { type: Number, default: 12 },
+      // Typography
+      fontFamily:            { type: String, default: 'Inter' },
+      fontSize:              { type: String, default: 'medium' },
+      lineHeight:            { type: String, default: 'normal' },
+      animationSpeed:        { type: String, default: 'normal' },
+      // Behavior
+      autoOpen:              { type: Boolean, default: false },
+      autoOpenDelay:         { type: Number, default: 3 },
+      notificationBadge:     { type: Boolean, default: false },
+      notificationCount:     { type: Number, default: 1 },
+      // Content
+      welcomeMessage:        { type: String, default: '' },
+      inputPlaceholder:      { type: String, default: 'Type your message...' },
+      offlineMessage:        { type: String, default: '' },
     },
     
     // Embed Config Version History

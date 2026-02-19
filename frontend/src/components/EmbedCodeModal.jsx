@@ -23,6 +23,7 @@ const EmbedCodeModal = ({ bot, setShowModal }) => {
   const [copied, setCopied]                 = useState('');
   const [activeTab, setActiveTab]           = useState('templates');
   const [showCustomizer, setShowCustomizer] = useState(false);
+  const [widgetConfig, setWidgetConfig]     = useState(null);
 
   // A/B Test
   const [abA, setAbA]       = useState({ color: bot?.color || '#4D9FFF', greeting: 'Hello! How can I help you?', position: 'bottom-right' });
@@ -43,23 +44,45 @@ const EmbedCodeModal = ({ bot, setShowModal }) => {
     return () => document.removeEventListener('keydown', h);
   }, [setShowModal]);
 
+  /* Load widgetConfig from backend */
+  useEffect(() => {
+    if (!botId) return;
+    botsService.getWidgetConfig(botId)
+      .then(res => setWidgetConfig(res.data || null))
+      .catch(() => {});
+  }, [botId]);
+
   /* Generate embed code */
   useEffect(() => {
     if (!bot) return;
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
     const widgetUrl = window.location.origin;
+    const wc = widgetConfig || {};
     setEmbedCode(`<!-- RAGhost Chat Widget -->
 <script>
   (function() {
-    window.raghostConfig = {
+    window.RAGhostConfig = {
       botId: '${botId}',
       apiUrl: '${apiUrl}',
       botName: '${bot.name}',
       botType: '${bot.type}',
       color: '${bot.color}',
+      welcomeMessage: '${wc.welcomeMessage || ''}',
+      primaryColor: '${wc.primaryColor || ''}',
+      secondaryColor: '${wc.secondaryColor || ''}',
+      backgroundColor: '${wc.backgroundColor || ''}',
+      textColor: '${wc.textColor || ''}',
+      width: ${wc.width || 400},
+      height: ${wc.height || 600},
+      position: '${wc.position || 'bottom-right'}',
+      borderRadius: ${wc.borderRadius != null ? wc.borderRadius : 16},
+      buttonSize: ${wc.buttonSize || 64},
+      buttonStyle: '${wc.buttonStyle || 'circle'}',
+      fontFamily: '${wc.fontFamily || 'Inter'}',
+      animationSpeed: '${wc.animationSpeed || 'normal'}',
     };
     var script = document.createElement('script');
-    script.src = '${widgetUrl}/widget.js';
+    script.src = '${widgetUrl}/widget/widget-new.js';
     script.async = true;
     document.body.appendChild(script);
   })();
@@ -72,7 +95,7 @@ const EmbedCodeModal = ({ bot, setShowModal }) => {
   frameborder="0"
   style="position: fixed; bottom: 20px; right: 20px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); z-index: 9999;"
 ></iframe>`);
-  }, [bot]);
+  }, [bot, widgetConfig]);
 
   /* Auto-save snapshot + load history on open */
   useEffect(() => {
@@ -118,17 +141,17 @@ const EmbedCodeModal = ({ bot, setShowModal }) => {
     return `<!-- RAGhost Widget – Variant ${label} -->
 <script>
   (function() {
-    window.raghostConfig = {
+    window.RAGhostConfig = {
       botId: '${botId}',
       apiUrl: '${apiUrl}',
       botName: '${bot.name}',
-      color: '${variant.color}',
+      primaryColor: '${variant.color}',
       position: '${variant.position}',
-      greeting: '${variant.greeting}',
+      welcomeMessage: '${variant.greeting}',
       abVariant: '${label}',
     };
     var s = document.createElement('script');
-    s.src = '${widgetUrl}/widget.js';
+    s.src = '${widgetUrl}/widget/widget-new.js';
     s.async = true;
     document.body.appendChild(s);
   })();
@@ -141,7 +164,7 @@ const EmbedCodeModal = ({ bot, setShowModal }) => {
     return `<!-- RAGhost Widget – snapshot ${new Date(snap.savedAt).toLocaleString()} -->
 <script>
   (function() {
-    window.raghostConfig = {
+    window.RAGhostConfig = {
       botId: '${botId}',
       apiUrl: '${apiUrl}',
       botName: '${snap.name}',
@@ -149,7 +172,7 @@ const EmbedCodeModal = ({ bot, setShowModal }) => {
       color: '${snap.color}',
     };
     var s = document.createElement('script');
-    s.src = '${widgetUrl}/widget.js';
+    s.src = '${widgetUrl}/widget/widget-new.js';
     s.async = true;
     document.body.appendChild(s);
   })();

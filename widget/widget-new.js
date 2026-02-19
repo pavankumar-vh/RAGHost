@@ -7,14 +7,28 @@
   'use strict';
 
   // Configuration
+  const _rc = window.RAGhostConfig || window.raghostConfig || {};
   const config = {
-    botId: window.RAGhostConfig?.botId || 'demo',
-    apiUrl: window.RAGhostConfig?.apiUrl || 'https://raghost-pcgw.onrender.com',
-    botName: window.RAGhostConfig?.botName || 'AI Assistant',
-    botType: window.RAGhostConfig?.botType || 'Support',
-    color: window.RAGhostConfig?.color || 'blue',
-    welcomeMessage: window.RAGhostConfig?.welcomeMessage || 'Hi! How can I help you today? 👋',
-    template: window.RAGhostConfig?.template || 'modern-gradient', // Template name
+    botId: _rc.botId || 'demo',
+    apiUrl: _rc.apiUrl || 'https://raghost-pcgw.onrender.com',
+    botName: _rc.botName || 'AI Assistant',
+    botType: _rc.botType || 'Support',
+    color: _rc.color || 'blue',
+    welcomeMessage: _rc.welcomeMessage || 'Hi! How can I help you today? 👋',
+    template: _rc.template || 'modern-gradient',
+    // Custom style overrides from WidgetCustomizer
+    primaryColor:    _rc.primaryColor    || null,
+    secondaryColor:  _rc.secondaryColor  || null,
+    backgroundColor: _rc.backgroundColor || null,
+    textColor:       _rc.textColor       || null,
+    width:           _rc.width           || 400,
+    height:          _rc.height          || 600,
+    position:        _rc.position        || 'bottom-right',
+    borderRadius:    _rc.borderRadius    != null ? _rc.borderRadius : 16,
+    buttonSize:      _rc.buttonSize      || 64,
+    buttonStyle:     _rc.buttonStyle     || 'circle',
+    fontFamily:      _rc.fontFamily      || null,
+    animationSpeed:  _rc.animationSpeed  || 'normal',
   };
 
   // State
@@ -512,6 +526,9 @@
     // Apply template styles
     applyTemplateStyles();
 
+    // Apply custom config overrides (from WidgetCustomizer)
+    applyCustomConfig();
+
     // Add welcome message
     setTimeout(() => {
       addMessage(config.welcomeMessage, 'bot');
@@ -571,6 +588,79 @@
         </div>
       </div>
     `;
+  }
+
+  // Apply custom config overrides on top of template styles
+  function applyCustomConfig() {
+    const container = chatButton ? chatButton.closest('.raghost-widget-container') : null;
+    if (!container) return;
+
+    const posMap = {
+      'bottom-right': { bottom: '24px', right: '24px', top: '',     left: ''    },
+      'bottom-left':  { bottom: '24px', left:  '24px', top: '',     right: ''   },
+      'top-right':    { top:    '24px', right: '24px', bottom: '',  left: ''    },
+      'top-left':     { top:    '24px', left:  '24px', bottom: '',  right: ''   },
+    };
+    const pos = posMap[config.position] || posMap['bottom-right'];
+    Object.assign(container.style, pos);
+
+    const isLeft = config.position.includes('left');
+    const isTop  = config.position.includes('top');
+    if (chatWindow) {
+      chatWindow.style.bottom = isTop ? '' : '90px';
+      chatWindow.style.top    = isTop ? '90px' : '';
+      chatWindow.style[isLeft ? 'left' : 'right'] = '0';
+      chatWindow.style[isLeft ? 'right' : 'left'] = '';
+      chatWindow.style.transformOrigin = `${isTop ? 'top' : 'bottom'} ${isLeft ? 'left' : 'right'}`;
+      chatWindow.style.width     = `${config.width}px`;
+      chatWindow.style.maxWidth  = 'calc(100vw - 48px)';
+      chatWindow.style.height    = `${config.height}px`;
+      chatWindow.style.maxHeight = 'calc(100vh - 140px)';
+      chatWindow.style.borderRadius = `${config.borderRadius}px`;
+    }
+    if (chatButton) {
+      chatButton.style.width  = `${config.buttonSize}px`;
+      chatButton.style.height = `${config.buttonSize}px`;
+      if (config.buttonStyle === 'rounded') chatButton.style.borderRadius = '12px';
+      else if (config.buttonStyle === 'square') chatButton.style.borderRadius = '0px';
+      else chatButton.style.borderRadius = '50%';
+    }
+    if (config.fontFamily && config.fontFamily !== 'Inter') {
+      container.style.fontFamily = `'${config.fontFamily}', sans-serif`;
+    }
+    const animMs = config.animationSpeed === 'fast' ? 150 : config.animationSpeed === 'slow' ? 600 : 300;
+    const animStyle = document.createElement('style');
+    animStyle.textContent = `.raghost-chat-window { transition: all ${animMs}ms cubic-bezier(0.4,0,0.2,1) !important; }`;
+    document.head.appendChild(animStyle);
+
+    if (config.primaryColor || config.secondaryColor || config.backgroundColor || config.textColor) {
+      const pc = config.primaryColor    || '#667eea';
+      const sc = config.secondaryColor  || '#764ba2';
+      const bg = config.backgroundColor || '#ffffff';
+      const tc = config.textColor       || '#1a1a2e';
+      const r  = parseInt(pc.slice(1,3), 16) || 102;
+      const g  = parseInt(pc.slice(3,5), 16) || 126;
+      const b  = parseInt(pc.slice(5,7), 16) || 234;
+      const colorStyle = document.createElement('style');
+      colorStyle.textContent = `
+        .raghost-chat-button { background: linear-gradient(135deg, ${pc}, ${sc}) !important; box-shadow: 0 8px 32px rgba(${r},${g},${b},0.4) !important; }
+        .raghost-chat-window { background: ${bg} !important; }
+        .raghost-header { background: linear-gradient(135deg, ${pc}, ${sc}) !important; color: white !important; }
+        .raghost-avatar { background: rgba(255,255,255,0.2) !important; }
+        .raghost-message.user .raghost-message-bubble { background: linear-gradient(135deg, ${pc}, ${sc}) !important; color: white !important; }
+        .raghost-message.bot .raghost-message-bubble { background: rgba(${r},${g},${b},0.08) !important; color: ${tc} !important; }
+        .raghost-send-btn { background: linear-gradient(135deg, ${pc}, ${sc}) !important; color: white !important; }
+        .raghost-input { color: ${tc} !important; background: ${bg} !important; border: 2px solid rgba(${r},${g},${b},0.3) !important; }
+        .raghost-input:focus { border-color: ${pc} !important; }
+        .raghost-messages { background: ${bg} !important; }
+        .raghost-input-area { background: ${bg} !important; border-top: 1px solid rgba(${r},${g},${b},0.15) !important; }
+        .raghost-watermark { background: ${bg} !important; }
+        .raghost-watermark a { color: ${pc} !important; }
+        .raghost-header-btn { background: rgba(255,255,255,0.2) !important; color: white !important; }
+        .raghost-header-btn:hover { background: rgba(255,255,255,0.35) !important; }
+      `;
+      document.head.appendChild(colorStyle);
+    }
   }
 
   // Apply template-specific styles
