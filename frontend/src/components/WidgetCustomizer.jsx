@@ -455,7 +455,7 @@ const WidgetCustomizer = ({ bot, onClose }) => {
       animationSpeed: '${config.animationSpeed}'
     };
     var script = document.createElement('script');
-    script.src = '${widgetUrl}/widget-custom.js';
+    script.src = '${widgetUrl}/widget/widget-new.js';
     script.async = true;
     document.body.appendChild(script);
   })();
