@@ -396,7 +396,17 @@ export const saveWidgetConfig = async (req, res) => {
   try {
     const userId = req.user.uid;
     const { id } = req.params;
-    const allowed = ['primaryColor','secondaryColor','backgroundColor','textColor','width','height','position','borderRadius','buttonSize','buttonStyle','fontFamily','animationSpeed'];
+    const allowed = [
+      'primaryColor','secondaryColor','gradientAngle','backgroundColor','textColor',
+      'userBubbleColor','botBubbleColor','botBubbleTextColor',
+      'width','height','position','borderRadius','shadowIntensity','edgePadding',
+      'buttonSize','buttonStyle','buttonIcon','buttonPulse','buttonLabel',
+      'avatarEmoji','headerBotName','headerStatus','showAvatar','showStatusDot',
+      'bubbleRadius','showTimestamps','showUserAvatar','showBotAvatar','messageSpacing',
+      'fontFamily','fontSize','lineHeight','animationSpeed',
+      'autoOpen','autoOpenDelay','notificationBadge','notificationCount',
+      'welcomeMessage','inputPlaceholder','offlineMessage',
+    ];
 
     const bot = await Bot.findOne({ _id: id, userId });
     if (!bot) return res.status(404).json({ error: 'Bot not found' });
