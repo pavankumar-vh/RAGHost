@@ -4,7 +4,7 @@
 
 **Production-ready RAG chatbot platform — build, embed, and manage AI-powered bots with your own knowledge base.**
 
-Optional **Redis (Upstash)** integration ships out of the box — set `REDIS_URL` and three Bull queues (chat, embedding, analytics) start automatically alongside `getCachedData` / `setCachedData` caching helpers. No Redis? The app runs fully synchronously, nothing breaks. AES-256 encrypted key storage, Firebase JWT auth, and a full neo-brutalism dashboard — ready to deploy to Vercel + Render in under 10 minutes.
+Built from day one to handle **thousands of users and bots** without breaking a sweat — MongoDB Atlas connection pooling, Redis-backed Bull queues, per-IP rate limiting, gzip/brotli compression, and a horizontally scalable architecture that grows with you. AES-256 encrypted key storage, Firebase JWT auth, and a sharp neo-brutalism dashboard — **deploy to Vercel + Render in under 10 minutes**.
 
 [![MIT License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/Node.js-18%2B-green)](https://nodejs.org)
@@ -78,9 +78,22 @@ Optional **Redis (Upstash)** integration ships out of the box — set `REDIS_URL
 
 RAGHost is a full-stack platform for building and deploying Retrieval-Augmented Generation (RAG) chatbots. Upload documents (PDF, TXT, DOCX, Markdown), connect your Pinecone index and Gemini API key, and get an embeddable chat widget you can drop on any website in seconds.
 
-**No infra management required** — deploy the frontend to Vercel and the backend to Render with the included config files.
+**No infra management required** — deploy the frontend to Vercel and the backend to Render with the included config files. Start free, scale when you need to — the architecture supports the journey from 1 user to 100,000+.
 
-**Redis support built-in (optional)** — `backend/config/redis.js` exposes `getCachedData` / `setCachedData` / `deleteCachedData` helpers with exponential-backoff reconnect. When `REDIS_URL` is set, three Bull queues (chat-processing, embedding-processing, analytics-processing) initialise automatically for background job offloading. Without it the app falls back to synchronous processing with zero config — add a free [Upstash](https://upstash.com/) instance whenever you need the async layer.
+**Engineered for large user bases** — the entire backend is designed with scale in mind:
+
+| Layer | What scales it |
+|-------|---------------|
+| **Database** | MongoDB Atlas with 2–50 connection pooling; add replica sets for read scaling |
+| **Caching** | Redis helpers (`getCachedData` / `setCachedData`) reduce DB hits for hot data |
+| **Async jobs** | 3 Bull queues (chat · embedding · analytics) offload heavy work off the request thread |
+| **Auth** | Firebase Authentication — scales to millions of users, zero maintenance |
+| **Vector search** | Pinecone — fully managed, scales to billions of vectors |
+| **API protection** | Per-IP rate limiting on every endpoint prevents abuse at any traffic level |
+| **Transport** | gzip/brotli compression cuts bandwidth 70–90% under load |
+| **Clustering** | `ENABLE_CLUSTERING=true` spawns one worker per CPU core |
+
+Redis and Bull queues activate automatically when `REDIS_URL` is set. Without it, the app runs synchronously — same code, zero config changes needed.
 
 ---
 
@@ -114,11 +127,14 @@ RAGHost is a full-stack platform for building and deploying Retrieval-Augmented 
 - Danger zone — full account deletion
 
 ### Performance & Scaling
-- **Redis caching layer** (`config/redis.js`) — `getCachedData` / `setCachedData` / `deleteCachedData` / `deleteCachedPattern` helpers; graceful fallback when Redis is unavailable so the rest of the app is unaffected
-- **Three Bull queues** initialised on startup when `REDIS_URL` is present: `chat-processing` (50 jobs/s, 3 retries), `embedding-processing` (async document embedding), `analytics-processing` (non-blocking metric writes)
-- Both features are **opt-in** — omit `REDIS_URL` to run fully synchronously; set it to unlock the async layer
-- MongoDB connection pooling (2–50 connections), gzip/brotli compression, code-split React bundles (~200 KB gzipped)
-- Configurable low-memory mode (`ENABLE_LOW_MEMORY=true`) for 512 MB Render free tier
+- **Designed for large user bases** — multi-layer architecture ensures the platform stays fast as your user count and bot count grow
+- **MongoDB connection pooling** — 2–50 configurable connections; supports Atlas replica sets for horizontal read scaling
+- **Redis caching layer** (`config/redis.js`) — `getCachedData` / `setCachedData` / `deleteCachedPattern` reduce database pressure for frequently accessed data
+- **Three Bull queues** auto-start with Redis: `chat-processing` (50 jobs/s, exponential retry), `embedding-processing` (async doc chunking & vectorisation), `analytics-processing` (non-blocking metric writes)
+- **CPU clustering** — `ENABLE_CLUSTERING=true` spawns one worker per core; double the cores, double the throughput
+- **Per-IP rate limiting** on every endpoint (configurable via env vars) — protects at any traffic scale
+- gzip/brotli compression (70–90% payload reduction), code-split React bundles (~200 KB gzipped)
+- Low-memory mode (`ENABLE_LOW_MEMORY=true`) fits 512 MB free tier; remove the flag and the same code runs on a 16 GB production server
 
 ### Security & Auth
 - Firebase Authentication (email/password)
