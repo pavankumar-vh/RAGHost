@@ -4,11 +4,16 @@
 
 **Production-ready RAG chatbot platform — build, embed, and manage AI-powered bots with your own knowledge base.**
 
+Battle-tested infrastructure: **Redis (Upstash)** for session caching, shared rate-limit state, and Bull job queues that keep the platform responsive under high concurrency. AES-256 encrypted key storage, Firebase JWT auth, and a full neo-brutalism dashboard — ready to deploy to Vercel + Render in under 10 minutes.
+
 [![MIT License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/Node.js-18%2B-green)](https://nodejs.org)
 [![React](https://img.shields.io/badge/React-18.2-blue)](https://reactjs.org)
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-rag--host.vercel.app-brightgreen)](https://rag-host.vercel.app)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![Production Ready](https://img.shields.io/badge/Production-Ready-brightgreen.svg)](https://rag-host.vercel.app)
+[![Redis](https://img.shields.io/badge/Redis-Upstash-red.svg)](https://upstash.com/)
+[![Built for Scale](https://img.shields.io/badge/Built%20for-Scale-blue.svg)](https://github.com/pavankumar-vh/RAGHost)
 
 [Live Demo](https://rag-host.vercel.app) · [Report Bug](https://github.com/pavankumar-vh/RAGHost/issues) · [Request Feature](https://github.com/pavankumar-vh/RAGHost/issues)
 
@@ -27,8 +32,32 @@
 
 ---
 
+## Screenshots
+
+<div align="center">
+
+| Dashboard | Bot Configuration |
+|:---------:|:-----------------:|
+| ![Dashboard Overview](media/images/01.png) | ![Bot Configuration](media/images/02.png) |
+| *Manage all your AI bots from one place* | *Powerful bot setup with templates* |
+
+| Knowledge Base | Widget Customizer V2 |
+|:--------------:|:-------------------:|
+| ![Knowledge Base](media/images/03.png) | ![Widget Customizer](media/images/04.png) |
+| *Upload & manage documents for RAG* | *Live-preview widget with 9 customisation tabs* |
+
+| Analytics Dashboard | Embed & Deploy |
+|:-------------------:|:--------------:|
+| ![Analytics](media/images/05.png) | ![Embed Code](media/images/06.png) |
+| *Real-time metrics & performance tracking* | *One-click embed code for any website* |
+
+</div>
+
+---
+
 ## Table of Contents
 
+- [Screenshots](#screenshots)
 - [What is RAGHost?](#what-is-raghost)
 - [Features](#features)
 - [Tech Stack](#tech-stack)
@@ -50,6 +79,8 @@
 RAGHost is a full-stack platform for building and deploying Retrieval-Augmented Generation (RAG) chatbots. Upload documents (PDF, TXT, DOCX, Markdown), connect your Pinecone index and Gemini API key, and get an embeddable chat widget you can drop on any website in seconds.
 
 **No infra management required** — deploy the frontend to Vercel and the backend to Render with the included config files.
+
+**Built for production scale** — Redis (Upstash) powers session caching, shared rate-limit counters, and async Bull job queues so the platform handles large teams and high-concurrency workloads without hitting MongoDB on every request. Free-tier Upstash Redis is enough for most deployments; swap in a dedicated instance as you grow.
 
 ---
 
@@ -81,6 +112,12 @@ RAGHost is a full-stack platform for building and deploying Retrieval-Augmented 
 - Preferences synced to MongoDB
 - Account security — change Firebase password from within the app
 - Danger zone — full account deletion
+
+### Performance & Scaling
+- **Redis (Upstash)** caches frequent query results and stores shared rate-limit counters — scales to hundreds of concurrent users without bottlenecking MongoDB
+- **Bull job queues** (backed by Redis) handle document uploads asynchronously; workers can be scaled horizontally across multiple server instances
+- MongoDB connection pooling (2–50 connections), gzip/brotli compression, and code-split React bundles (~200 KB gzipped)
+- Configurable low-memory mode (`ENABLE_LOW_MEMORY=true`) for 512 MB Render free tier
 
 ### Security & Auth
 - Firebase Authentication (email/password)
@@ -122,6 +159,8 @@ RAGHost is a full-stack platform for building and deploying Retrieval-Augmented 
 | Multer | 1.x | File uploads |
 | pdf-parse + Mammoth | latest | Document parsing |
 | Helmet + Compression | latest | Security & performance |
+| **Redis (Upstash)** | 7+ | Session caching, rate-limit state, Bull queue backend |
+| **Bull** | 4.x | Async job queues (document processing) |
 
 ---
 
