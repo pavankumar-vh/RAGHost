@@ -299,16 +299,29 @@ const WidgetCustomizer = ({ bot, onClose }) => {
       botName: '${(bot?.name || 'AI Assistant').replace(/'/g, "\\'")}',
       botType: '${bot?.type || 'Support'}',
       welcomeMessage: '${wm}',
+      // Colors & gradient
       primaryColor: '${config.primaryColor}',
       secondaryColor: '${config.secondaryColor}',
+      gradientAngle: ${config.gradientAngle ?? 135},
       backgroundColor: '${config.backgroundColor}',
       textColor: '${config.textColor}',
+      userBubbleColor: '${config.userBubbleColor}',
+      botBubbleColor: '${config.botBubbleColor}',
+      botBubbleTextColor: '${config.botBubbleTextColor}',
+      // Layout
       width: ${config.width},
       height: ${config.height},
       position: '${config.position}',
       borderRadius: ${config.borderRadius},
+      shadowIntensity: ${config.shadowIntensity ?? 2},
+      edgePadding: ${config.edgePadding ?? 24},
+      // Button
       buttonSize: ${config.buttonSize},
       buttonStyle: '${config.buttonStyle}',
+      // Messages
+      bubbleRadius: ${config.bubbleRadius ?? 16},
+      messageSpacing: ${config.messageSpacing ?? 12},
+      // Typography
       fontFamily: '${config.fontFamily}',
       animationSpeed: '${config.animationSpeed}',
     };
