@@ -112,15 +112,47 @@
         transform: scale(0.95);
       }
 
-      .raghost-chat-button svg {
-        width: 28px;
-        height: 28px;
-        fill: white;
-        transition: transform 0.3s ease;
+      @keyframes rh-buttonPulse {
+        0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.35); }
+        70% { box-shadow: 0 0 0 12px rgba(255,255,255,0); }
+        100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
       }
 
-      .raghost-chat-button.open svg {
-        transform: rotate(180deg);
+      .raghost-chat-button .rh-icon-chat,
+      .raghost-chat-button .rh-icon-close {
+        position: absolute;
+        width: 28px;
+        height: 28px;
+        transition: opacity 0.25s ease, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .raghost-chat-button .rh-icon-chat {
+        opacity: 1;
+        transform: rotate(0deg) scale(1);
+        fill: white;
+      }
+
+      .raghost-chat-button .rh-icon-close {
+        opacity: 0;
+        transform: rotate(-90deg) scale(0.6);
+        fill: none;
+        stroke: white;
+        stroke-width: 2.5;
+        stroke-linecap: round;
+      }
+
+      .raghost-chat-button.open .rh-icon-chat {
+        opacity: 0;
+        transform: rotate(90deg) scale(0.6);
+      }
+
+      .raghost-chat-button.open .rh-icon-close {
+        opacity: 1;
+        transform: rotate(0deg) scale(1);
+      }
+
+      .raghost-chat-button.rh-pulse {
+        animation: rh-buttonPulse 0.6s ease-out;
       }
 
       .raghost-chat-window {
@@ -225,7 +257,10 @@
       .raghost-header-btn svg {
         width: 18px;
         height: 18px;
-        fill: currentColor;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2.5;
+        stroke-linecap: round;
       }
 
       .raghost-messages {
@@ -548,11 +583,17 @@
   function getWidgetHTML() {
     return `
       <button class="raghost-chat-button" aria-label="Open chat">
-        <svg viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 2C6.48 2 2 6.48 2 12c0 1.54.36 3 .97 4.29L2 22l5.71-.97C9 21.64 10.46 22 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm0 18c-1.38 0-2.68-.29-3.86-.82l-.28-.15-2.9.49.49-2.9-.15-.28C4.29 14.68 4 13.38 4 12c0-4.41 3.59-8 8-8s8 3.59 8 8-3.59 8-8 8z"/>
-          <circle cx="9" cy="12" r="1"/>
-          <circle cx="12" cy="12" r="1"/>
-          <circle cx="15" cy="12" r="1"/>
+        <!-- Chat bubble icon (shown when closed) -->
+        <svg class="rh-icon-chat" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
+          <circle cx="8.5" cy="11" r="1.1" fill="white"/>
+          <circle cx="12" cy="11" r="1.1" fill="white"/>
+          <circle cx="15.5" cy="11" r="1.1" fill="white"/>
+        </svg>
+        <!-- X icon (shown when open) -->
+        <svg class="rh-icon-close" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <line x1="6" y1="6" x2="18" y2="18"/>
+          <line x1="18" y1="6" x2="6" y2="18"/>
         </svg>
       </button>
 
@@ -567,8 +608,9 @@
           </div>
           <div class="raghost-header-actions">
             <button class="raghost-header-btn raghost-close-btn" aria-label="Close">
-              <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg">
+                <line x1="6" y1="6" x2="18" y2="18"/>
+                <line x1="18" y1="6" x2="6" y2="18"/>
               </svg>
             </button>
           </div>
@@ -1443,9 +1485,8 @@
         box-shadow: 6px 6px 16px #b8bec7, -6px -6px 16px #ffffff;
       }
 
-      .raghost-chat-button svg {
-        fill: #4a5568;
-      }
+      .raghost-chat-button .rh-icon-chat { fill: #4a5568; }
+      .raghost-chat-button .rh-icon-close { stroke: #4a5568; }
 
       .raghost-chat-window {
         background: #e0e5ec;
@@ -1556,9 +1597,8 @@
         box-shadow: 3px 3px 0 #000;
       }
 
-      .raghost-chat-button svg {
-        fill: #000;
-      }
+      .raghost-chat-button .rh-icon-chat { fill: #000; }
+      .raghost-chat-button .rh-icon-close { stroke: #000; }
 
       .raghost-chat-window {
         background: #fff;
@@ -2209,7 +2249,12 @@
     isOpen = !isOpen;
     chatWindow.classList.toggle('open', isOpen);
     chatButton.classList.toggle('open', isOpen);
+    chatButton.setAttribute('aria-label', isOpen ? 'Close chat' : 'Open chat');
     if (isOpen) {
+      // Brief pulse on open for tactile feedback
+      chatButton.classList.remove('rh-pulse');
+      void chatButton.offsetWidth; // force reflow
+      chatButton.classList.add('rh-pulse');
       input.focus();
     }
   }
