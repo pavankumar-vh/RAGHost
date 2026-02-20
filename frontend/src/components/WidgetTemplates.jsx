@@ -5,10 +5,11 @@ const WidgetTemplates = ({ bot }) => {
   const [copied, setCopied] = useState('');
   const [selected, setSelected] = useState('minimal');
   const apiUrl = import.meta.env.VITE_API_URL || 'https://raghost-pcgw.onrender.com';
-  const widgetUrl = 'https://rag-host.vercel.app';
+  const widgetUrl = window.location.origin || 'https://rag-host.vercel.app';
+  const botId = bot?._id || bot?.id;
 
   const makeCode = (templateId) =>
-    `<!-- RAGhost Chat Widget - ${templateId} -->\n<script>\n  window.RAGhostConfig = {\n    botId: '${bot?.id || 'YOUR_BOT_ID'}',\n    apiUrl: '${apiUrl}',\n    botName: '${bot?.name || 'AI Assistant'}',\n    template: '${templateId}',\n    welcomeMessage: 'Hi! How can I help you today? 👋'\n  };\n<\/script>\n<script src="${widgetUrl}/widget/widget-new.js" async><\/script>`;
+    `<!-- RAGhost Chat Widget - ${templateId} -->\n<script>\n  window.RAGhostConfig = {\n    botId: '${botId || 'YOUR_BOT_ID'}',\n    apiUrl: '${apiUrl}',\n    botName: '${(bot?.name || 'AI Assistant').replace(/'/g, "\\\\'") }',\n    botType: '${bot?.type || 'Support'}',\n    template: '${templateId}',\n    welcomeMessage: 'Hi! How can I help you today? 👋'\n  };\n<\/script>\n<script src="${widgetUrl}/widget/widget-new.js" async><\/script>`;
 
   const templates = [
     {
@@ -18,6 +19,7 @@ const WidgetTemplates = ({ bot }) => {
       tagline: 'Pure. Clean. Invisible.',
       description: 'Zero decoration, total focus on content. White background, black type, no distractions.',
       badge: 'bg-gray-100 text-gray-800',
+      features: ['Floating Bubble', 'Zero Distractions', 'Mobile Ready', 'Session Persist', 'Zero Deps'],
       preview: (
         <div style={{ fontFamily: 'system-ui', background: '#fff', border: '1px solid #eee', borderRadius: 8, padding: 12, fontSize: 12 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #eee', paddingBottom: 8, marginBottom: 8 }}>
@@ -40,6 +42,7 @@ const WidgetTemplates = ({ bot }) => {
       tagline: 'Soft. Extruded. Tactile.',
       description: 'Soft light morphism — elements appear pushed out or inset from a matte surface.',
       badge: 'bg-indigo-100 text-indigo-700',
+      features: ['Floating Bubble', 'Soft Shadows', 'Tactile UI', 'Mobile Ready', 'Zero Deps'],
       preview: (
         <div style={{ fontFamily: 'system-ui', background: '#E0E5EC', borderRadius: 16, padding: 14, fontSize: 12 }}>
           <div style={{ background: '#E0E5EC', boxShadow: '5px 5px 10px #b8bec7, -5px -5px 10px #fff', borderRadius: 12, padding: '8px 12px', marginBottom: 8 }}>
@@ -61,6 +64,7 @@ const WidgetTemplates = ({ bot }) => {
       tagline: 'Frosted. Layered. Ethereal.',
       description: 'Translucent frosted glass panels floating over vibrant gradient backgrounds.',
       badge: 'bg-blue-100 text-blue-700',
+      features: ['Floating Bubble', 'Backdrop Blur', 'Glass Effect', 'Mobile Ready', 'Zero Deps'],
       preview: (
         <div style={{ fontFamily: 'system-ui', background: 'linear-gradient(135deg,#667eea,#764ba2)', borderRadius: 12, padding: 12, fontSize: 12 }}>
           <div style={{ background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.35)', borderRadius: 10, padding: 10 }}>
@@ -82,6 +86,7 @@ const WidgetTemplates = ({ bot }) => {
       tagline: 'Bold. Raw. Unapologetic.',
       description: 'Hard black borders, flat shadows, and primary color blocks. Brutally honest design.',
       badge: 'bg-yellow-100 text-yellow-800',
+      features: ['Floating Bubble', 'Hard Borders', 'Flat Shadows', 'Mobile Ready', 'Zero Deps'],
       preview: (
         <div style={{ fontFamily: 'Space Grotesk, system-ui', background: '#FFFEF0', border: '2px solid #000', padding: 10, fontSize: 12 }}>
           <div style={{ background: '#FFE500', border: '2px solid #000', padding: '5px 10px', marginBottom: 8, fontWeight: 900, display: 'flex', justifyContent: 'space-between', fontSize: 11 }}>
@@ -103,6 +108,7 @@ const WidgetTemplates = ({ bot }) => {
       tagline: 'Elevated. Systematic. Google.',
       description: 'Material Design 3 — tonal surfaces, dynamic color, and motion-ready depth system.',
       badge: 'bg-purple-100 text-purple-700',
+      features: ['Floating Bubble', 'Material 3', 'Tonal Color', 'Motion Ready', 'Zero Deps'],
       preview: (
         <div style={{ fontFamily: 'Roboto, system-ui', background: '#FEF7FF', borderRadius: 28, padding: 12, fontSize: 12, boxShadow: '0 1px 3px rgba(0,0,0,0.12),0 1px 2px rgba(0,0,0,0.08)' }}>
           <div style={{ background: '#6750A4', borderRadius: '28px 28px 4px 4px', padding: '8px 14px', marginBottom: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -125,6 +131,7 @@ const WidgetTemplates = ({ bot }) => {
       tagline: 'Airy. Acrylic. Microsoft.',
       description: 'Fluent Design System — acrylic blur, reveal highlight, and connected motion.',
       badge: 'bg-sky-100 text-sky-700',
+      features: ['Floating Bubble', 'Acrylic Blur', 'Reveal Highlight', 'Mobile Ready', 'Zero Deps'],
       preview: (
         <div style={{ fontFamily: 'Segoe UI, system-ui', background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(20px)', border: '1px solid rgba(0,120,212,0.2)', borderRadius: 8, padding: 10, fontSize: 12, boxShadow: '0 8px 32px rgba(0,120,212,0.1)' }}>
           <div style={{ borderBottom: '1px solid rgba(0,120,212,0.15)', paddingBottom: 7, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -147,6 +154,7 @@ const WidgetTemplates = ({ bot }) => {
       tagline: 'Polished. Premium. Midnight.',
       description: 'The premium SaaS dark — glowing accents, subtle gradients, and refined typography.',
       badge: 'bg-violet-100 text-violet-700',
+      features: ['Floating Bubble', 'Dark Mode', 'Glow Accents', 'Session Persist', 'Zero Deps'],
       preview: (
         <div style={{ fontFamily: 'Inter, system-ui', background: '#0F0F1A', borderRadius: 12, padding: 12, fontSize: 12, border: '1px solid rgba(124,58,237,0.3)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 9, paddingBottom: 7, borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
@@ -170,6 +178,7 @@ const WidgetTemplates = ({ bot }) => {
       tagline: 'Chunky. Chrome. 2000s.',
       description: 'Y2K era aesthetic — chrome gradients, pixel fonts, bubbly UI and nostalgic neon.',
       badge: 'bg-pink-100 text-pink-700',
+      features: ['Floating Bubble', 'Y2K Aesthetic', 'Neon Effects', 'Mobile Ready', 'Zero Deps'],
       preview: (
         <div style={{ fontFamily: '"Courier New", monospace', background: 'linear-gradient(180deg,#0A0030,#1A0050)', borderRadius: 6, padding: 10, fontSize: 11, border: '2px solid #FF00FF', boxShadow: '0 0 12px rgba(255,0,255,0.4), inset 0 0 20px rgba(255,0,255,0.05)' }}>
           <div style={{ background: 'linear-gradient(90deg,#FF00FF,#00FFFF)', padding: '4px 10px', marginBottom: 8, borderRadius: 3, display: 'flex', justifyContent: 'space-between', fontSize: 10 }}>
@@ -192,6 +201,7 @@ const WidgetTemplates = ({ bot }) => {
       tagline: 'Textured. Real. Physical.',
       description: 'Real-world materials — leather stitching, paper textures, and depth that mimics objects.',
       badge: 'bg-amber-100 text-amber-800',
+      features: ['Floating Bubble', 'Real Textures', 'Physical Depth', 'Classic UI', 'Zero Deps'],
       preview: (
         <div style={{ fontFamily: 'Georgia, serif', background: 'linear-gradient(145deg,#f5e6c8,#e8d5a0)', borderRadius: 8, padding: 10, fontSize: 12, border: '3px solid #8B5E3C', boxShadow: '0 4px 8px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.6)' }}>
           <div style={{ background: 'linear-gradient(180deg,#a0522d,#7a3f1e)', borderRadius: '6px 6px 0 0', padding: '6px 12px', marginBottom: 8, display: 'flex', justifyContent: 'space-between', boxShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
@@ -214,6 +224,7 @@ const WidgetTemplates = ({ bot }) => {
       tagline: 'Data-rich. Compact. Precise.',
       description: 'Maximum information density — monospace data, status indicators, and tabular precision.',
       badge: 'bg-blue-100 text-blue-800',
+      features: ['Floating Bubble', 'Data Dense', 'Monospace Type', 'Enterprise Grade', 'Zero Deps'],
       preview: (
         <div style={{ fontFamily: '"Courier New", monospace', background: '#F8F9FA', borderRadius: 4, padding: 10, fontSize: 11, border: '1px solid #dee2e6' }}>
           <div style={{ background: '#0D6EFD', padding: '4px 10px', marginBottom: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -293,7 +304,7 @@ const WidgetTemplates = ({ bot }) => {
             <p className="text-nb-muted text-sm leading-relaxed">{selectedTemplate.description}</p>
 
             <div className="flex flex-wrap gap-2">
-              {['Floating Bubble', 'Markdown Support', 'Mobile Ready', 'Session Persist', 'Zero Deps'].map(f => (
+              {(selectedTemplate.features || ['Floating Bubble', 'Markdown Support', 'Mobile Ready', 'Session Persist', 'Zero Deps']).map(f => (
                 <span key={f} className="text-xs font-bold px-2 py-1 border-2 border-black bg-nb-bg">{f}</span>
               ))}
             </div>
