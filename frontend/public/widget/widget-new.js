@@ -46,7 +46,7 @@
   let isOpen = false;
 
   // Elements (will be created dynamically)
-  let chatButton, chatWindow, closeBtn, minimizeBtn, messagesContainer, input, sendBtn;
+  let chatButton, chatWindow, closeBtn, messagesContainer, input, sendBtn;
 
   // Initialize
   function init() {
@@ -527,7 +527,6 @@
     chatButton = container.querySelector('.raghost-chat-button');
     chatWindow = container.querySelector('.raghost-chat-window');
     closeBtn = container.querySelector('.raghost-close-btn');
-    minimizeBtn = container.querySelector('.raghost-minimize-btn');
     messagesContainer = container.querySelector('.raghost-messages');
     input = container.querySelector('.raghost-input');
     sendBtn = container.querySelector('.raghost-send-btn');
@@ -566,12 +565,7 @@
             </div>
           </div>
           <div class="raghost-header-actions">
-            <button class="raghost-header-btn raghost-minimize-btn" aria-label="Minimize">
-              <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M19 13H5v-2h14v2z"/>
-              </svg>
-            </button>
-            <button class="raghost-header-btn raghost-close-btn" aria-label="Close">
+            <<button class="raghost-header-btn raghost-close-btn" aria-label="Close">
               <svg viewBox="0 0 24 24" fill="currentColor">
                 <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/>
               </svg>
@@ -1815,7 +1809,6 @@
   function attachEventListeners() {
     chatButton.addEventListener('click', toggleChat);
     closeBtn.addEventListener('click', closeChat);
-    minimizeBtn.addEventListener('click', closeChat);
     sendBtn.addEventListener('click', handleSendMessage);
 
     input.addEventListener('keydown', (e) => {
