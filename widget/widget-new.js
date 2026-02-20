@@ -29,6 +29,15 @@
     buttonStyle:     _rc.buttonStyle     || 'circle',
     fontFamily:      _rc.fontFamily      || null,
     animationSpeed:  _rc.animationSpeed  || 'normal',
+    // Extended theme overrides (v2 Widget Customizer)
+    gradientAngle:      _rc.gradientAngle     != null ? _rc.gradientAngle : 135,
+    userBubbleColor:    _rc.userBubbleColor   || null,
+    botBubbleColor:     _rc.botBubbleColor    || null,
+    botBubbleTextColor: _rc.botBubbleTextColor|| null,
+    shadowIntensity:    _rc.shadowIntensity   != null ? _rc.shadowIntensity : 2,
+    edgePadding:        _rc.edgePadding       || 24,
+    bubbleRadius:       _rc.bubbleRadius      != null ? _rc.bubbleRadius : 16,
+    messageSpacing:     _rc.messageSpacing    || 12,
   };
 
   // State
@@ -595,11 +604,12 @@
     const container = chatButton ? chatButton.closest('.raghost-widget-container') : null;
     if (!container) return;
 
+    const _ep = `${config.edgePadding || 24}px`;
     const posMap = {
-      'bottom-right': { bottom: '24px', right: '24px', top: '',     left: ''    },
-      'bottom-left':  { bottom: '24px', left:  '24px', top: '',     right: ''   },
-      'top-right':    { top:    '24px', right: '24px', bottom: '',  left: ''    },
-      'top-left':     { top:    '24px', left:  '24px', bottom: '',  right: ''   },
+      'bottom-right': { bottom: _ep, right: _ep, top: '', left: '' },
+      'bottom-left':  { bottom: _ep, left:  _ep, top: '', right: '' },
+      'top-right':    { top:    _ep, right: _ep, bottom: '', left: '' },
+      'top-left':     { top:    _ep, left:  _ep, bottom: '', right: '' },
     };
     const pos = posMap[config.position] || posMap['bottom-right'];
     Object.assign(container.style, pos);
@@ -633,31 +643,97 @@
     animStyle.textContent = `.raghost-chat-window { transition: all ${animMs}ms cubic-bezier(0.4,0,0.2,1) !important; }`;
     document.head.appendChild(animStyle);
 
-    if (config.primaryColor || config.secondaryColor || config.backgroundColor || config.textColor) {
-      const pc = config.primaryColor    || '#667eea';
-      const sc = config.secondaryColor  || '#764ba2';
-      const bg = config.backgroundColor || '#ffffff';
-      const tc = config.textColor       || '#1a1a2e';
+    if (config.primaryColor || config.secondaryColor || config.backgroundColor || config.textColor ||
+        config.userBubbleColor || config.botBubbleColor || config.botBubbleTextColor) {
+      const pc   = config.primaryColor      || '#667eea';
+      const sc   = config.secondaryColor    || '#764ba2';
+      const bg   = config.backgroundColor  || '#ffffff';
+      const tc   = config.textColor        || '#1a1a2e';
+      const ubc  = config.userBubbleColor  || null;   // user bubble bg (null = use gradient)
+      const bbc  = config.botBubbleColor   || null;   // bot bubble bg
+      const bbtc = config.botBubbleTextColor || tc;   // bot bubble text
+      const ang  = config.gradientAngle    != null ? config.gradientAngle : 135;
+      const br   = config.bubbleRadius     != null ? config.bubbleRadius : 16;
+      const grad = `linear-gradient(${ang}deg, ${pc}, ${sc})`;
       const r  = parseInt(pc.slice(1,3), 16) || 102;
       const g  = parseInt(pc.slice(3,5), 16) || 126;
       const b  = parseInt(pc.slice(5,7), 16) || 234;
+
+      // Shadow lookup
+      const shadowMap = {
+        0: 'none',
+        1: '0 4px 16px rgba(0,0,0,0.10)',
+        2: `0 8px 32px rgba(${r},${g},${b},0.35)`,
+        3: `0 20px 60px rgba(${r},${g},${b},0.50)`,
+      };
+      const shadow = shadowMap[config.shadowIntensity != null ? config.shadowIntensity : 2] || shadowMap[2];
+
+      // User bubble: use custom color if set, else gradient
+      const userBubbleBg  = ubc ? ubc  : grad;
+      const userBubbleTxt = ubc ? tc   : 'white';
+
+      // Bot bubble: use custom color if set, else subtle tint
+      const botBubbleBg  = bbc ? bbc : `rgba(${r},${g},${b},0.08)`;
+
       const colorStyle = document.createElement('style');
       colorStyle.textContent = `
-        .raghost-chat-button { background: linear-gradient(135deg, ${pc}, ${sc}) !important; box-shadow: 0 8px 32px rgba(${r},${g},${b},0.4) !important; }
-        .raghost-chat-window { background: ${bg} !important; }
-        .raghost-header { background: linear-gradient(135deg, ${pc}, ${sc}) !important; color: white !important; }
-        .raghost-avatar { background: rgba(255,255,255,0.2) !important; }
-        .raghost-message.user .raghost-message-bubble { background: linear-gradient(135deg, ${pc}, ${sc}) !important; color: white !important; }
-        .raghost-message.bot .raghost-message-bubble { background: rgba(${r},${g},${b},0.08) !important; color: ${tc} !important; }
-        .raghost-send-btn { background: linear-gradient(135deg, ${pc}, ${sc}) !important; color: white !important; }
-        .raghost-input { color: ${tc} !important; background: ${bg} !important; border: 2px solid rgba(${r},${g},${b},0.3) !important; }
-        .raghost-input:focus { border-color: ${pc} !important; }
-        .raghost-messages { background: ${bg} !important; }
-        .raghost-input-area { background: ${bg} !important; border-top: 1px solid rgba(${r},${g},${b},0.15) !important; }
-        .raghost-watermark { background: ${bg} !important; }
-        .raghost-watermark a { color: ${pc} !important; }
-        .raghost-header-btn { background: rgba(255,255,255,0.2) !important; color: white !important; }
-        .raghost-header-btn:hover { background: rgba(255,255,255,0.35) !important; }
+        .raghost-chat-button {
+          background: ${grad} !important;
+          box-shadow: ${shadow} !important;
+        }
+        .raghost-chat-window {
+          background: ${bg} !important;
+          box-shadow: ${shadow} !important;
+        }
+        .raghost-header {
+          background: ${grad} !important;
+          color: white !important;
+        }
+        .raghost-avatar {
+          background: rgba(255,255,255,0.2) !important;
+        }
+        .raghost-message.user .raghost-message-bubble {
+          background: ${userBubbleBg} !important;
+          color: ${userBubbleTxt} !important;
+          border-radius: ${br}px ${br}px 4px ${br}px !important;
+        }
+        .raghost-message.bot .raghost-message-bubble {
+          background: ${botBubbleBg} !important;
+          color: ${bbtc} !important;
+          border-radius: ${br}px ${br}px ${br}px 4px !important;
+        }
+        .raghost-send-btn {
+          background: ${grad} !important;
+          color: white !important;
+        }
+        .raghost-input {
+          color: ${tc} !important;
+          background: ${bg} !important;
+          border: 2px solid rgba(${r},${g},${b},0.3) !important;
+        }
+        .raghost-input:focus {
+          border-color: ${pc} !important;
+        }
+        .raghost-messages {
+          background: ${bg} !important;
+        }
+        .raghost-input-area {
+          background: ${bg} !important;
+          border-top: 1px solid rgba(${r},${g},${b},0.15) !important;
+        }
+        .raghost-watermark {
+          background: ${bg} !important;
+        }
+        .raghost-watermark a {
+          color: ${pc} !important;
+        }
+        .raghost-header-btn {
+          background: rgba(255,255,255,0.2) !important;
+          color: white !important;
+        }
+        .raghost-header-btn:hover {
+          background: rgba(255,255,255,0.35) !important;
+        }
       `;
       document.head.appendChild(colorStyle);
     }
