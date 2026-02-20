@@ -817,675 +817,518 @@
     document.head.appendChild(style);
   }
 
-  // Template 1: Modern Gradient
+
+  // ═══════════════════════════════════════════════════════════════════════
+  //  TEMPLATE STYLE FUNCTIONS
+  //  Each template is self-contained with its own @keyframes.
+  //  ● Dark-header templates: .raghost-header-btn inherits white from base
+  //  ● Light-header templates: MUST set .raghost-header-btn { color: <dark> }
+  //  ● Light-button templates: MUST override .rh-icon-chat fill + .rh-icon-close stroke
+  //  ● Every template sets color on .raghost-send-btn for SVG arrow visibility
+  // ═══════════════════════════════════════════════════════════════════════
+
+  // ── Template 1: Modern Gradient ──────────────────────────────────────
   function getModernGradientStyles() {
     return `
+      @keyframes rh-mg-shift {
+        0%   { background-position: 0% 50%; }
+        50%  { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+      }
+
       .raghost-chat-button {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        box-shadow: 0 8px 25px rgba(102,126,234,0.45);
+        background: linear-gradient(135deg, #6366f1, #8b5cf6, #a855f7);
+        background-size: 200% 200%;
+        animation: rh-mg-shift 6s ease infinite;
+        box-shadow: 0 8px 30px rgba(99,102,241,0.5);
       }
 
       .raghost-chat-window {
         background: #ffffff;
-        box-shadow: 0 25px 60px rgba(0,0,0,0.15);
-        border: 1px solid rgba(0,0,0,0.06);
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 25px 65px rgba(0,0,0,0.18);
       }
 
       .raghost-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
+        color: #fff;
       }
 
       .raghost-avatar {
-        background: rgba(255,255,255,0.22);
-        border: 2px solid rgba(255,255,255,0.3);
+        background: rgba(255,255,255,0.2);
+        border: 2px solid rgba(255,255,255,0.35);
       }
 
-      .raghost-messages { background: #f8f9ff; }
+      .raghost-messages { background: #f8f7ff; }
 
       .raghost-message.bot .raghost-message-avatar {
-        background: #eef0fb;
-        border: 1px solid #dde0f5;
+        background: #ede9fe;
+        color: #6366f1;
       }
       .raghost-message.user .raghost-message-avatar {
-        background: linear-gradient(135deg, #667eea, #764ba2);
+        background: linear-gradient(135deg, #6366f1, #a855f7);
+        color: #fff;
       }
 
       .raghost-message.bot .raghost-message-bubble {
-        background: #ffffff;
-        color: #1a1a2e;
-        border: 1px solid #e8eaf5;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        background: #fff;
+        color: #1e1b4b;
+        border: 1px solid #e9e5ff;
+        box-shadow: 0 2px 8px rgba(99,102,241,0.08);
       }
       .raghost-message.user .raghost-message-bubble {
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        color: white;
-        box-shadow: 0 4px 15px rgba(102,126,234,0.35);
+        background: linear-gradient(135deg, #6366f1, #a855f7);
+        color: #fff;
+        box-shadow: 0 4px 14px rgba(99,102,241,0.35);
       }
 
-      .raghost-input-area {
-        background: #ffffff;
-        border-top: 1px solid #eef0f5;
-      }
+      .raghost-input-area { background: #fff; border-top: 1px solid #ede9fe; }
       .raghost-input {
-        background: #f3f4f8;
-        color: #1a1a2e;
-        border: 1px solid #e0e2ea;
+        background: #f5f3ff;
+        color: #1e1b4b;
+        border: 1.5px solid #ddd6fe;
       }
       .raghost-input:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102,126,234,0.15);
+        border-color: #8b5cf6;
+        box-shadow: 0 0 0 3px rgba(139,92,246,0.15);
       }
-      .raghost-input::placeholder { color: #9a9cb8; }
+      .raghost-input::placeholder { color: #a5b4fc; }
 
       .raghost-send-btn {
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        color: white;
-        box-shadow: 0 4px 12px rgba(102,126,234,0.35);
+        background: linear-gradient(135deg, #6366f1, #a855f7);
+        color: #fff;
+        box-shadow: 0 4px 12px rgba(99,102,241,0.4);
       }
-      .raghost-send-btn:disabled {
-        background: #e0e2ea;
-        color: #9a9cb8;
-        box-shadow: none;
-      }
+      .raghost-send-btn:disabled { background: #e9e5ff; color: #a5b4fc; box-shadow: none; }
 
-      .raghost-header-btn {
-        color: white;
-        background: rgba(255,255,255,0.18);
-        border: 1px solid rgba(255,255,255,0.25);
-      }
-      .raghost-header-btn:hover {
-        background: rgba(255,255,255,0.3);
-      }
+      .raghost-header-btn { color: #fff; background: rgba(255,255,255,0.18); }
+      .raghost-header-btn:hover { background: rgba(255,255,255,0.32); }
 
-      .raghost-typing span { background: #667eea; }
+      .raghost-typing span { background: #8b5cf6; }
 
-      .raghost-watermark {
-        color: #9a9cb8;
-        background: #f8f9ff;
-        border-top: 1px solid #eef0f5;
-      }
-      .raghost-watermark a { color: #667eea; }
+      .raghost-watermark { background: #f8f7ff; color: #a5b4fc; border-top: 1px solid #ede9fe; }
+      .raghost-watermark a { color: #6366f1; }
     `;
   }
 
-  // Template 2: Glass Morphism
+  // ── Template 2: Glass Morphism ───────────────────────────────────────
   function getGlassMorphismStyles() {
     return `
+      @keyframes rh-gm-float {
+        0%, 100% { transform: translateY(0) scale(1); }
+        50%      { transform: translateY(-6px) scale(1.03); }
+      }
+
       .raghost-chat-button {
-        background: rgba(255,255,255,0.2);
-        backdrop-filter: blur(20px);
+        background: rgba(255,255,255,0.15);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
         border: 1px solid rgba(255,255,255,0.3);
         box-shadow: 0 8px 32px rgba(31,38,135,0.25);
+        animation: rh-gm-float 4s ease-in-out infinite;
       }
 
       .raghost-chat-window {
-        background: rgba(255,255,255,0.12);
-        backdrop-filter: blur(24px) saturate(180%);
-        border: 1px solid rgba(255,255,255,0.18);
-        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        background: rgba(17,17,27,0.65);
+        backdrop-filter: blur(40px) saturate(200%);
+        -webkit-backdrop-filter: blur(40px) saturate(200%);
+        border: 1px solid rgba(255,255,255,0.12);
+        box-shadow: 0 30px 80px rgba(0,0,0,0.45);
       }
 
       .raghost-header {
-        background: rgba(255,255,255,0.1);
-        backdrop-filter: blur(16px);
-        color: white;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
+        background: rgba(255,255,255,0.07);
+        backdrop-filter: blur(12px);
+        color: #fff;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
       }
       .raghost-avatar {
-        background: rgba(255,255,255,0.15);
-        border: 1.5px solid rgba(255,255,255,0.3);
+        background: rgba(255,255,255,0.12);
+        border: 1.5px solid rgba(255,255,255,0.25);
       }
 
       .raghost-messages { background: transparent; }
 
       .raghost-message.bot .raghost-message-avatar {
-        background: rgba(255,255,255,0.15);
-        border: 1px solid rgba(255,255,255,0.2);
+        background: rgba(255,255,255,0.1);
+        color: rgba(255,255,255,0.8);
       }
       .raghost-message.user .raghost-message-avatar {
-        background: rgba(255,255,255,0.85);
+        background: rgba(139,92,246,0.4);
+        color: #fff;
       }
 
       .raghost-message.bot .raghost-message-bubble {
-        background: rgba(255,255,255,0.12);
+        background: rgba(255,255,255,0.08);
         color: rgba(255,255,255,0.92);
-        backdrop-filter: blur(12px);
-        border: 1px solid rgba(255,255,255,0.15);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.1);
       }
       .raghost-message.user .raghost-message-bubble {
-        background: rgba(255,255,255,0.88);
+        background: rgba(255,255,255,0.85);
         color: #1a1a2e;
-        border: 1px solid rgba(255,255,255,0.4);
       }
 
       .raghost-input-area {
-        background: rgba(255,255,255,0.06);
-        border-top: 1px solid rgba(255,255,255,0.08);
-        backdrop-filter: blur(16px);
+        background: rgba(255,255,255,0.04);
+        border-top: 1px solid rgba(255,255,255,0.06);
       }
       .raghost-input {
-        background: rgba(255,255,255,0.1);
-        color: white;
-        border: 1px solid rgba(255,255,255,0.16);
+        background: rgba(255,255,255,0.08);
+        color: #fff;
+        border: 1px solid rgba(255,255,255,0.12);
       }
       .raghost-input:focus {
-        border-color: rgba(255,255,255,0.4);
-        box-shadow: 0 0 0 3px rgba(255,255,255,0.08);
+        border-color: rgba(139,92,246,0.5);
+        box-shadow: 0 0 0 3px rgba(139,92,246,0.12);
       }
-      .raghost-input::placeholder { color: rgba(255,255,255,0.4); }
+      .raghost-input::placeholder { color: rgba(255,255,255,0.3); }
 
       .raghost-send-btn {
-        background: rgba(255,255,255,0.18);
-        color: white;
-        border: 1px solid rgba(255,255,255,0.25);
-      }
-      .raghost-send-btn:hover {
-        background: rgba(255,255,255,0.28);
-      }
-      .raghost-send-btn:disabled {
-        background: rgba(255,255,255,0.05);
-        color: rgba(255,255,255,0.3);
-      }
-
-      .raghost-header-btn {
-        color: white;
-        background: rgba(255,255,255,0.1);
+        background: rgba(255,255,255,0.12);
+        color: #fff;
         border: 1px solid rgba(255,255,255,0.2);
       }
-      .raghost-header-btn:hover {
-        background: rgba(255,255,255,0.2);
-      }
+      .raghost-send-btn:hover { background: rgba(255,255,255,0.22); }
+      .raghost-send-btn:disabled { background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.2); }
 
-      .raghost-typing span { background: rgba(255,255,255,0.6); }
+      .raghost-header-btn { color: #fff; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); }
+      .raghost-header-btn:hover { background: rgba(255,255,255,0.18); }
 
-      .raghost-watermark {
-        color: rgba(255,255,255,0.4);
-        background: rgba(255,255,255,0.04);
-        border-top: 1px solid rgba(255,255,255,0.07);
-      }
-      .raghost-watermark a { color: rgba(255,255,255,0.6); }
+      .raghost-typing span { background: rgba(255,255,255,0.5); }
+
+      .raghost-watermark { background: rgba(255,255,255,0.03); color: rgba(255,255,255,0.3); border-top: 1px solid rgba(255,255,255,0.05); }
+      .raghost-watermark a { color: rgba(139,92,246,0.7); }
     `;
   }
 
-  // Template 3: Minimal Dark
+  // ── Template 3: Minimal Dark ─────────────────────────────────────────
   function getMinimalDarkStyles() {
     return `
       .raghost-chat-button {
-        background: #18181b;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-        border: 1px solid #27272a;
+        background: #111;
+        border: 1px solid #333;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.5);
       }
 
       .raghost-chat-window {
-        background: #18181b;
-        border: 1px solid #27272a;
-        box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+        background: #111;
+        border: 1px solid #222;
+        box-shadow: 0 25px 60px rgba(0,0,0,0.6);
       }
 
       .raghost-header {
-        background: #1f1f23;
-        color: #fafafa;
-        border-bottom: 1px solid #27272a;
+        background: #161616;
+        color: #f5f5f5;
+        border-bottom: 1px solid #222;
       }
-      .raghost-avatar {
-        background: #27272a;
-        border: 1px solid #3f3f46;
-      }
+      .raghost-avatar { background: #222; border: 1px solid #333; }
 
-      .raghost-messages { background: #18181b; }
+      .raghost-messages { background: #111; }
 
-      .raghost-message.bot .raghost-message-avatar {
-        background: #27272a;
-      }
-      .raghost-message.user .raghost-message-avatar {
-        background: #3b82f6;
-      }
+      .raghost-message.bot .raghost-message-avatar { background: #1e1e1e; color: #888; }
+      .raghost-message.user .raghost-message-avatar { background: #3b82f6; color: #fff; }
 
       .raghost-message.bot .raghost-message-bubble {
-        background: #27272a;
-        color: #e4e4e7;
-        border: 1px solid #3f3f46;
+        background: #1e1e1e;
+        color: #d4d4d8;
+        border: 1px solid #2a2a2a;
       }
       .raghost-message.user .raghost-message-bubble {
         background: #3b82f6;
-        color: white;
+        color: #fff;
       }
 
-      .raghost-input-area {
-        background: #1f1f23;
-        border-top: 1px solid #27272a;
-      }
+      .raghost-input-area { background: #161616; border-top: 1px solid #222; }
       .raghost-input {
-        background: #27272a;
-        color: #fafafa;
-        border: 1px solid #3f3f46;
+        background: #1e1e1e;
+        color: #f5f5f5;
+        border: 1px solid #333;
       }
-      .raghost-input:focus {
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
-      }
-      .raghost-input::placeholder { color: #52525b; }
+      .raghost-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,0.2); }
+      .raghost-input::placeholder { color: #555; }
 
-      .raghost-send-btn {
-        background: #3b82f6;
-        color: white;
-      }
-      .raghost-send-btn:disabled {
-        background: #27272a;
-        color: #52525b;
-      }
+      .raghost-send-btn { background: #3b82f6; color: #fff; }
+      .raghost-send-btn:disabled { background: #222; color: #555; }
 
-      .raghost-header-btn {
-        color: #a1a1aa;
-        background: rgba(255,255,255,0.06);
-        border: 1px solid #3f3f46;
-      }
-      .raghost-header-btn:hover {
-        color: #fafafa;
-        background: rgba(255,255,255,0.1);
-      }
+      .raghost-header-btn { color: #999; background: rgba(255,255,255,0.05); border: 1px solid #333; }
+      .raghost-header-btn:hover { color: #fff; background: rgba(255,255,255,0.1); }
 
-      .raghost-typing span { background: #71717a; }
+      .raghost-typing span { background: #555; }
 
-      .raghost-watermark {
-        color: #52525b;
-        background: #1f1f23;
-        border-top: 1px solid #27272a;
-      }
+      .raghost-watermark { background: #161616; color: #444; border-top: 1px solid #222; }
       .raghost-watermark a { color: #3b82f6; }
     `;
   }
 
-  // Template 4: Neon Glow
+  // ── Template 4: Neon Glow ────────────────────────────────────────────
   function getNeonGlowStyles() {
     return `
-      @keyframes rh-neonPulse {
-        0%, 100% { box-shadow: 0 0 15px rgba(0,255,255,0.5), 0 0 40px rgba(0,255,255,0.2); }
-        50% { box-shadow: 0 0 25px rgba(0,255,255,0.7), 0 0 60px rgba(0,255,255,0.3); }
+      @keyframes rh-neon-pulse {
+        0%, 100% { box-shadow: 0 0 15px rgba(0,255,255,0.5), 0 0 45px rgba(0,255,255,0.15); }
+        50%      { box-shadow: 0 0 25px rgba(0,255,255,0.8), 0 0 65px rgba(0,255,255,0.25); }
       }
 
       .raghost-chat-button {
-        background: #0a0a1a;
+        background: #050515;
         border: 2px solid #0ff;
-        box-shadow: 0 0 20px rgba(0,255,255,0.5), 0 0 50px rgba(0,255,255,0.2);
-        animation: rh-neonPulse 3s ease-in-out infinite;
+        animation: rh-neon-pulse 3s ease-in-out infinite;
       }
+      .raghost-chat-button .rh-icon-chat { fill: #0ff; }
+      .raghost-chat-button .rh-icon-close { stroke: #0ff; }
 
       .raghost-chat-window {
-        background: #0a0a1a;
-        border: 1px solid rgba(0,255,255,0.3);
-        box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 30px rgba(0,255,255,0.15);
+        background: #050515;
+        border: 1px solid rgba(0,255,255,0.25);
+        box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 30px rgba(0,255,255,0.08);
       }
 
       .raghost-header {
-        background: linear-gradient(135deg, rgba(0,255,255,0.15), rgba(255,0,255,0.1));
+        background: linear-gradient(135deg, rgba(0,255,255,0.1), rgba(255,0,255,0.06));
         color: #0ff;
-        border-bottom: 1px solid rgba(0,255,255,0.2);
+        border-bottom: 1px solid rgba(0,255,255,0.15);
         text-shadow: 0 0 8px rgba(0,255,255,0.5);
       }
       .raghost-avatar {
-        background: #0a0a1a;
+        background: #050515;
         border: 2px solid #0ff;
-        box-shadow: 0 0 10px rgba(0,255,255,0.4);
+        box-shadow: 0 0 10px rgba(0,255,255,0.3);
       }
 
-      .raghost-messages { background: #0a0a1a; }
+      .raghost-messages { background: #050515; }
 
       .raghost-message.bot .raghost-message-avatar {
-        background: #0a0a1a;
+        background: transparent;
         border: 1px solid rgba(0,255,255,0.4);
+        color: #0ff;
       }
       .raghost-message.user .raghost-message-avatar {
-        background: #0a0a1a;
-        border: 1px solid rgba(255,0,255,0.5);
+        background: transparent;
+        border: 1px solid rgba(255,0,255,0.4);
+        color: #f0f;
       }
 
       .raghost-message.bot .raghost-message-bubble {
-        background: rgba(0,255,255,0.06);
-        color: #0ff;
-        border: 1px solid rgba(0,255,255,0.25);
-        box-shadow: 0 0 12px rgba(0,255,255,0.08);
+        background: rgba(0,255,255,0.05);
+        color: #b0ffff;
+        border: 1px solid rgba(0,255,255,0.2);
+        box-shadow: 0 0 12px rgba(0,255,255,0.06);
       }
       .raghost-message.user .raghost-message-bubble {
         background: rgba(255,0,255,0.08);
-        color: #f0f;
-        border: 1px solid rgba(255,0,255,0.3);
-        box-shadow: 0 0 12px rgba(255,0,255,0.08);
+        color: #ffb0ff;
+        border: 1px solid rgba(255,0,255,0.25);
+        box-shadow: 0 0 12px rgba(255,0,255,0.06);
       }
 
-      .raghost-input-area {
-        background: #0d0d22;
-        border-top: 1px solid rgba(0,255,255,0.2);
-      }
+      .raghost-input-area { background: #0a0a20; border-top: 1px solid rgba(0,255,255,0.12); }
       .raghost-input {
-        background: rgba(0,255,255,0.05);
-        color: #0ff;
-        border: 1px solid rgba(0,255,255,0.25);
+        background: rgba(0,255,255,0.04);
+        color: #b0ffff;
+        border: 1px solid rgba(0,255,255,0.2);
       }
       .raghost-input:focus {
         border-color: #0ff;
-        box-shadow: 0 0 0 2px rgba(0,255,255,0.15);
+        box-shadow: 0 0 0 2px rgba(0,255,255,0.12);
       }
-      .raghost-input::placeholder { color: rgba(0,255,255,0.3); }
+      .raghost-input::placeholder { color: rgba(0,255,255,0.25); }
 
       .raghost-send-btn {
-        background: rgba(255,0,255,0.12);
+        background: rgba(255,0,255,0.1);
         color: #f0f;
-        border: 1px solid rgba(255,0,255,0.4);
-        box-shadow: 0 0 10px rgba(255,0,255,0.15);
+        border: 1px solid rgba(255,0,255,0.35);
+        box-shadow: 0 0 10px rgba(255,0,255,0.12);
       }
-      .raghost-send-btn:hover {
-        box-shadow: 0 0 18px rgba(255,0,255,0.35);
-      }
-      .raghost-send-btn:disabled {
-        border-color: #222;
-        color: #333;
-        box-shadow: none;
-      }
+      .raghost-send-btn:hover { box-shadow: 0 0 18px rgba(255,0,255,0.3); }
+      .raghost-send-btn:disabled { border-color: #1a1a2e; color: #1a1a2e; box-shadow: none; }
 
-      .raghost-header-btn {
-        color: #0ff;
-        background: rgba(0,255,255,0.08);
-        border: 1px solid rgba(0,255,255,0.25);
-      }
-      .raghost-header-btn:hover {
-        background: rgba(0,255,255,0.15);
-      }
+      .raghost-header-btn { color: #0ff; background: rgba(0,255,255,0.06); border: 1px solid rgba(0,255,255,0.2); }
+      .raghost-header-btn:hover { background: rgba(0,255,255,0.14); }
 
-      .raghost-typing span { background: #0ff; box-shadow: 0 0 5px #0ff; }
+      .raghost-typing span { background: #0ff; box-shadow: 0 0 6px #0ff; }
 
-      .raghost-watermark {
-        color: rgba(0,255,255,0.3);
-        background: #0d0d22;
-        border-top: 1px solid rgba(0,255,255,0.12);
-      }
-      .raghost-watermark a { color: rgba(255,0,255,0.6); }
+      .raghost-watermark { background: #0a0a20; color: rgba(0,255,255,0.25); border-top: 1px solid rgba(0,255,255,0.08); }
+      .raghost-watermark a { color: rgba(255,0,255,0.5); }
     `;
   }
 
-  // Template 5: Soft Light
+  // ── Template 5: Soft Light ───────────────────────────────────────────
   function getSoftLightStyles() {
     return `
       .raghost-chat-button {
-        background: linear-gradient(135deg, #a855f7, #6366f1);
-        box-shadow: 0 8px 25px rgba(168,85,247,0.4);
+        background: linear-gradient(135deg, #e879f9, #a855f7, #6366f1);
+        box-shadow: 0 8px 28px rgba(168,85,247,0.45);
       }
 
       .raghost-chat-window {
-        background: #ffffff;
-        box-shadow: 0 25px 60px rgba(0,0,0,0.12);
-        border: 1px solid rgba(0,0,0,0.04);
+        background: #fff;
+        border: 1px solid #f0ebff;
+        box-shadow: 0 24px 60px rgba(0,0,0,0.1);
       }
 
       .raghost-header {
-        background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%);
-        color: white;
+        background: linear-gradient(135deg, #e879f9, #a855f7, #6366f1);
+        color: #fff;
       }
       .raghost-avatar {
-        background: rgba(255,255,255,0.22);
+        background: rgba(255,255,255,0.2);
         border: 2px solid rgba(255,255,255,0.35);
       }
 
-      .raghost-messages { background: #faf8ff; }
+      .raghost-messages { background: #faf7ff; }
 
-      .raghost-message.bot .raghost-message-avatar {
-        background: #ede9fe;
-        border: 1px solid #ddd6fe;
-      }
-      .raghost-message.user .raghost-message-avatar {
-        background: linear-gradient(135deg, #a855f7, #6366f1);
-      }
+      .raghost-message.bot .raghost-message-avatar { background: #f3e8ff; color: #a855f7; }
+      .raghost-message.user .raghost-message-avatar { background: linear-gradient(135deg, #a855f7, #6366f1); color: #fff; }
 
       .raghost-message.bot .raghost-message-bubble {
-        background: white;
+        background: #fff;
         color: #1e1b4b;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
         border: 1px solid #ede9fe;
+        box-shadow: 0 2px 8px rgba(168,85,247,0.06);
       }
       .raghost-message.user .raghost-message-bubble {
         background: linear-gradient(135deg, #a855f7, #6366f1);
-        color: white;
+        color: #fff;
         box-shadow: 0 4px 14px rgba(168,85,247,0.3);
       }
 
-      .raghost-input-area {
-        background: white;
-        border-top: 1px solid #ede9fe;
-      }
-      .raghost-input {
-        background: #f5f3ff;
-        color: #1e1b4b;
-        border: 1px solid #ddd6fe;
-      }
-      .raghost-input:focus {
-        border-color: #a855f7;
-        box-shadow: 0 0 0 3px rgba(168,85,247,0.12);
-      }
+      .raghost-input-area { background: #fff; border-top: 1px solid #ede9fe; }
+      .raghost-input { background: #f5f3ff; color: #1e1b4b; border: 1.5px solid #ddd6fe; }
+      .raghost-input:focus { border-color: #a855f7; box-shadow: 0 0 0 3px rgba(168,85,247,0.12); }
       .raghost-input::placeholder { color: #c4b5fd; }
 
-      .raghost-send-btn {
-        background: linear-gradient(135deg, #a855f7, #6366f1);
-        color: white;
-        box-shadow: 0 4px 12px rgba(168,85,247,0.35);
-      }
-      .raghost-send-btn:disabled {
-        background: #ede9fe;
-        color: #c4b5fd;
-        box-shadow: none;
-      }
+      .raghost-send-btn { background: linear-gradient(135deg, #a855f7, #6366f1); color: #fff; box-shadow: 0 4px 12px rgba(168,85,247,0.35); }
+      .raghost-send-btn:disabled { background: #ede9fe; color: #c4b5fd; box-shadow: none; }
 
-      .raghost-header-btn {
-        color: white;
-        background: rgba(255,255,255,0.18);
-        border: 1px solid rgba(255,255,255,0.3);
-      }
-      .raghost-header-btn:hover {
-        background: rgba(255,255,255,0.3);
-      }
+      .raghost-header-btn { color: #fff; background: rgba(255,255,255,0.18); }
+      .raghost-header-btn:hover { background: rgba(255,255,255,0.3); }
 
       .raghost-typing span { background: #a855f7; }
 
-      .raghost-watermark {
-        color: #c4b5fd;
-        background: #faf8ff;
-        border-top: 1px solid #ede9fe;
-      }
+      .raghost-watermark { background: #faf7ff; color: #c4b5fd; border-top: 1px solid #ede9fe; }
       .raghost-watermark a { color: #a855f7; }
     `;
   }
 
-  // Template 6: Corporate
+  // ── Template 6: Corporate ────────────────────────────────────────────
   function getCorporateStyles() {
     return `
       .raghost-chat-button {
-        background: #2563eb;
-        box-shadow: 0 4px 20px rgba(37,99,235,0.35);
+        background: #1d4ed8;
+        box-shadow: 0 4px 18px rgba(29,78,216,0.4);
       }
 
       .raghost-chat-window {
-        background: #ffffff;
-        box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+        background: #fff;
         border: 1px solid #e5e7eb;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.12);
       }
 
-      .raghost-header {
-        background: #2563eb;
-        color: white;
-      }
-      .raghost-avatar {
-        background: rgba(255,255,255,0.2);
-        border: 1.5px solid rgba(255,255,255,0.25);
-      }
+      .raghost-header { background: #1d4ed8; color: #fff; }
+      .raghost-avatar { background: rgba(255,255,255,0.2); }
 
       .raghost-messages { background: #f9fafb; }
 
-      .raghost-message.bot .raghost-message-avatar {
-        background: #dbeafe;
-        border: 1px solid #bfdbfe;
-      }
-      .raghost-message.user .raghost-message-avatar {
-        background: #2563eb;
-      }
+      .raghost-message.bot .raghost-message-avatar { background: #dbeafe; color: #1d4ed8; }
+      .raghost-message.user .raghost-message-avatar { background: #1d4ed8; color: #fff; }
 
       .raghost-message.bot .raghost-message-bubble {
-        background: white;
-        color: #1f2937;
+        background: #fff;
+        color: #111827;
         border: 1px solid #e5e7eb;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
       }
       .raghost-message.user .raghost-message-bubble {
-        background: #2563eb;
-        color: white;
+        background: #1d4ed8;
+        color: #fff;
       }
 
-      .raghost-input-area {
-        background: white;
-        border-top: 1px solid #e5e7eb;
-      }
-      .raghost-input {
-        background: #f9fafb;
-        color: #1f2937;
-        border: 1px solid #e5e7eb;
-      }
-      .raghost-input:focus {
-        border-color: #2563eb;
-        box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
-      }
+      .raghost-input-area { background: #fff; border-top: 1px solid #e5e7eb; }
+      .raghost-input { background: #f9fafb; color: #111827; border: 1px solid #d1d5db; }
+      .raghost-input:focus { border-color: #1d4ed8; box-shadow: 0 0 0 3px rgba(29,78,216,0.1); }
       .raghost-input::placeholder { color: #9ca3af; }
 
-      .raghost-send-btn {
-        background: #2563eb;
-        color: white;
-      }
-      .raghost-send-btn:disabled {
-        background: #e5e7eb;
-        color: #9ca3af;
-      }
+      .raghost-send-btn { background: #1d4ed8; color: #fff; }
+      .raghost-send-btn:disabled { background: #e5e7eb; color: #9ca3af; }
 
-      .raghost-header-btn {
-        color: white;
-        background: rgba(255,255,255,0.15);
-        border: 1px solid rgba(255,255,255,0.25);
-      }
-      .raghost-header-btn:hover {
-        background: rgba(255,255,255,0.25);
-      }
+      .raghost-header-btn { color: #fff; background: rgba(255,255,255,0.15); }
+      .raghost-header-btn:hover { background: rgba(255,255,255,0.25); }
 
-      .raghost-typing span { background: #2563eb; }
+      .raghost-typing span { background: #1d4ed8; }
 
-      .raghost-watermark {
-        color: #9ca3af;
-        background: #f9fafb;
-        border-top: 1px solid #e5e7eb;
-      }
-      .raghost-watermark a { color: #2563eb; }
+      .raghost-watermark { background: #f9fafb; color: #9ca3af; border-top: 1px solid #e5e7eb; }
+      .raghost-watermark a { color: #1d4ed8; }
     `;
   }
 
-  // Template 7: Minimal
+  // ── Template 7: Minimal (LIGHT header — needs dark header-btn color) ─
   function getMinimalStyles() {
     return `
       .raghost-chat-button {
         background: #18181b;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.2);
       }
 
       .raghost-chat-window {
-        background: #ffffff;
+        background: #fff;
         border: 1px solid #e4e4e7;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        box-shadow: 0 12px 40px rgba(0,0,0,0.1);
       }
 
       .raghost-header {
-        background: #ffffff;
+        background: #fff;
         color: #18181b;
         border-bottom: 1px solid #e4e4e7;
       }
-      .raghost-avatar {
-        background: #f4f4f5;
-        border: 1px solid #e4e4e7;
-      }
+      .raghost-avatar { background: #f4f4f5; border: 1px solid #e4e4e7; }
 
       .raghost-messages { background: #fafafa; }
 
-      .raghost-message.bot .raghost-message-avatar {
-        background: #f4f4f5;
-      }
-      .raghost-message.user .raghost-message-avatar {
-        background: #18181b;
-      }
+      .raghost-message.bot .raghost-message-avatar { background: #f4f4f5; color: #71717a; }
+      .raghost-message.user .raghost-message-avatar { background: #18181b; color: #fff; }
 
       .raghost-message.bot .raghost-message-bubble {
-        background: white;
+        background: #fff;
         color: #18181b;
         border: 1px solid #e4e4e7;
       }
       .raghost-message.user .raghost-message-bubble {
         background: #18181b;
-        color: white;
+        color: #fff;
       }
 
-      .raghost-input-area {
-        background: white;
-        border-top: 1px solid #e4e4e7;
-      }
-      .raghost-input {
-        background: #f4f4f5;
-        color: #18181b;
-        border: 1px solid #e4e4e7;
-      }
-      .raghost-input:focus {
-        border-color: #71717a;
-        box-shadow: 0 0 0 3px rgba(0,0,0,0.05);
-      }
+      .raghost-input-area { background: #fff; border-top: 1px solid #e4e4e7; }
+      .raghost-input { background: #f4f4f5; color: #18181b; border: 1px solid #e4e4e7; }
+      .raghost-input:focus { border-color: #71717a; box-shadow: 0 0 0 3px rgba(0,0,0,0.05); }
       .raghost-input::placeholder { color: #a1a1aa; }
 
-      .raghost-send-btn {
-        background: #18181b;
-        color: white;
-      }
-      .raghost-send-btn:disabled {
-        background: #e4e4e7;
-        color: #a1a1aa;
-      }
+      .raghost-send-btn { background: #18181b; color: #fff; }
+      .raghost-send-btn:disabled { background: #e4e4e7; color: #a1a1aa; }
 
-      .raghost-header-btn {
-        color: #71717a;
-        background: #f4f4f5;
-        border: 1px solid #e4e4e7;
-      }
-      .raghost-header-btn:hover {
-        color: #18181b;
-        background: #e4e4e7;
-      }
+      /* ★ Light header — dark close button */
+      .raghost-header-btn { color: #52525b; background: #f4f4f5; border: 1px solid #e4e4e7; }
+      .raghost-header-btn:hover { color: #18181b; background: #e4e4e7; }
 
       .raghost-typing span { background: #a1a1aa; }
 
-      .raghost-watermark {
-        background: white;
-        color: #d4d4d8;
-        border-top: 1px solid #e4e4e7;
-      }
+      .raghost-watermark { background: #fff; color: #d4d4d8; border-top: 1px solid #e4e4e7; }
       .raghost-watermark a { color: #71717a; }
     `;
   }
 
-  // Template 8: Neumorphism
+  // ── Template 8: Neumorphism (LIGHT bg — needs dark icon overrides) ──
   function getNeumorphismStyles() {
     return `
       .raghost-chat-button {
         background: #e0e5ec;
-        color: #4a5568;
-        box-shadow: 6px 6px 16px #b8bec7, -6px -6px 16px #ffffff;
+        box-shadow: 8px 8px 20px #b8bec7, -8px -8px 20px #fff;
       }
-
+      /* ★ Light button — dark icons */
       .raghost-chat-button .rh-icon-chat { fill: #4a5568; }
       .raghost-chat-button .rh-icon-close { stroke: #4a5568; }
 
       .raghost-chat-window {
         background: #e0e5ec;
-        box-shadow: 12px 12px 30px #b8bec7, -12px -12px 30px #ffffff;
+        box-shadow: 14px 14px 35px #b8bec7, -14px -14px 35px #fff;
         border: none;
       }
 
@@ -1493,22 +1336,24 @@
         background: #e0e5ec;
         color: #374151;
         border-bottom: 1px solid rgba(0,0,0,0.06);
-        box-shadow: 0 3px 8px rgba(0,0,0,0.06);
+        box-shadow: 0 3px 8px rgba(0,0,0,0.05);
       }
       .raghost-avatar {
         background: #e0e5ec;
         box-shadow: 3px 3px 8px #b8bec7, -3px -3px 8px #fff;
       }
 
-      .raghost-messages { background: #e4e8ed; }
+      .raghost-messages { background: #e3e7ee; }
 
       .raghost-message.bot .raghost-message-avatar {
         background: #e0e5ec;
         box-shadow: 2px 2px 6px #b8bec7, -2px -2px 6px #fff;
+        color: #6b7280;
       }
       .raghost-message.user .raghost-message-avatar {
         background: #e0e5ec;
         box-shadow: inset 2px 2px 6px #b8bec7, inset -2px -2px 6px #fff;
+        color: #374151;
       }
 
       .raghost-message.bot .raghost-message-bubble {
@@ -1520,14 +1365,11 @@
       .raghost-message.user .raghost-message-bubble {
         background: #e0e5ec;
         color: #374151;
-        box-shadow: inset 3px 3px 8px #b8bec7, inset -3px -3px 8px #fff;
+        box-shadow: inset 4px 4px 10px #b8bec7, inset -4px -4px 10px #fff;
         border: none;
       }
 
-      .raghost-input-area {
-        background: #e0e5ec;
-        border-top: 1px solid rgba(0,0,0,0.05);
-      }
+      .raghost-input-area { background: #e0e5ec; border-top: 1px solid rgba(0,0,0,0.04); }
       .raghost-input {
         background: #e0e5ec;
         color: #374151;
@@ -1548,10 +1390,9 @@
       .raghost-send-btn:hover {
         box-shadow: inset 3px 3px 8px #b8bec7, inset -3px -3px 8px #fff;
       }
-      .raghost-send-btn:disabled {
-        color: #b0b6c0;
-      }
+      .raghost-send-btn:disabled { color: #b0b6c0; }
 
+      /* ★ Light header — dark close button */
       .raghost-header-btn {
         background: #e0e5ec;
         color: #4a5568;
@@ -1564,79 +1405,62 @@
 
       .raghost-typing span { background: #94a3b8; }
 
-      .raghost-watermark {
-        background: #e0e5ec;
-        color: #94a3b8;
-        border-top: 1px solid rgba(0,0,0,0.04);
-      }
+      .raghost-watermark { background: #e0e5ec; color: #94a3b8; border-top: 1px solid rgba(0,0,0,0.04); }
       .raghost-watermark a { color: #64748b; }
     `;
   }
 
-  // Template 9: Neo-Brutalism
+  // ── Template 9: Neo-Brutalism (LIGHT yellow — needs dark icon overrides) ─
   function getNeoBrutalismStyles() {
     return `
       .raghost-chat-button {
-        background: #FFDD00;
-        color: #000;
+        background: #facc15;
         border: 3px solid #000;
         box-shadow: 5px 5px 0 #000;
         border-radius: 0 !important;
       }
-      .raghost-chat-button:hover {
-        transform: translate(-2px,-2px);
-        box-shadow: 7px 7px 0 #000;
-      }
-      .raghost-chat-button:active {
-        transform: translate(2px,2px);
-        box-shadow: 3px 3px 0 #000;
-      }
-
+      .raghost-chat-button:hover { transform: translate(-2px,-2px); box-shadow: 7px 7px 0 #000; }
+      .raghost-chat-button:active { transform: translate(2px,2px); box-shadow: 3px 3px 0 #000; }
+      /* ★ Light button — dark icons */
       .raghost-chat-button .rh-icon-chat { fill: #000; }
       .raghost-chat-button .rh-icon-close { stroke: #000; }
 
       .raghost-chat-window {
-        background: #fff;
+        background: #fffbeb;
         border: 3px solid #000;
         box-shadow: 8px 8px 0 #000;
         border-radius: 0 !important;
       }
 
       .raghost-header {
-        background: #FFDD00;
+        background: #facc15;
         color: #000;
         border-bottom: 3px solid #000;
-        font-weight: 900;
+        font-weight: 800;
         text-transform: uppercase;
-        letter-spacing: 0.05em;
+        letter-spacing: 0.04em;
       }
       .raghost-avatar {
         background: #000;
         border: 2px solid #000;
         border-radius: 0 !important;
+        color: #facc15;
       }
 
-      .raghost-messages { background: #fff; }
+      .raghost-messages { background: #fffbeb; }
 
-      .raghost-message.bot .raghost-message-avatar {
-        background: #000;
-        border-radius: 0 !important;
-      }
-      .raghost-message.user .raghost-message-avatar {
-        background: #FFDD00;
-        border: 2px solid #000;
-        border-radius: 0 !important;
-      }
+      .raghost-message.bot .raghost-message-avatar { background: #000; color: #fff; border-radius: 0 !important; }
+      .raghost-message.user .raghost-message-avatar { background: #facc15; color: #000; border: 2px solid #000; border-radius: 0 !important; }
 
       .raghost-message.bot .raghost-message-bubble {
-        background: #f0f0f0;
+        background: #fff;
         color: #000;
         border: 2px solid #000;
         border-radius: 0 !important;
         box-shadow: 3px 3px 0 #000;
       }
       .raghost-message.user .raghost-message-bubble {
-        background: #FFDD00;
+        background: #facc15;
         color: #000;
         border: 2px solid #000;
         border-radius: 0 !important;
@@ -1644,10 +1468,7 @@
         font-weight: 600;
       }
 
-      .raghost-input-area {
-        background: #fff;
-        border-top: 3px solid #000;
-      }
+      .raghost-input-area { background: #fffbeb; border-top: 3px solid #000; }
       .raghost-input {
         background: #fff;
         color: #000;
@@ -1655,105 +1476,76 @@
         border-radius: 0 !important;
         font-weight: 500;
       }
-      .raghost-input:focus {
-        box-shadow: 3px 3px 0 #000;
-      }
+      .raghost-input:focus { box-shadow: 3px 3px 0 #000; }
       .raghost-input::placeholder { color: #888; }
 
       .raghost-send-btn {
-        background: #FFDD00;
+        background: #facc15;
         color: #000;
         border: 2px solid #000;
         border-radius: 0 !important;
         box-shadow: 3px 3px 0 #000;
         font-weight: 900;
       }
-      .raghost-send-btn:hover {
-        transform: translate(-1px,-1px);
-        box-shadow: 4px 4px 0 #000;
-      }
-      .raghost-send-btn:active {
-        transform: translate(1px,1px);
-        box-shadow: 2px 2px 0 #000;
-      }
-      .raghost-send-btn:disabled {
-        background: #ddd;
-        color: #888;
-        box-shadow: 2px 2px 0 #999;
-      }
+      .raghost-send-btn:hover { transform: translate(-1px,-1px); box-shadow: 4px 4px 0 #000; }
+      .raghost-send-btn:active { transform: translate(1px,1px); box-shadow: 2px 2px 0 #000; }
+      .raghost-send-btn:disabled { background: #ddd; color: #888; box-shadow: 2px 2px 0 #999; }
 
+      /* ★ Light header — dark close button */
       .raghost-header-btn {
         background: #fff;
         color: #000;
         border: 2px solid #000;
         border-radius: 0 !important;
       }
-      .raghost-header-btn:hover {
-        background: #f0f0f0;
-      }
+      .raghost-header-btn:hover { background: #f0f0f0; }
 
       .raghost-typing span { background: #000; }
 
-      .raghost-watermark {
-        background: #f5f5f5;
-        border-top: 2px solid #000;
-        color: #555;
-        font-weight: 700;
-      }
+      .raghost-watermark { background: #fff8e1; border-top: 2px solid #000; color: #555; font-weight: 700; }
       .raghost-watermark a { color: #000; }
     `;
   }
 
-  // Template 10: Material Design
+  // ── Template 10: Material Design ─────────────────────────────────────
   function getMaterialStyles() {
     return `
       .raghost-chat-button {
-        background: #1976d2;
-        box-shadow: 0 6px 18px rgba(25,118,210,0.4);
+        background: #6200ea;
+        box-shadow: 0 6px 20px rgba(98,0,234,0.4);
       }
 
       .raghost-chat-window {
-        background: #ffffff;
-        box-shadow: 0 16px 48px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.08);
+        background: #fff;
+        box-shadow: 0 24px 48px rgba(0,0,0,0.15);
         border: none;
       }
 
       .raghost-header {
-        background: #1976d2;
-        color: white;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        background: #6200ea;
+        color: #fff;
+        box-shadow: 0 3px 10px rgba(98,0,234,0.25);
       }
-      .raghost-avatar {
-        background: rgba(255,255,255,0.2);
-        border: 1px solid rgba(255,255,255,0.25);
-      }
+      .raghost-avatar { background: rgba(255,255,255,0.18); }
 
       .raghost-messages { background: #fafafa; }
 
-      .raghost-message.bot .raghost-message-avatar {
-        background: #e3f2fd;
-        border: 1px solid #bbdefb;
-      }
-      .raghost-message.user .raghost-message-avatar {
-        background: #1976d2;
-      }
+      .raghost-message.bot .raghost-message-avatar { background: #ede7f6; color: #6200ea; }
+      .raghost-message.user .raghost-message-avatar { background: #6200ea; color: #fff; }
 
       .raghost-message.bot .raghost-message-bubble {
-        background: #ffffff;
+        background: #fff;
         color: #212121;
         box-shadow: 0 1px 4px rgba(0,0,0,0.1);
         border: none;
       }
       .raghost-message.user .raghost-message-bubble {
-        background: #1976d2;
-        color: white;
-        box-shadow: 0 2px 8px rgba(25,118,210,0.3);
+        background: #6200ea;
+        color: #fff;
+        box-shadow: 0 3px 10px rgba(98,0,234,0.3);
       }
 
-      .raghost-input-area {
-        background: #ffffff;
-        border-top: 1px solid #e0e0e0;
-      }
+      .raghost-input-area { background: #fff; border-top: 1px solid #e0e0e0; }
       .raghost-input {
         background: #f5f5f5;
         color: #212121;
@@ -1761,81 +1553,56 @@
         border-bottom: 2px solid #bdbdbd;
         border-radius: 4px 4px 0 0 !important;
       }
-      .raghost-input:focus {
-        border-bottom-color: #1976d2;
-      }
+      .raghost-input:focus { border-bottom-color: #6200ea; }
       .raghost-input::placeholder { color: #9e9e9e; }
 
-      .raghost-send-btn {
-        background: #1976d2;
-        color: white;
-        box-shadow: 0 3px 10px rgba(25,118,210,0.3);
-      }
-      .raghost-send-btn:disabled {
-        background: #e0e0e0;
-        color: #9e9e9e;
-        box-shadow: none;
-      }
+      .raghost-send-btn { background: #6200ea; color: #fff; box-shadow: 0 3px 10px rgba(98,0,234,0.3); }
+      .raghost-send-btn:hover { background: #7c4dff; }
+      .raghost-send-btn:disabled { background: #e0e0e0; color: #9e9e9e; box-shadow: none; }
 
-      .raghost-header-btn {
-        color: white;
-        background: rgba(255,255,255,0.12);
-        border: none;
-      }
-      .raghost-header-btn:hover {
-        background: rgba(255,255,255,0.22);
-      }
+      .raghost-header-btn { color: #fff; background: rgba(255,255,255,0.12); border: none; }
+      .raghost-header-btn:hover { background: rgba(255,255,255,0.22); }
 
-      .raghost-typing span { background: #1976d2; }
+      .raghost-typing span { background: #6200ea; }
 
-      .raghost-watermark {
-        background: #ffffff;
-        color: #9e9e9e;
-        border-top: 1px solid #e0e0e0;
-      }
-      .raghost-watermark a { color: #1976d2; }
+      .raghost-watermark { background: #fff; color: #bdbdbd; border-top: 1px solid #e0e0e0; }
+      .raghost-watermark a { color: #6200ea; }
     `;
   }
 
-  // Template 11: Fluent (Windows 11)
+  // ── Template 11: Fluent (Windows 11 Acrylic) ─────────────────────────
   function getFluentStyles() {
     return `
       .raghost-chat-button {
         background: rgba(0,120,212,0.92);
         backdrop-filter: blur(20px);
-        box-shadow: 0 4px 16px rgba(0,120,212,0.35);
+        -webkit-backdrop-filter: blur(20px);
+        box-shadow: 0 4px 18px rgba(0,120,212,0.35);
       }
 
       .raghost-chat-window {
-        background: rgba(243,243,243,0.85);
-        backdrop-filter: blur(40px) saturate(1.5);
-        border: 1px solid rgba(255,255,255,0.55);
-        box-shadow: 0 16px 48px rgba(0,0,0,0.15);
+        background: rgba(243,243,243,0.82);
+        backdrop-filter: blur(50px) saturate(1.6);
+        -webkit-backdrop-filter: blur(50px) saturate(1.6);
+        border: 1px solid rgba(255,255,255,0.5);
+        box-shadow: 0 16px 48px rgba(0,0,0,0.14);
       }
 
       .raghost-header {
         background: rgba(0,120,212,0.88);
-        backdrop-filter: blur(16px);
-        color: white;
-        border-bottom: 1px solid rgba(255,255,255,0.15);
+        backdrop-filter: blur(14px);
+        color: #fff;
+        border-bottom: 1px solid rgba(255,255,255,0.12);
       }
-      .raghost-avatar {
-        background: rgba(255,255,255,0.22);
-        border: 1px solid rgba(255,255,255,0.3);
-      }
+      .raghost-avatar { background: rgba(255,255,255,0.2); }
 
-      .raghost-messages { background: rgba(255,255,255,0.3); }
+      .raghost-messages { background: rgba(255,255,255,0.25); }
 
-      .raghost-message.bot .raghost-message-avatar {
-        background: rgba(0,120,212,0.1);
-        border: 1px solid rgba(0,120,212,0.2);
-      }
-      .raghost-message.user .raghost-message-avatar {
-        background: rgba(0,120,212,0.85);
-      }
+      .raghost-message.bot .raghost-message-avatar { background: rgba(0,120,212,0.1); color: #0078d4; }
+      .raghost-message.user .raghost-message-avatar { background: rgba(0,120,212,0.85); color: #fff; }
 
       .raghost-message.bot .raghost-message-bubble {
-        background: rgba(255,255,255,0.72);
+        background: rgba(255,255,255,0.7);
         color: #1b1b1b;
         backdrop-filter: blur(8px);
         border: 1px solid rgba(255,255,255,0.5);
@@ -1843,161 +1610,113 @@
       }
       .raghost-message.user .raghost-message-bubble {
         background: rgba(0,120,212,0.85);
-        color: white;
-        box-shadow: 0 2px 6px rgba(0,120,212,0.25);
+        color: #fff;
+        box-shadow: 0 2px 6px rgba(0,120,212,0.22);
       }
 
       .raghost-input-area {
-        background: rgba(255,255,255,0.55);
-        backdrop-filter: blur(16px);
-        border-top: 1px solid rgba(0,0,0,0.06);
-      }
-      .raghost-input {
-        background: rgba(255,255,255,0.65);
-        color: #1b1b1b;
-        border: 1px solid rgba(0,0,0,0.1);
-      }
-      .raghost-input:focus {
-        border-color: rgba(0,120,212,0.5);
-        box-shadow: 0 0 0 2px rgba(0,120,212,0.12);
-      }
-      .raghost-input::placeholder { color: rgba(0,0,0,0.38); }
-
-      .raghost-send-btn {
-        background: rgba(0,120,212,0.9);
-        color: white;
-      }
-      .raghost-send-btn:disabled {
-        background: rgba(0,0,0,0.08);
-        color: rgba(0,0,0,0.3);
-      }
-
-      .raghost-header-btn {
-        color: white;
-        background: rgba(255,255,255,0.12);
-        border: 1px solid rgba(255,255,255,0.2);
-      }
-      .raghost-header-btn:hover {
-        background: rgba(255,255,255,0.22);
-      }
-
-      .raghost-typing span { background: rgba(0,120,212,0.7); }
-
-      .raghost-watermark {
-        background: rgba(255,255,255,0.45);
-        color: rgba(0,0,0,0.38);
+        background: rgba(255,255,255,0.5);
+        backdrop-filter: blur(14px);
         border-top: 1px solid rgba(0,0,0,0.05);
       }
-      .raghost-watermark a { color: rgba(0,120,212,0.9); }
+      .raghost-input {
+        background: rgba(255,255,255,0.6);
+        color: #1b1b1b;
+        border: 1px solid rgba(0,0,0,0.08);
+      }
+      .raghost-input:focus { border-color: rgba(0,120,212,0.5); box-shadow: 0 0 0 2px rgba(0,120,212,0.1); }
+      .raghost-input::placeholder { color: rgba(0,0,0,0.35); }
+
+      .raghost-send-btn { background: rgba(0,120,212,0.9); color: #fff; }
+      .raghost-send-btn:disabled { background: rgba(0,0,0,0.08); color: rgba(0,0,0,0.25); }
+
+      .raghost-header-btn { color: #fff; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.18); }
+      .raghost-header-btn:hover { background: rgba(255,255,255,0.22); }
+
+      .raghost-typing span { background: rgba(0,120,212,0.65); }
+
+      .raghost-watermark { background: rgba(255,255,255,0.4); color: rgba(0,0,0,0.35); border-top: 1px solid rgba(0,0,0,0.04); }
+      .raghost-watermark a { color: rgba(0,120,212,0.85); }
     `;
   }
 
-  // Template 12: Retro Y2K
+  // ── Template 12: Retro Y2K ───────────────────────────────────────────
   function getRetroY2kStyles() {
     return `
-      @keyframes rh-y2kGlow {
+      @keyframes rh-y2k-glow {
         0%, 100% { text-shadow: 0 0 6px #ff00cc, 0 0 14px #ff00cc; }
-        50% { text-shadow: 0 0 10px #00ffff, 0 0 24px #00ffff; }
+        50%      { text-shadow: 0 0 10px #00ffff, 0 0 24px #00ffff; }
       }
 
       .raghost-chat-button {
-        background: linear-gradient(135deg, #ff00cc 0%, #3333ff 50%, #00ffff 100%);
+        background: linear-gradient(135deg, #ff00cc, #3333ff, #00ffff);
         border: 2px solid #fff;
-        box-shadow: 0 0 20px rgba(255,0,204,0.5), 0 0 40px rgba(0,255,255,0.3);
+        box-shadow: 0 0 20px rgba(255,0,204,0.5), 0 0 40px rgba(0,255,255,0.2);
       }
 
       .raghost-chat-window {
         background: #0a0a20;
         border: 2px solid #ff00cc;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 25px rgba(255,0,204,0.2);
+        box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 20px rgba(255,0,204,0.15);
       }
 
       .raghost-header {
         background: linear-gradient(90deg, #ff00cc, #3333ff, #00ffff);
         color: #000;
-        font-weight: 900;
+        font-weight: 800;
         letter-spacing: 0.1em;
         text-transform: uppercase;
         border-bottom: 2px solid #000;
       }
-      .raghost-avatar {
-        background: #000;
-        border: 2px solid #fff;
-      }
+      .raghost-avatar { background: #000; border: 2px solid #fff; color: #0ff; }
 
       .raghost-messages { background: #0a0a20; }
 
-      .raghost-message.bot .raghost-message-avatar {
-        background: #0a0a20;
-        border: 1.5px solid #00ffff;
-      }
-      .raghost-message.user .raghost-message-avatar {
-        background: #0a0a20;
-        border: 1.5px solid #ff00cc;
-      }
+      .raghost-message.bot .raghost-message-avatar { background: transparent; border: 1.5px solid #00ffff; color: #0ff; }
+      .raghost-message.user .raghost-message-avatar { background: transparent; border: 1.5px solid #ff00cc; color: #f0f; }
 
       .raghost-message.bot .raghost-message-bubble {
         background: rgba(0,255,255,0.06);
         color: #00ffff;
-        border: 1px solid rgba(0,255,255,0.35);
-        font-family: monospace;
+        border: 1px solid rgba(0,255,255,0.3);
+        font-family: 'Courier New', monospace;
       }
       .raghost-message.user .raghost-message-bubble {
-        background: rgba(255,0,204,0.1);
+        background: rgba(255,0,204,0.08);
         color: #ff88dd;
-        border: 1px solid rgba(255,0,204,0.35);
-        font-family: monospace;
+        border: 1px solid rgba(255,0,204,0.3);
+        font-family: 'Courier New', monospace;
       }
 
-      .raghost-input-area {
-        background: #0d0d28;
-        border-top: 2px solid rgba(51,51,255,0.5);
-      }
+      .raghost-input-area { background: #0d0d28; border-top: 2px solid rgba(51,51,255,0.4); }
       .raghost-input {
-        background: rgba(0,0,0,0.4);
+        background: rgba(0,0,0,0.3);
         color: #00ffff;
-        border: 1px solid rgba(0,255,255,0.3);
-        font-family: monospace;
+        border: 1px solid rgba(0,255,255,0.25);
+        font-family: 'Courier New', monospace;
       }
-      .raghost-input:focus {
-        border-color: #00ffff;
-        box-shadow: 0 0 0 2px rgba(0,255,255,0.15);
-      }
-      .raghost-input::placeholder { color: rgba(0,255,255,0.3); }
+      .raghost-input:focus { border-color: #00ffff; box-shadow: 0 0 0 2px rgba(0,255,255,0.12); }
+      .raghost-input::placeholder { color: rgba(0,255,255,0.25); }
 
       .raghost-send-btn {
         background: linear-gradient(135deg, #ff00cc, #3333ff);
-        color: white;
-        box-shadow: 0 0 10px rgba(255,0,204,0.4);
+        color: #fff;
+        box-shadow: 0 0 10px rgba(255,0,204,0.35);
       }
-      .raghost-send-btn:disabled {
-        background: #1a1a30;
-        color: #333;
-        box-shadow: none;
-      }
+      .raghost-send-btn:disabled { background: #1a1a30; color: #333; box-shadow: none; }
 
-      .raghost-header-btn {
-        color: #000;
-        background: rgba(255,255,255,0.25);
-        border: 1px solid rgba(255,255,255,0.4);
-      }
-      .raghost-header-btn:hover {
-        background: rgba(255,255,255,0.4);
-      }
+      /* Y2K gradient header = dark text — needs dark close button */
+      .raghost-header-btn { color: #000; background: rgba(255,255,255,0.25); border: 1px solid rgba(255,255,255,0.35); }
+      .raghost-header-btn:hover { background: rgba(255,255,255,0.4); }
 
       .raghost-typing span { background: #00ffff; box-shadow: 0 0 4px #00ffff; }
 
-      .raghost-watermark {
-        background: #0d0d28;
-        color: rgba(0,255,255,0.35);
-        border-top: 1px solid rgba(51,51,255,0.3);
-        font-family: monospace;
-      }
+      .raghost-watermark { background: #0d0d28; color: rgba(0,255,255,0.3); border-top: 1px solid rgba(51,51,255,0.25); font-family: 'Courier New', monospace; }
       .raghost-watermark a { color: #ff00cc; }
     `;
   }
 
-  // Template 13: Skeuomorphic
+  // ── Template 13: Skeuomorphic ────────────────────────────────────────
   function getSkeuomorphicStyles() {
     return `
       .raghost-chat-button {
@@ -2005,14 +1724,8 @@
         box-shadow: 0 5px 0 #1a4878, 0 7px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.3);
         border: 1px solid #1a4878;
       }
-      .raghost-chat-button:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 7px 0 #1a4878, 0 10px 20px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.3);
-      }
-      .raghost-chat-button:active {
-        transform: translateY(2px);
-        box-shadow: 0 2px 0 #1a4878, 0 3px 8px rgba(0,0,0,0.3), inset 0 2px 4px rgba(0,0,0,0.15);
-      }
+      .raghost-chat-button:hover { transform: translateY(-1px); box-shadow: 0 7px 0 #1a4878, 0 10px 20px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.3); }
+      .raghost-chat-button:active { transform: translateY(2px); box-shadow: 0 2px 0 #1a4878, 0 3px 8px rgba(0,0,0,0.3), inset 0 2px 4px rgba(0,0,0,0.15); }
 
       .raghost-chat-window {
         background: linear-gradient(180deg, #f0ebe0, #e5ddd0);
@@ -2022,7 +1735,7 @@
 
       .raghost-header {
         background: linear-gradient(180deg, #6a9dd0, #4a80b5 50%, #3668a0);
-        color: white;
+        color: #fff;
         border-bottom: 2px solid #2c5f8a;
         text-shadow: 0 1px 2px rgba(0,0,0,0.3);
       }
@@ -2037,10 +1750,12 @@
       .raghost-message.bot .raghost-message-avatar {
         background: linear-gradient(135deg, #e0e0e0, #c8c8c8);
         border: 1px solid #aaa;
+        color: #555;
       }
       .raghost-message.user .raghost-message-avatar {
         background: linear-gradient(135deg, #6aade8, #3a80b8);
         border: 1px solid #2a6098;
+        color: #fff;
       }
 
       .raghost-message.bot .raghost-message-bubble {
@@ -2051,7 +1766,7 @@
       }
       .raghost-message.user .raghost-message-bubble {
         background: linear-gradient(180deg, #6aade8, #4090c8);
-        color: white;
+        color: #fff;
         border: 1px solid #2a6898;
         box-shadow: 0 2px 4px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.25);
         text-shadow: 0 1px 1px rgba(0,0,0,0.15);
@@ -2067,74 +1782,53 @@
         border: 1px solid #b0906a;
         box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
       }
-      .raghost-input:focus {
-        border-color: #4a80b5;
-        box-shadow: inset 0 2px 4px rgba(0,0,0,0.1), 0 0 0 2px rgba(74,128,181,0.25);
-      }
+      .raghost-input:focus { border-color: #4a80b5; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1), 0 0 0 2px rgba(74,128,181,0.25); }
       .raghost-input::placeholder { color: #a89070; }
 
       .raghost-send-btn {
-        background: linear-gradient(180deg, #6ab0e8, #4090c8 50%, #2a70a8);
-        color: white;
+        background: linear-gradient(180deg, #6ab0e8, #3d88c8 50%, #2a70a8);
+        color: #fff;
         border: 1px solid #206090;
         box-shadow: 0 3px 0 #184870, 0 4px 8px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.25);
       }
-      .raghost-send-btn:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 0 #184870, 0 6px 12px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.3);
-      }
-      .raghost-send-btn:disabled {
-        background: linear-gradient(180deg, #ccc, #b8b8b8);
-        color: #888;
-        box-shadow: 0 1px 0 #999;
-      }
+      .raghost-send-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 0 #184870, 0 6px 12px rgba(0,0,0,0.25); }
+      .raghost-send-btn:disabled { background: linear-gradient(180deg, #ccc, #b8b8b8); color: #888; box-shadow: 0 1px 0 #999; }
 
-      .raghost-header-btn {
-        color: white;
-        background: rgba(255,255,255,0.12);
-        border: 1px solid rgba(255,255,255,0.25);
-      }
-      .raghost-header-btn:hover {
-        background: rgba(255,255,255,0.22);
-      }
+      .raghost-header-btn { color: #fff; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25); }
+      .raghost-header-btn:hover { background: rgba(255,255,255,0.22); }
 
       .raghost-typing span { background: #4a80b5; }
 
-      .raghost-watermark {
-        background: #e5ddd0;
-        color: #9a8870;
-        border-top: 1px solid #c8b888;
-      }
+      .raghost-watermark { background: #e5ddd0; color: #9a8870; border-top: 1px solid #c8b888; }
       .raghost-watermark a { color: #4a80b5; }
     `;
   }
 
-  // Template 14: Enterprise Dense
+  // ── Template 14: Enterprise Dense ────────────────────────────────────
   function getEnterpriseDenseStyles() {
     return `
       .raghost-chat-button {
-        background: #1e3a5f;
-        box-shadow: 0 4px 14px rgba(30,58,95,0.4);
+        background: linear-gradient(135deg, #1e3a5f, #1d4ed8);
+        box-shadow: 0 4px 16px rgba(30,58,95,0.4);
         border-radius: 8px !important;
       }
 
       .raghost-chat-window {
-        background: #ffffff;
+        background: #fff;
         border: 1px solid #d0d7de;
-        box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        box-shadow: 0 8px 30px rgba(0,0,0,0.1);
         border-radius: 8px !important;
       }
 
       .raghost-header {
-        background: #1e3a5f;
-        color: white;
+        background: linear-gradient(135deg, #1e3a5f, #1d4ed8);
+        color: #fff;
         padding: 10px 14px !important;
         border-radius: 8px 8px 0 0 !important;
       }
       .raghost-avatar {
         background: rgba(255,255,255,0.18);
-        width: 30px !important;
-        height: 30px !important;
+        width: 30px !important; height: 30px !important;
         border: 1px solid rgba(255,255,255,0.2);
         border-radius: 6px !important;
       }
@@ -2145,35 +1839,31 @@
         background: #dbeafe;
         border: 1px solid #bfdbfe;
         border-radius: 6px !important;
-        width: 26px !important;
-        height: 26px !important;
+        width: 26px !important; height: 26px !important;
+        color: #1d4ed8;
       }
       .raghost-message.user .raghost-message-avatar {
         background: #1e3a5f;
         border-radius: 6px !important;
-        width: 26px !important;
-        height: 26px !important;
+        width: 26px !important; height: 26px !important;
+        color: #fff;
       }
 
       .raghost-message.bot .raghost-message-bubble {
-        background: #ffffff;
+        background: #fff;
         color: #24292f;
         border: 1px solid #d0d7de;
         font-size: 13px !important;
         line-height: 1.5 !important;
       }
       .raghost-message.user .raghost-message-bubble {
-        background: #1e3a5f;
-        color: white;
+        background: linear-gradient(135deg, #1e3a5f, #1d4ed8);
+        color: #fff;
         font-size: 13px !important;
         line-height: 1.5 !important;
       }
 
-      .raghost-input-area {
-        background: #ffffff;
-        border-top: 1px solid #d0d7de;
-        padding: 8px 12px !important;
-      }
+      .raghost-input-area { background: #fff; border-top: 1px solid #d0d7de; padding: 8px 12px !important; }
       .raghost-input {
         background: #f6f8fa;
         color: #24292f;
@@ -2181,41 +1871,23 @@
         border-radius: 6px !important;
         font-size: 13px !important;
       }
-      .raghost-input:focus {
-        border-color: #1e3a5f;
-        box-shadow: 0 0 0 3px rgba(30,58,95,0.12);
-      }
+      .raghost-input:focus { border-color: #1d4ed8; box-shadow: 0 0 0 3px rgba(29,78,216,0.12); }
       .raghost-input::placeholder { color: #6e7781; }
 
       .raghost-send-btn {
-        background: #1e3a5f;
-        color: white;
+        background: linear-gradient(135deg, #1e3a5f, #1d4ed8);
+        color: #fff;
         border-radius: 6px !important;
       }
-      .raghost-send-btn:disabled {
-        background: #d0d7de;
-        color: #6e7781;
-      }
+      .raghost-send-btn:disabled { background: #d0d7de; color: #6e7781; }
 
-      .raghost-header-btn {
-        color: white;
-        background: rgba(255,255,255,0.1);
-        border: 1px solid rgba(255,255,255,0.2);
-        border-radius: 5px !important;
-      }
-      .raghost-header-btn:hover {
-        background: rgba(255,255,255,0.2);
-      }
+      .raghost-header-btn { color: #fff; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 5px !important; }
+      .raghost-header-btn:hover { background: rgba(255,255,255,0.2); }
 
-      .raghost-typing span { background: #1e3a5f; }
+      .raghost-typing span { background: #1d4ed8; }
 
-      .raghost-watermark {
-        background: #f6f8fa;
-        color: #6e7781;
-        border-top: 1px solid #d0d7de;
-        font-size: 10px !important;
-      }
-      .raghost-watermark a { color: #1e3a5f; }
+      .raghost-watermark { background: #f6f8fa; color: #6e7781; border-top: 1px solid #d0d7de; font-size: 10px !important; }
+      .raghost-watermark a { color: #1d4ed8; }
     `;
   }
 
