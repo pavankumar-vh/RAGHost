@@ -242,7 +242,7 @@
         justify-content: center;
         transition: all 0.2s ease;
         background: rgba(255, 255, 255, 0.15);
-        color: white;
+        color: white !important;
       }
 
       .raghost-header-btn:hover {
@@ -257,7 +257,12 @@
       .raghost-header-btn svg {
         width: 18px;
         height: 18px;
-        fill: currentColor;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2.5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        pointer-events: none;
       }
 
       .raghost-messages {
@@ -605,8 +610,9 @@
           </div>
           <div class="raghost-header-actions">
             <button class="raghost-header-btn raghost-close-btn" aria-label="Close">
-              <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
               </svg>
             </button>
           </div>
@@ -1305,8 +1311,8 @@
       .raghost-send-btn:disabled { background: #e4e4e7; color: #a1a1aa; }
 
       /* ★ Light header — dark close button */
-      .raghost-header-btn { color: #52525b; background: #f4f4f5; border: 1px solid #e4e4e7; }
-      .raghost-header-btn:hover { color: #18181b; background: #e4e4e7; }
+      .raghost-header-btn { color: #52525b !important; background: #f4f4f5; border: 1px solid #e4e4e7; }
+      .raghost-header-btn:hover { color: #18181b !important; background: #e4e4e7; }
 
       .raghost-typing span { background: #a1a1aa; }
 
@@ -1395,11 +1401,12 @@
       /* ★ Light header — dark close button */
       .raghost-header-btn {
         background: #e0e5ec;
-        color: #4a5568;
+        color: #4a5568 !important;
         border: none;
         box-shadow: 2px 2px 6px #b8bec7, -2px -2px 6px #fff;
       }
       .raghost-header-btn:hover {
+        color: #374151 !important;
         box-shadow: inset 2px 2px 6px #b8bec7, inset -2px -2px 6px #fff;
       }
 
@@ -1494,7 +1501,7 @@
       /* ★ Light header — dark close button */
       .raghost-header-btn {
         background: #fff;
-        color: #000;
+        color: #000 !important;
         border: 2px solid #000;
         border-radius: 0 !important;
       }
@@ -1706,7 +1713,7 @@
       .raghost-send-btn:disabled { background: #1a1a30; color: #333; box-shadow: none; }
 
       /* Y2K gradient header = dark text — needs dark close button */
-      .raghost-header-btn { color: #000; background: rgba(255,255,255,0.25); border: 1px solid rgba(255,255,255,0.35); }
+      .raghost-header-btn { color: #000 !important; background: rgba(255,255,255,0.25); border: 1px solid rgba(255,255,255,0.35); }
       .raghost-header-btn:hover { background: rgba(255,255,255,0.4); }
 
       .raghost-typing span { background: #00ffff; box-shadow: 0 0 4px #00ffff; }
