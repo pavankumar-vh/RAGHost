@@ -257,10 +257,7 @@
       .raghost-header-btn svg {
         width: 18px;
         height: 18px;
-        fill: none;
-        stroke: currentColor;
-        stroke-width: 2.5;
-        stroke-linecap: round;
+        fill: currentColor;
       }
 
       .raghost-messages {
@@ -608,9 +605,8 @@
           </div>
           <div class="raghost-header-actions">
             <button class="raghost-header-btn raghost-close-btn" aria-label="Close">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg">
-                <line x1="6" y1="6" x2="18" y2="18"/>
-                <line x1="18" y1="6" x2="6" y2="18"/>
+              <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
               </svg>
             </button>
           </div>
@@ -783,10 +779,9 @@
         }
         .raghost-header-btn {
           background: rgba(255,255,255,0.2) !important;
-          color: white !important;
         }
         .raghost-header-btn:hover {
-          background: rgba(255,255,255,0.35) !important;
+          background: rgba(255,255,255,0.3) !important;
         }
       `;
       document.head.appendChild(colorStyle);
