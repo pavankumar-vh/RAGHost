@@ -216,8 +216,8 @@ const AuthPage = () => {
                       </button>
                     )}
                   </div>
-                  <div className="relative">
-                    <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <div className="flex items-center h-11 w-full bg-white border-2 border-black rounded px-3 gap-2 focus-within:ring-2 focus-within:ring-nb-yellow" style={{transition:'box-shadow 150ms'}}>
+                    <Lock size={16} className="text-gray-400 flex-shrink-0" />
                     <input
                       type={showPassword ? 'text' : 'password'}
                       value={password}
@@ -225,17 +225,17 @@ const AuthPage = () => {
                       required
                       disabled={loading}
                       minLength={6}
-                      className="nb-input pl-9 pr-10"
+                      className="flex-1 h-full bg-transparent border-none outline-none font-medium text-black placeholder-gray-400 text-sm"
                       placeholder="••••••••"
                     />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(v => !v)}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 z-10 p-1 flex items-center text-gray-400 hover:text-black transition-colors"
+                    <span
+                      role="button"
                       tabIndex={-1}
+                      onMouseDown={e => { e.preventDefault(); setShowPassword(v => !v); }}
+                      className="flex-shrink-0 flex items-center justify-center w-6 h-6 text-gray-400 hover:text-black cursor-pointer select-none"
                     >
                       {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </button>
+                    </span>
                   </div>
                   {!isLogin && <p className="mt-1 text-xs text-nb-muted">At least 6 characters</p>}
                 </div>
@@ -245,8 +245,8 @@ const AuthPage = () => {
               {!isLogin && !showForgotPassword && (
                 <div>
                   <label className="block text-sm font-bold text-nb-text mb-1.5">Confirm Password</label>
-                  <div className="relative">
-                    <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <div className="flex items-center h-11 w-full bg-white border-2 border-black rounded px-3 gap-2 focus-within:ring-2 focus-within:ring-nb-yellow" style={{transition:'box-shadow 150ms'}}>
+                    <Lock size={16} className="text-gray-400 flex-shrink-0" />
                     <input
                       type={showConfirmPassword ? 'text' : 'password'}
                       value={confirmPassword}
@@ -254,17 +254,17 @@ const AuthPage = () => {
                       required={!isLogin}
                       disabled={loading}
                       minLength={6}
-                      className="nb-input pl-9 pr-10"
+                      className="flex-1 h-full bg-transparent border-none outline-none font-medium text-black placeholder-gray-400 text-sm"
                       placeholder="••••••••"
                     />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword(v => !v)}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 z-10 p-1 flex items-center text-gray-400 hover:text-black transition-colors"
+                    <span
+                      role="button"
                       tabIndex={-1}
+                      onMouseDown={e => { e.preventDefault(); setShowConfirmPassword(v => !v); }}
+                      className="flex-shrink-0 flex items-center justify-center w-6 h-6 text-gray-400 hover:text-black cursor-pointer select-none"
                     >
                       {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </button>
+                    </span>
                   </div>
                 </div>
               )}
