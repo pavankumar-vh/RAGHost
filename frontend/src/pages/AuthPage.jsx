@@ -169,15 +169,15 @@ const AuthPage = () => {
               {!isLogin && !showForgotPassword && (
                 <div>
                   <label className="block text-sm font-bold text-nb-text mb-1.5">Full Name</label>
-                  <div className="relative">
-                    <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <div className="flex items-center h-11 w-full bg-white border-2 border-black rounded px-3 gap-2 focus-within:ring-2 focus-within:ring-nb-yellow" style={{transition:'box-shadow 150ms'}}>
+                    <User size={16} className="text-gray-400 flex-shrink-0" />
                     <input
                       type="text"
                       value={displayName}
                       onChange={e => setDisplayName(e.target.value)}
                       required={!isLogin}
                       disabled={loading}
-                      className="nb-input pl-9"
+                      className="flex-1 h-full bg-transparent border-none outline-none font-medium text-black placeholder-gray-400 text-sm"
                       placeholder="John Doe"
                     />
                   </div>
@@ -187,15 +187,15 @@ const AuthPage = () => {
               {/* Email */}
               <div>
                 <label className="block text-sm font-bold text-nb-text mb-1.5">Email Address</label>
-                <div className="relative">
-                  <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <div className="flex items-center h-11 w-full bg-white border-2 border-black rounded px-3 gap-2 focus-within:ring-2 focus-within:ring-nb-yellow" style={{transition:'box-shadow 150ms'}}>
+                  <Mail size={16} className="text-gray-400 flex-shrink-0" />
                   <input
                     type="email"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     required
                     disabled={loading}
-                    className="nb-input pl-9"
+                    className="flex-1 h-full bg-transparent border-none outline-none font-medium text-black placeholder-gray-400 text-sm"
                     placeholder="you@example.com"
                   />
                 </div>
