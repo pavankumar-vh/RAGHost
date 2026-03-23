@@ -71,3 +71,6 @@ private/
 TODO.md
 NOTES.md
 
+*.bak
+*.bak2
+.vite/

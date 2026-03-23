@@ -2,6 +2,46 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─── CSS custom property for animated gradient border ─── */
+@property --border-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.animate-border-rotate {
+  --border-angle: 0deg;
+  animation: borderRotate 4s linear infinite;
+}
+
+@keyframes borderRotate {
+  to { --border-angle: 360deg; }
+}
+
+.animate-border-rotate {
+  background: conic-gradient(from var(--border-angle), #FFE500, #FF6B9D, #4D9FFF, #00C853, #FFE500);
+}
+
+/* ─── text shimmer gradient animation ─── */
+.animate-text-shimmer {
+  animation: textShimmer 3s ease-in-out infinite;
+}
+
+/* ─── gradient shift for CTA background ─── */
+.animate-gradient-shift {
+  animation: gradientShift 8s ease-in-out infinite;
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes textShimmer {
+  0%, 100% { background-position: 0% center; }
+  50% { background-position: 200% center; }
+}
+
 @layer base {
   * {
     box-sizing: border-box;
