@@ -4,6 +4,7 @@ import AuthPage from './pages/AuthPage';
 import Dashboard from './pages/Dashboard';
 import ChatPage from './pages/ChatPage';
 import EmbedPage from './pages/EmbedPage';
+import LandingPage from './pages/LandingPage';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
 
@@ -71,9 +72,11 @@ function App() {
             {/* Embed Route (for iframe embeds) */}
             <Route path="/embed/:botId" element={<EmbedPage />} />
 
-            {/* Default Route */}
-            <Route path="/" element={<Navigate to="/auth" />} />
-            <Route path="*" element={<Navigate to="/auth" />} />
+            {/* Landing Page */}
+            <Route path="/" element={<LandingPage />} />
+
+            {/* Catch-all */}
+            <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </NotificationProvider>
       </AuthProvider>
