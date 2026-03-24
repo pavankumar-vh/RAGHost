@@ -426,8 +426,8 @@ function Hero() {
         </svg>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32 w-full">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-32 w-full">
+        <div className="grid lg:grid-cols-2 gap-8 md:gap-12 lg:gap-20 items-center">
           {/* Copy */}
           <motion.div style={{ y: heroY }} className="relative z-10">
             <motion.div initial={{ opacity: 0, y: 20, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.5, ease }}>
@@ -440,7 +440,7 @@ function Hero() {
               </span>
             </motion.div>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-[4.25rem] font-bold leading-[1.08] tracking-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-[4.25rem] font-bold leading-[1.08] tracking-tight">
               <SplitText>Ship RAG Chatbots</SplitText>{' '}
               <span className="relative inline-block">
                 <SplitText>That Actually</SplitText>
@@ -488,7 +488,7 @@ function Hero() {
           {/* Visual — parallax tiltable mockup */}
           <motion.div style={{ y: mockupY, rotate: mockupRotate }}
             initial={{ opacity: 0, x: 50, scale: 0.95 }} animate={{ opacity: 1, x: 0, scale: 1 }} transition={{ duration: 0.8, delay: 0.3, ease }}
-            className="relative hidden lg:block perspective-[1200px]">
+            className="relative hidden md:block perspective-[1200px]">
             <TiltCard intensity={8}>
               {/* Depth layers */}
               <div className="absolute inset-0 translate-x-5 translate-y-5 bg-black/40 rounded-xl blur-md" />
@@ -574,7 +574,7 @@ function Hero() {
 
             {/* Chat widget preview */}
             <motion.div initial={{ opacity: 0, scale: 0.85, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ delay: 1.4, duration: 0.5, ease }}
-              className="absolute -bottom-10 -left-14 w-64 z-10">
+              className="absolute -bottom-10 -left-4 md:-left-14 w-52 md:w-64 z-10">
               <TiltCard>
                 <div className="bg-white border-3 border-black rounded-xl shadow-nb overflow-hidden">
                   <div className="bg-gradient-to-r from-nb-blue to-[#3B82F6] px-3 py-2 border-b-3 border-black flex items-center justify-between">
@@ -606,7 +606,7 @@ function Hero() {
 
             {/* Deploy notification */}
             <motion.div initial={{ opacity: 0, x: 20, y: -10 }} animate={{ opacity: 1, x: 0, y: 0 }} transition={{ delay: 2.2, duration: 0.4, ease }}
-              className="absolute -top-4 -right-6 z-10">
+              className="absolute -top-4 -right-2 md:-right-6 z-10">
               <div className="bg-white border-2 border-black rounded-lg shadow-nb-sm px-3 py-2 flex items-center gap-2 hover:shadow-nb hover:-translate-y-px transition-all cursor-default">
                 <div className="w-5 h-5 bg-nb-green/10 rounded flex items-center justify-center"><Check className="w-3 h-3 text-nb-green" /></div>
                 <div><p className="text-[10px] font-bold">Bot deployed</p><p className="text-[8px] text-nb-muted">Widget live on 3 sites</p></div>
@@ -670,14 +670,14 @@ function Stats() {
     { end: 256, prefix: 'AES-', label: 'Key encryption', icon: Lock, accent: 'group-hover:border-nb-green group-hover:shadow-[4px_4px_0_0_#00C853]' },
   ];
   return (
-    <section ref={ref} className="py-16 relative">
+    <section ref={ref} className="py-12 sm:py-16 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
           {stats.map(({ end, suffix, prefix, label, icon: I, accent }, i) => (
             <Reveal key={label} custom={i}>
-              <SpotlightCard className={`group p-5 bg-white border-3 border-black rounded-lg shadow-nb text-center hover:shadow-nb-lg hover:-translate-y-1 hover:-translate-x-1 transition-all duration-300 ${accent}`}>
+              <SpotlightCard className={`group p-3 sm:p-5 bg-white border-3 border-black rounded-lg shadow-nb text-center hover:shadow-nb-lg hover:-translate-y-1 hover:-translate-x-1 transition-all duration-300 ${accent}`}>
                 <I className="w-5 h-5 mx-auto mb-2 text-nb-muted group-hover:text-black group-hover:scale-110 transition-all duration-300" />
-                <div className="text-2xl sm:text-3xl font-bold tracking-tight tabular-nums">
+                <div className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight tabular-nums">
                   {prefix}{inView ? <CountUp end={end} duration={2} delay={i * 0.15} /> : '0'}{suffix}
                 </div>
                 <div className="text-[10px] text-nb-muted mt-1 uppercase tracking-wider font-semibold">{label}</div>
@@ -704,14 +704,14 @@ function Features() {
   ];
 
   return (
-    <section id="features" className="py-20 lg:py-28 relative">
+    <section id="features" className="py-14 sm:py-20 lg:py-28 relative">
       <GridBg dotted />
       <GlowOrb className="w-72 h-72 top-20 right-10" color="bg-nb-pink/6" />
       <GlowOrb className="w-56 h-56 bottom-10 left-20" color="bg-nb-blue/6" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <Reveal className="max-w-2xl mx-auto mb-14 text-center">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight">
             <SplitText>Everything to go from</SplitText>{' '}
             <span className="relative inline-block">
               <SplitText>idea to production</SplitText>
@@ -721,7 +721,7 @@ function Features() {
           <p className="mt-4 text-nb-muted text-lg">A full platform for RAG chatbots. No infra management needed.</p>
         </Reveal>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
           {features.map(({ icon: I, title, desc, color, gradColors, span }, i) => (
             <Reveal key={title} custom={i} variants={scaleIn} className={span}>
               <TiltCard className="h-full">
@@ -757,12 +757,12 @@ function HowItWorks() {
   const embedCode = `<script\n  src="https://rag-host.vercel.app/widget.js"\n  data-bot-id="your-bot-id"\n  data-color="#4D9FFF"\n  data-position="bottom-right"\n></script>`;
 
   return (
-    <section id="how-it-works" className="py-20 lg:py-28 relative bg-white">
+    <section id="how-it-works" className="py-14 sm:py-20 lg:py-28 relative bg-white">
       <WaveDivider flip color="#FFFEF0" className="absolute top-0 left-0 right-0 -translate-y-[calc(100%-1px)]" />
       <GridBg />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <Reveal className="max-w-2xl mx-auto mb-16 text-center">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight">
             <SplitText>Zero to</SplitText>{' '}
             <span className="relative inline-block">
               <SplitText>production</SplitText>
@@ -773,7 +773,7 @@ function HowItWorks() {
           <p className="mt-4 text-nb-muted text-lg">No DevOps team. No pipeline. Connect APIs and ship.</p>
         </Reveal>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
           {steps.map(({ n, title, desc, icon: I, color }, i) => (
             <Reveal key={n} custom={i}>
               <div className="relative h-full">
@@ -850,14 +850,14 @@ function TechStackSection() {
   ];
 
   return (
-    <section id="stack" className="py-20 lg:py-28 relative">
+    <section id="stack" className="py-14 sm:py-20 lg:py-28 relative">
       <GridBg />
       <GlowOrb className="w-64 h-64 top-20 left-10" color="bg-nb-yellow/8" />
       <GlowOrb className="w-48 h-48 bottom-20 right-20" color="bg-nb-purple/6" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <Reveal className="max-w-2xl mx-auto mb-14 text-center">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight">
             <SplitText>The stack under</SplitText>{' '}
             <span className="relative inline-block">
               <SplitText>the hood</SplitText>
@@ -867,7 +867,7 @@ function TechStackSection() {
           <p className="mt-4 text-nb-muted text-lg">Proven tools. Battle-tested in production.</p>
         </Reveal>
 
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 sm:gap-3">
           {stack.map(({ name, cat, I, color }, i) => (
             <Reveal key={name} custom={i} variants={scaleIn}>
               <MagneticWrap strength={0.12}>
@@ -948,15 +948,15 @@ function TechStackSection() {
    ═══════════════════════════════════════ */
 function OpenSource() {
   return (
-    <section id="oss" className="py-20 lg:py-28 relative bg-white">
+    <section id="oss" className="py-14 sm:py-20 lg:py-28 relative bg-white">
       <WaveDivider flip color="#FFFEF0" className="absolute top-0 left-0 right-0 -translate-y-[calc(100%-1px)]" />
       <GridBg dotted />
       <GlowOrb className="w-80 h-80 top-10 left-10" color="bg-nb-green/5" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+        <div className="grid md:grid-cols-2 gap-8 md:gap-12 lg:gap-16 items-center">
           <Reveal variants={slideL}>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight">
               <SplitText>Fully open source.</SplitText>{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-nb-green to-[#00E676]">MIT licensed.</span>
             </h2>
@@ -1045,11 +1045,11 @@ function FAQ() {
   ];
 
   return (
-    <section id="faq" className="py-20 lg:py-28 relative">
+    <section id="faq" className="py-14 sm:py-20 lg:py-28 relative">
       <GridBg dotted />
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <Reveal className="mb-14 text-center">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight">
             <SplitText>Frequently asked</SplitText>{' '}
             <span className="relative inline-block">
               <SplitText>questions</SplitText>
@@ -1099,10 +1099,10 @@ function FAQItem({ question, answer }) {
    ═══════════════════════════════════════ */
 function CTA() {
   return (
-    <section className="py-20 lg:py-28">
+    <section className="py-14 sm:py-20 lg:py-28">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <Reveal>
-          <div className="relative overflow-hidden rounded-2xl">
+          <div className="relative overflow-hidden rounded-xl sm:rounded-2xl">
             {/* Animated gradient background */}
             <div className="absolute inset-0 bg-black" />
             <div className="absolute inset-0 opacity-30 animate-gradient-shift bg-[length:400%_400%] bg-gradient-to-br from-nb-yellow via-nb-pink to-nb-blue" />
@@ -1122,7 +1122,7 @@ function CTA() {
             {/* Grid overlay */}
             <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px]" />
 
-            <div className="relative z-10 p-8 md:p-16 text-center">
+            <div className="relative z-10 p-6 sm:p-8 md:p-16 text-center">
               <motion.div initial={{ scale: 0.8, opacity: 0 }} whileInView={{ scale: 1, opacity: 1 }} viewport={{ once: true }}
                 transition={{ duration: 0.6, ease }}>
                 <h2 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-white tracking-tight">
@@ -1178,7 +1178,7 @@ function CTA() {
    ═══════════════════════════════════════ */
 function Footer() {
   return (
-    <footer className="py-12 border-t-3 border-black bg-nb-bg relative">
+    <footer className="py-8 sm:py-12 border-t-3 border-black bg-nb-bg relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
           <div className="sm:col-span-2 lg:col-span-1">

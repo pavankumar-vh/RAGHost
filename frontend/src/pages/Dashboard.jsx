@@ -309,8 +309,8 @@ const DashboardView = ({ stats, bots, setShowBotModal, loading, dailyStats }) =>
           </div>
         ))}
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-        <div className="lg:col-span-2 bg-white border-2 border-black shadow-nb p-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
+        <div className="lg:col-span-2 bg-white border-2 border-black shadow-nb p-4 sm:p-6">
           <div className="flex items-center justify-between mb-4">
             <div><h3 className="font-bold text-lg">Query Activity</h3><p className="text-xs text-nb-muted">Last 7 days</p></div>
             <div className="w-8 h-8 bg-nb-yellow border-2 border-black flex items-center justify-center"><Activity size={16} /></div>
@@ -504,10 +504,10 @@ const MyBotsView = ({ bots, setShowBotModal, setSelectedBot, setShowKnowledgeMod
                     <span className="text-nb-muted">Gemini</span>
                   </div>
                 </div>
-                <div className="flex gap-1.5 border-t-2 border-black pt-4">
-                  <button onClick={() => { setSelectedBot(bot); setShowKnowledgeModal(true); }} className="flex-1 nb-btn bg-white px-2 py-1.5 justify-center text-xs"><Database size={14} />Docs</button>
-                  <button onClick={() => onShowEmbed(bot)} className="flex-1 nb-btn bg-nb-blue px-2 py-1.5 justify-center text-xs"><Code size={14} />Embed</button>
-                  <button onClick={() => onEdit(bot)} className="flex-1 nb-btn bg-nb-yellow px-2 py-1.5 justify-center text-xs"><Edit size={14} />Edit</button>
+                <div className="flex gap-1 sm:gap-1.5 border-t-2 border-black pt-3 sm:pt-4 flex-wrap">
+                  <button onClick={() => { setSelectedBot(bot); setShowKnowledgeModal(true); }} className="flex-1 nb-btn bg-white px-2 py-1.5 justify-center text-xs min-w-[60px]"><Database size={14} /><span className="hidden xs:inline">Docs</span></button>
+                  <button onClick={() => onShowEmbed(bot)} className="flex-1 nb-btn bg-nb-blue px-2 py-1.5 justify-center text-xs min-w-[60px]"><Code size={14} /><span className="hidden xs:inline">Embed</span></button>
+                  <button onClick={() => onEdit(bot)} className="flex-1 nb-btn bg-nb-yellow px-2 py-1.5 justify-center text-xs min-w-[60px]"><Edit size={14} /><span className="hidden xs:inline">Edit</span></button>
                   <button onClick={() => onDelete(bot.id)} className="nb-btn bg-white px-2 py-1.5 hover:bg-red-100 hover:border-red-500 hover:text-red-600 justify-center"><Trash2 size={14} /></button>
                 </div>
               </div>

@@ -321,7 +321,7 @@ const KnowledgeBaseModal = ({ bot, setShowModal }) => {
       className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 overflow-y-auto"
       onClick={handleBackdropClick}
     >
-      <div className="bg-nb-bg border-2 border-black shadow-nb-xl w-full max-w-3xl my-8">
+      <div className="bg-nb-bg border-2 border-black shadow-nb-xl w-full max-w-3xl my-4 sm:my-8">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b-2 border-black bg-nb-yellow">
           <div className="flex items-center gap-3">

@@ -75,7 +75,7 @@ const AuthPage = () => {
   return (
     <div className="min-h-screen bg-nb-bg flex">
       {/* Left Panel - Branding */}
-      <div className="hidden lg:flex flex-col justify-between w-[45%] bg-black text-white p-12 relative overflow-hidden">
+      <div className="hidden md:flex flex-col justify-between w-[45%] bg-black text-white p-8 lg:p-12 relative overflow-hidden">
         {/* Decorative grid */}
         <div
           className="absolute inset-0 opacity-10"
@@ -93,7 +93,7 @@ const AuthPage = () => {
             <Bot size={16} />
             RAGhost Platform
           </div>
-          <h1 className="text-6xl font-bold leading-tight tracking-tight">
+          <h1 className="text-4xl lg:text-6xl font-bold leading-tight tracking-tight">
             Bot Hosting.<br />
             <span className="text-nb-yellow">Simplified.</span>
           </h1>
@@ -119,11 +119,11 @@ const AuthPage = () => {
       </div>
 
       {/* Right Panel - Auth Form */}
-      <div className="flex-1 flex items-center justify-center p-6 lg:p-12">
+      <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-12">
         <div className="w-full max-w-md animate-fade-in">
 
           {/* Mobile logo */}
-          <div className="lg:hidden mb-8 text-center">
+          <div className="md:hidden mb-8 text-center">
             <div className="inline-flex items-center gap-2 bg-black text-white font-bold px-4 py-2 border-3 border-black shadow-nb mb-2">
               <Bot size={18} />
               RAGhost
@@ -132,10 +132,10 @@ const AuthPage = () => {
           </div>
 
           {/* Card */}
-          <div className="nb-card p-8">
+          <div className="nb-card p-5 sm:p-8">
             {/* Header */}
             <div className="mb-7">
-              <h2 className="text-3xl font-bold text-nb-text tracking-tight">
+              <h2 className="text-2xl sm:text-3xl font-bold text-nb-text tracking-tight">
                 {showForgotPassword ? 'Reset Password' : isLogin ? 'Welcome back' : 'Create account'}
               </h2>
               <p className="text-nb-muted mt-1 text-sm">

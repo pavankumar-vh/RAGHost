@@ -117,7 +117,7 @@ const ChatWidget = ({ botId, botName, botType, color = 'blue', apiUrl = 'http://
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className={`fixed bottom-6 right-6 w-16 h-16 ${colors.bg} text-black rounded-full shadow-lg hover:scale-110 transition-transform z-[9999] flex items-center justify-center font-bold text-xl`}
+        className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 w-14 h-14 sm:w-16 sm:h-16 ${colors.bg} text-black rounded-full shadow-lg hover:scale-110 transition-transform z-[9999] flex items-center justify-center font-bold text-xl`}
       >
         💬
       </button>
@@ -194,8 +194,8 @@ const ChatWidget = ({ botId, botName, botType, color = 'blue', apiUrl = 'http://
 
   // Regular floating widget mode
   return (
-    <div className={`fixed bottom-6 right-6 bg-nb-bg border-2 border-black shadow-nb z-[9999] transition-all ${
-      isMinimized ? 'w-80 h-16' : 'w-96 h-[600px]'
+    <div className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 bg-nb-bg border-2 border-black shadow-nb z-[9999] transition-all ${
+      isMinimized ? 'w-72 sm:w-80 h-16' : 'w-[calc(100vw-2rem)] sm:w-96 h-[70vh] sm:h-[600px] max-h-[600px]'
     } flex flex-col`}>
       {/* Header */}
       <div className={`${colors.bg} border-b-2 border-black p-4 flex items-center justify-between`}>

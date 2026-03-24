@@ -158,8 +158,8 @@ const EmbedPage = () => {
         return {
           width: mobile ? '100%' : '400px',
           height: mobile ? '100%' : '600px',
-          maxWidth: mobile ? 'calc(100vw - 40px)' : '400px',
-          maxHeight: mobile ? 'calc(100vh - 100px)' : '600px'
+          maxWidth: mobile ? '100%' : 'min(400px, calc(100vw - 40px))',
+          maxHeight: mobile ? '100%' : 'min(600px, calc(100vh - 100px))'
         };
     }
   };

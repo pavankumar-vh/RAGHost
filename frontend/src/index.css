@@ -49,6 +49,8 @@
 
   html {
     scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
 
   body {
@@ -57,12 +59,13 @@
     font-family: 'Space Grotesk', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
   }
 
   /* Scrollbar styling */
   ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 8px;
+    height: 8px;
   }
 
   ::-webkit-scrollbar-track {
@@ -404,5 +407,45 @@ body {
   /* Remove will-change after animation completes */
   .animate-complete {
     will-change: auto;
+  }
+}
+
+/* ─── Mobile & touch-device improvements ─── */
+@media (max-width: 640px) {
+  .nb-btn {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .nb-input {
+    font-size: 16px; /* Prevents iOS zoom on input focus */
+  }
+
+  /* Prevent horizontal overflow on small screens */
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Touch-friendly scrollbar on mobile */
+@media (pointer: coarse) {
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+}
+
+/* Landscape mobile fixes */
+@media (max-height: 500px) and (orientation: landscape) {
+  .min-h-screen {
+    min-height: 100dvh;
+  }
+}
+
+/* Safe area insets for notched phones */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .fixed.bottom-4,
+  .fixed.bottom-6 {
+    padding-bottom: env(safe-area-inset-bottom);
   }
 }

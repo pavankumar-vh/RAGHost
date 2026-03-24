@@ -197,9 +197,9 @@ const BotConfigModal = ({ setShowModal, onSave }) => {
           transform: isClosing ? 'translate3d(100%, 0, 0)' : 'translate3d(0, 0, 0)'
         }}
       >
-        <div className="p-6">
+        <div className="p-4 sm:p-6">
           {/* Sticky Header */}
-          <div className="sticky top-0 -mx-6 px-6 py-4 bg-nb-bg border-b-2 border-black mb-6 z-20">
+          <div className="sticky top-0 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 sm:py-4 bg-nb-bg border-b-2 border-black mb-4 sm:mb-6 z-20">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-2xl font-bold text-nb-text">Create New Bot</h2>
