@@ -165,16 +165,15 @@
 
 
 /* Performance Optimizations for 60fps */
-* {
-  /* Hardware acceleration for all transforms */
+/* NOTE: Do NOT apply transform/perspective to * — it breaks fixed positioning (sidebars, modals, sticky headers). */
+/* Instead, apply GPU hints only on elements that animate. */
+.gpu-accelerated,
+.page-enter,
+.page-enter-active {
   -webkit-transform: translateZ(0);
-  -moz-transform: translateZ(0);
-  -ms-transform: translateZ(0);
   transform: translateZ(0);
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
-  -webkit-perspective: 1000;
-  perspective: 1000;
 }
 
 body {
