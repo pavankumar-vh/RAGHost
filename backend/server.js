@@ -23,6 +23,7 @@ import knowledgeRoutes from './routes/knowledge.js';
 import widgetRoutes from './routes/widgetRoutes.js';
 import analyticsRoutes from './routes/analytics.js';
 import usersRoutes from './routes/users.js';
+import v1Routes from './routes/v1.js';
 import { errorHandler, notFound } from './middleware/errorHandler.js';
 import { authenticate } from './middleware/auth.js';
 import { 
@@ -105,7 +106,7 @@ app.use(cors({
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-API-Key'],
   exposedHeaders: ['Content-Range', 'X-Content-Range'],
   maxAge: 86400, // 24 hours
 }));
@@ -161,6 +162,8 @@ app.use('/api/bots', authenticate, generalLimiter);
 app.use('/api/analytics', authenticate, generalLimiter);
 app.use('/api/chat', chatLimiter); // Stricter for public chat endpoint
 app.use('/api/knowledge', authenticate, knowledgeLimiter);
+app.use('/api/v1/query', chatLimiter); // Same rate limit as public chat
+app.use('/api/v1/documents', knowledgeLimiter); // Same rate limit as knowledge uploads
 
 // Memory-optimized body parsing
 const bodyLimit = isLowMemory ? '5mb' : '10mb';
@@ -259,6 +262,7 @@ app.use('/api/analytics', authenticate, analyticsRoutes);
 app.use('/api/users', authenticate, usersRoutes);
 app.use('/api/chat', chatRoutes); // Public chat API (no auth required)
 app.use('/api/widget', widgetRoutes); // Widget embed code generation
+app.use('/api/v1', v1Routes); // External API (headless query + upload via API keys)
 
 // Error handling
 app.use(notFound);

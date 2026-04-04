@@ -242,4 +242,25 @@ export const knowledgeService = {
   },
 };
 
+// External API Key management (v1)
+export const externalKeyService = {
+  // Create a new external API key for a bot
+  createKey: async (botId, name, scopes = ['query']) => {
+    const response = await api.post('/api/v1/keys', { botId, name, scopes });
+    return response.data;
+  },
+
+  // List all external API keys for a bot
+  listKeys: async (botId) => {
+    const response = await api.get(`/api/v1/keys/${botId}`);
+    return response.data;
+  },
+
+  // Revoke (delete) an external API key
+  revokeKey: async (keyId) => {
+    const response = await api.delete(`/api/v1/keys/${keyId}`);
+    return response.data;
+  },
+};
+
 export default api;

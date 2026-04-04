@@ -221,7 +221,7 @@ Redis and Bull queues activate automatically when `REDIS_URL` is set. Without it
 - **Node.js** 18+ and npm
 - **MongoDB Atlas** account (free tier works)
 - **Firebase** project with Authentication enabled
-- **Pinecone** account and index
+- **Pinecone** account and index (**1536 dimensions, cosine metric** — must match Gemini `gemini-embedding-001`)
 - **Google Gemini API** key
 
 ### Installation
@@ -237,6 +237,18 @@ cd backend && npm install
 # Install frontend dependencies
 cd ../frontend && npm install
 ```
+
+### Pinecone Index Setup
+
+When creating your Pinecone index, use these **exact settings**:
+
+| Setting | Value | Why |
+|---------|-------|-----|
+| **Dimensions** | **1536** | Gemini `gemini-embedding-001` output size |
+| **Metric** | **cosine** | Best for semantic similarity search |
+| **Pod type** | Starter (free) | Sufficient for most use cases |
+
+> **Warning:** Using any dimension other than **1536** will cause uploads to appear successful but queries will return no results.
 
 ---
 
@@ -353,7 +365,11 @@ Production:   https://raghost-pcgw.onrender.com
 ### Auth header
 
 ```
+# Dashboard endpoints (Firebase JWT)
 Authorization: Bearer <firebase_jwt_token>
+
+# External API v1 endpoints (API key)
+X-API-Key: rh_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
 ### Endpoints
@@ -388,6 +404,65 @@ POST /api/keys/:botId
 
 # Widget
 GET /api/widget/:botId/embed-code
+```
+
+### External API (v1) — Headless Access
+
+Use RAGHost as a backend for your **own custom UI**. No widget or theme required — just API key authentication.
+
+#### Setup
+
+1. Create a bot in the RAGHost dashboard
+2. Go to **API Keys** → **External API Keys** → **Generate Key**
+3. Choose scopes: `query` (chat), `upload` (document upload), or both
+4. Copy the key (starts with `rh_`) — it's shown once
+
+#### Query your bot (no widget needed)
+
+```bash
+curl -X POST https://your-backend/api/v1/query \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: rh_your_key_here" \
+  -d '{"message": "What is your refund policy?", "sessionId": "user-123"}'
+```
+
+Response:
+```json
+{
+  "success": true,
+  "data": {
+    "response": "Our refund policy allows returns within 30 days...",
+    "sessionId": "user-123",
+    "responseTime": 1230,
+    "contextUsed": 4,
+    "tokensUsed": 285
+  }
+}
+```
+
+#### Upload documents from your app
+
+```bash
+curl -X POST https://your-backend/api/v1/documents/upload \
+  -H "X-API-Key: rh_your_key_here" \
+  -F "document=@./docs/faq.pdf"
+```
+
+#### All v1 endpoints
+
+```http
+# Key management (Firebase auth — from dashboard)
+POST   /api/v1/keys              # Generate API key for a bot
+GET    /api/v1/keys/:botId       # List keys for a bot
+DELETE /api/v1/keys/:keyId       # Revoke a key
+
+# Headless query (API key auth, scope: query)
+POST   /api/v1/query             # Send message, get AI response
+
+# Headless document upload (API key auth, scope: upload)
+POST   /api/v1/documents/upload          # Upload PDF/DOCX/TXT/MD/CSV
+GET    /api/v1/documents/status/:jobId   # Check processing progress
+GET    /api/v1/documents                 # List documents in knowledge base
 ```
 
 ### Rate limits

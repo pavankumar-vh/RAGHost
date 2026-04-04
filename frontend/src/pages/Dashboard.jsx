@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { botsService, analyticsService, setAuthToken } from '../services/api';
+import { botsService, analyticsService, setAuthToken, externalKeyService } from '../services/api';
 import BotConfigModal from '../components/BotConfigModal';
 import EditBotModal from '../components/EditBotModal';
 import EmbedCodeModal from '../components/EmbedCodeModal';
@@ -524,6 +524,16 @@ const ApiKeysView = ({ bots, loading, onEdit, fetchBots }) => {
   const { getIdToken } = useAuth();
   const [testingBotId, setTestingBotId] = useState(null);
   const [testResults, setTestResults] = useState({});
+  const [activeSubTab, setActiveSubTab] = useState('connections');
+  // External API key state
+  const [selectedBotId, setSelectedBotId] = useState('');
+  const [extKeys, setExtKeys] = useState([]);
+  const [extLoading, setExtLoading] = useState(false);
+  const [newKeyName, setNewKeyName] = useState('');
+  const [newKeyScopes, setNewKeyScopes] = useState(['query']);
+  const [createdKey, setCreatedKey] = useState(null);
+  const [keyCopied, setKeyCopied] = useState(false);
+  const [keyError, setKeyError] = useState('');
 
   const handleTest = async (botId) => {
     try {
@@ -539,67 +549,286 @@ const ApiKeysView = ({ bots, loading, onEdit, fetchBots }) => {
     } finally { setTestingBotId(null); }
   };
 
+  const fetchExtKeys = async (botId) => {
+    if (!botId) { setExtKeys([]); return; }
+    try {
+      setExtLoading(true);
+      const token = await getIdToken();
+      if (token) { setAuthToken(token); }
+      const res = await externalKeyService.listKeys(botId);
+      setExtKeys(res.data || []);
+    } catch (e) { setExtKeys([]); } finally { setExtLoading(false); }
+  };
+
+  const handleSelectBot = (botId) => {
+    setSelectedBotId(botId);
+    setCreatedKey(null);
+    setKeyError('');
+    fetchExtKeys(botId);
+  };
+
+  const handleCreateKey = async () => {
+    if (!selectedBotId || !newKeyName.trim()) {
+      setKeyError('Select a bot and enter a key name.');
+      return;
+    }
+    try {
+      setKeyError('');
+      setExtLoading(true);
+      const token = await getIdToken();
+      if (token) { setAuthToken(token); }
+      const res = await externalKeyService.createKey(selectedBotId, newKeyName.trim(), newKeyScopes);
+      setCreatedKey(res.data);
+      setNewKeyName('');
+      fetchExtKeys(selectedBotId);
+    } catch (e) {
+      setKeyError(e.response?.data?.error || 'Failed to create key.');
+    } finally { setExtLoading(false); }
+  };
+
+  const handleRevokeKey = async (keyId) => {
+    try {
+      const token = await getIdToken();
+      if (token) { setAuthToken(token); }
+      await externalKeyService.revokeKey(keyId);
+      fetchExtKeys(selectedBotId);
+    } catch (e) { setKeyError(e.response?.data?.error || 'Failed to revoke key.'); }
+  };
+
+  const copyKey = (text) => {
+    navigator.clipboard.writeText(text);
+    setKeyCopied(true);
+    setTimeout(() => setKeyCopied(false), 2000);
+  };
+
   if (loading) return <LoadingSpinner />;
 
   return (
     <div className="space-y-6 w-full">
       <div>
         <h2 className="text-xl sm:text-2xl font-bold">API Keys</h2>
-        <p className="text-nb-muted text-sm mt-0.5">Monitor and test per-bot API connections</p>
+        <p className="text-nb-muted text-sm mt-0.5">Manage bot connections and external API access</p>
       </div>
-      <div className="bg-nb-blue/30 border-2 border-black shadow-nb p-5">
-        <div className="flex items-start gap-3">
-          <div className="w-8 h-8 bg-nb-blue border-2 border-black flex items-center justify-center flex-shrink-0"><Key size={16} /></div>
-          <div>
-            <h3 className="font-bold text-sm">Per-Bot API Configuration</h3>
-            <p className="text-xs text-nb-muted mt-1">Each bot has its own Pinecone and Gemini API keys for better security and independent knowledge bases.</p>
-          </div>
-        </div>
+
+      {/* Sub-tabs */}
+      <div className="flex gap-0 border-2 border-black overflow-hidden">
+        {[
+          { id: 'connections', label: 'Bot Connections', icon: Database },
+          { id: 'external', label: 'External API Keys', icon: Key },
+        ].map(({ id, label, icon: Icon }) => (
+          <button key={id} onClick={() => setActiveSubTab(id)}
+            className={`flex items-center gap-2 px-4 py-2.5 font-bold text-sm border-r-2 last:border-r-0 border-black transition-all ${
+              activeSubTab === id ? 'bg-nb-yellow text-black' : 'bg-white text-nb-muted hover:bg-gray-50'}`}>
+            <Icon size={14} />{label}
+          </button>
+        ))}
       </div>
-      {bots.length === 0 ? (
-        <div className="bg-white border-2 border-black shadow-nb p-12 text-center"><Bot size={40} className="text-gray-300 mx-auto mb-3" /><h3 className="font-bold">No Bots Yet</h3></div>
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          {bots.map(bot => {
-            const r = testResults[bot.id];
-            const isTesting = testingBotId === bot.id;
-            return (
-              <div key={bot.id} className="bg-white border-2 border-black shadow-nb p-5">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 bg-nb-yellow border-2 border-black flex items-center justify-center"><Bot size={18} /></div>
-                    <div><h3 className="font-bold">{bot.name}</h3><p className="text-xs text-nb-muted">{bot.type}</p></div>
-                  </div>
-                  <div className="flex gap-2">
-                    <button onClick={() => onEdit(bot)} className="nb-btn bg-nb-yellow px-3 py-1.5 text-xs"><Edit size={13} />Edit Keys</button>
-                    <button onClick={() => handleTest(bot.id)} disabled={isTesting} className="nb-btn bg-black text-white border-black px-3 py-1.5 text-xs disabled:opacity-50 disabled:shadow-none disabled:translate-x-0 disabled:translate-y-0">
-                      {isTesting ? <><Loader2 size={13} className="animate-spin" />Testing…</> : <><Activity size={13} />Test</>}
-                    </button>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  {[
-                    { label: 'Pinecone', v: bot.pineconeVerified, icon: Database, detail: bot.pineconeIndexName, td: r?.testResults?.pinecone },
-                    { label: 'Gemini AI', v: bot.geminiVerified, icon: Zap, detail: 'gemini-embedding-001', td: r?.testResults?.gemini },
-                  ].map(({ label, v, icon: Icon, detail, td }) => (
-                    <div key={label} className={`border-2 p-3 ${v ? 'border-green-500 bg-green-50' : 'border-red-500 bg-red-50'}`}>
-                      <div className="flex items-center justify-between mb-1">
-                        <div className="flex items-center gap-2"><Icon size={15} className={v ? 'text-green-600' : 'text-red-500'} /><span className="text-sm font-bold">{label}</span></div>
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-bold border-2 ${v ? 'border-green-500 bg-green-100 text-green-700' : 'border-red-500 bg-red-100 text-red-600'}`}>
-                          {v ? <><CheckCircle2 size={11} />Verified</> : <><XCircle size={11} />Failed</>}
-                        </span>
-                      </div>
-                      <p className="text-xs text-nb-muted font-mono">{detail}</p>
-                      {td && <p className={`text-xs mt-1.5 font-medium ${td.verified ? 'text-green-700' : 'text-red-600'}`}>{td.message}</p>}
-                    </div>
-                  ))}
-                </div>
-                {r?.error && <div className="mt-3 border-2 border-red-500 bg-red-50 p-3"><p className="text-xs text-red-600 font-bold">Error: {r.error}</p></div>}
-                {bot.lastVerified && <p className="text-xs text-nb-muted mt-3 border-t border-gray-200 pt-2">Last verified: {new Date(bot.lastVerified).toLocaleString()}</p>}
+
+      {/* ── Bot Connections tab ── */}
+      {activeSubTab === 'connections' && (
+        <>
+          <div className="bg-nb-blue/30 border-2 border-black shadow-nb p-5">
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 bg-nb-blue border-2 border-black flex items-center justify-center flex-shrink-0"><Key size={16} /></div>
+              <div>
+                <h3 className="font-bold text-sm">Per-Bot API Configuration</h3>
+                <p className="text-xs text-nb-muted mt-1">Each bot has its own Pinecone and Gemini API keys for better security and independent knowledge bases.</p>
               </div>
-            );
-          })}
-        </div>
+            </div>
+          </div>
+          {bots.length === 0 ? (
+            <div className="bg-white border-2 border-black shadow-nb p-12 text-center"><Bot size={40} className="text-gray-300 mx-auto mb-3" /><h3 className="font-bold">No Bots Yet</h3></div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              {bots.map(bot => {
+                const r = testResults[bot.id];
+                const isTesting = testingBotId === bot.id;
+                return (
+                  <div key={bot.id} className="bg-white border-2 border-black shadow-nb p-5">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 bg-nb-yellow border-2 border-black flex items-center justify-center"><Bot size={18} /></div>
+                        <div><h3 className="font-bold">{bot.name}</h3><p className="text-xs text-nb-muted">{bot.type}</p></div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button onClick={() => onEdit(bot)} className="nb-btn bg-nb-yellow px-3 py-1.5 text-xs"><Edit size={13} />Edit Keys</button>
+                        <button onClick={() => handleTest(bot.id)} disabled={isTesting} className="nb-btn bg-black text-white border-black px-3 py-1.5 text-xs disabled:opacity-50 disabled:shadow-none disabled:translate-x-0 disabled:translate-y-0">
+                          {isTesting ? <><Loader2 size={13} className="animate-spin" />Testing…</> : <><Activity size={13} />Test</>}
+                        </button>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      {[
+                        { label: 'Pinecone', v: bot.pineconeVerified, icon: Database, detail: bot.pineconeIndexName, td: r?.testResults?.pinecone },
+                        { label: 'Gemini AI', v: bot.geminiVerified, icon: Zap, detail: 'gemini-embedding-001', td: r?.testResults?.gemini },
+                      ].map(({ label, v, icon: Icon, detail, td }) => (
+                        <div key={label} className={`border-2 p-3 ${v ? 'border-green-500 bg-green-50' : 'border-red-500 bg-red-50'}`}>
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="flex items-center gap-2"><Icon size={15} className={v ? 'text-green-600' : 'text-red-500'} /><span className="text-sm font-bold">{label}</span></div>
+                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-bold border-2 ${v ? 'border-green-500 bg-green-100 text-green-700' : 'border-red-500 bg-red-100 text-red-600'}`}>
+                              {v ? <><CheckCircle2 size={11} />Verified</> : <><XCircle size={11} />Failed</>}
+                            </span>
+                          </div>
+                          <p className="text-xs text-nb-muted font-mono">{detail}</p>
+                          {td && <p className={`text-xs mt-1.5 font-medium ${td.verified ? 'text-green-700' : 'text-red-600'}`}>{td.message}</p>}
+                        </div>
+                      ))}
+                    </div>
+                    {r?.error && <div className="mt-3 border-2 border-red-500 bg-red-50 p-3"><p className="text-xs text-red-600 font-bold">Error: {r.error}</p></div>}
+                    {bot.lastVerified && <p className="text-xs text-nb-muted mt-3 border-t border-gray-200 pt-2">Last verified: {new Date(bot.lastVerified).toLocaleString()}</p>}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </>
+      )}
+
+      {/* ── External API Keys tab ── */}
+      {activeSubTab === 'external' && (
+        <>
+          <div className="bg-nb-pink/30 border-2 border-black shadow-nb p-5">
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 bg-nb-pink border-2 border-black flex items-center justify-center flex-shrink-0"><Shield size={16} /></div>
+              <div>
+                <h3 className="font-bold text-sm">External API Keys</h3>
+                <p className="text-xs text-nb-muted mt-1">
+                  Generate API keys to query your bots or upload documents from your own custom website — no RAGHost widget or theme required.
+                  Use the <code className="bg-gray-100 px-1 font-mono">X-API-Key</code> header with <code className="bg-gray-100 px-1 font-mono">POST /api/v1/query</code> or <code className="bg-gray-100 px-1 font-mono">POST /api/v1/documents/upload</code>.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {bots.length === 0 ? (
+            <div className="bg-white border-2 border-black shadow-nb p-12 text-center"><Bot size={40} className="text-gray-300 mx-auto mb-3" /><h3 className="font-bold">Create a bot first to generate API keys</h3></div>
+          ) : (
+            <div className="space-y-5">
+              {/* Bot selector */}
+              <div className="bg-white border-2 border-black shadow-nb p-5">
+                <label className="text-sm font-bold mb-2 block">Select Bot</label>
+                <select value={selectedBotId} onChange={e => handleSelectBot(e.target.value)} className="nb-input w-full sm:w-72 py-2 text-sm">
+                  <option value="">— Choose a bot —</option>
+                  {bots.map(b => <option key={b.id} value={b.id}>{b.name} ({b.type})</option>)}
+                </select>
+              </div>
+
+              {selectedBotId && (
+                <>
+                  {/* Generate new key */}
+                  <div className="bg-white border-2 border-black shadow-nb p-5">
+                    <h3 className="font-bold text-sm mb-3">Generate New Key</h3>
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <input type="text" value={newKeyName} onChange={e => setNewKeyName(e.target.value)} placeholder="Key name (e.g. My Website)" className="nb-input py-2 text-sm flex-1" maxLength={100} />
+                      <div className="flex gap-2 items-center">
+                        {['query', 'upload'].map(scope => (
+                          <label key={scope} className="flex items-center gap-1.5 text-xs font-bold cursor-pointer select-none">
+                            <input type="checkbox" checked={newKeyScopes.includes(scope)} onChange={() => {
+                              setNewKeyScopes(prev => prev.includes(scope) ? prev.filter(s => s !== scope) : [...prev, scope]);
+                            }} className="w-4 h-4 accent-black" />
+                            {scope}
+                          </label>
+                        ))}
+                      </div>
+                      <button onClick={handleCreateKey} disabled={extLoading || !newKeyName.trim() || newKeyScopes.length === 0} className="nb-btn bg-black text-white border-black px-4 py-2 text-xs disabled:opacity-50 disabled:shadow-none flex-shrink-0">
+                        {extLoading ? <Loader2 size={13} className="animate-spin" /> : <><Key size={13} />Generate</>}
+                      </button>
+                    </div>
+                    {keyError && <p className="text-xs text-red-600 font-bold mt-2">{keyError}</p>}
+                  </div>
+
+                  {/* Show newly created key */}
+                  {createdKey && (
+                    <div className="bg-green-50 border-2 border-green-500 shadow-nb p-5">
+                      <div className="flex items-center gap-2 mb-2">
+                        <CheckCircle2 size={16} className="text-green-600" />
+                        <h3 className="font-bold text-sm text-green-800">API Key Created — Copy it now!</h3>
+                      </div>
+                      <p className="text-xs text-green-700 mb-3">This key will <strong>not</strong> be shown again. Store it securely.</p>
+                      <div className="flex items-center gap-2">
+                        <code className="bg-white border-2 border-green-400 px-3 py-2 font-mono text-xs flex-1 overflow-x-auto">{createdKey.key}</code>
+                        <button onClick={() => copyKey(createdKey.key)} className="nb-btn bg-green-500 text-white border-green-600 px-3 py-2 text-xs flex-shrink-0">
+                          {keyCopied ? <><Check size={13} />Copied!</> : <><Copy size={13} />Copy</>}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Existing keys */}
+                  <div className="bg-white border-2 border-black shadow-nb overflow-hidden">
+                    <div className="bg-nb-yellow border-b-2 border-black p-4 flex items-center gap-2">
+                      <Key size={16} /><h3 className="font-bold text-sm">Active Keys</h3>
+                      <span className="ml-auto text-xs text-nb-muted font-mono">{extKeys.length}/10</span>
+                    </div>
+                    {extLoading ? (
+                      <div className="p-8 text-center"><Loader2 size={20} className="animate-spin mx-auto text-nb-muted" /></div>
+                    ) : extKeys.length === 0 ? (
+                      <div className="p-8 text-center text-nb-muted text-sm">No external API keys yet. Generate one above.</div>
+                    ) : (
+                      <div className="divide-y-2 divide-black">
+                        {extKeys.map(k => (
+                          <div key={k._id} className="p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="font-bold text-sm">{k.name}</span>
+                                <code className="text-xs text-nb-muted font-mono bg-gray-100 px-1.5 py-0.5 border border-gray-200">{k.keyPrefix}</code>
+                                {k.scopes?.map(s => (
+                                  <span key={s} className={`text-[10px] font-bold px-1.5 py-0.5 border-2 ${s === 'query' ? 'border-blue-400 bg-blue-50 text-blue-700' : 'border-purple-400 bg-purple-50 text-purple-700'}`}>{s}</span>
+                                ))}
+                              </div>
+                              <div className="flex gap-3 mt-1 text-[11px] text-nb-muted">
+                                <span>Created: {new Date(k.createdAt).toLocaleDateString()}</span>
+                                <span>Requests: {k.totalRequests || 0}</span>
+                                {k.lastUsedAt && <span>Last used: {new Date(k.lastUsedAt).toLocaleDateString()}</span>}
+                              </div>
+                            </div>
+                            <button onClick={() => handleRevokeKey(k._id)} className="nb-btn bg-red-100 text-red-700 border-red-400 px-3 py-1.5 text-xs flex-shrink-0 hover:bg-red-200">
+                              <Trash2 size={12} />Revoke
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Quick integration guide */}
+                  <div className="bg-white border-2 border-black shadow-nb overflow-hidden">
+                    <div className="bg-black text-white p-4 flex items-center gap-2">
+                      <Terminal size={16} /><h3 className="font-bold text-sm">Quick Integration</h3>
+                    </div>
+                    <div className="p-5 space-y-4">
+                      <div>
+                        <p className="text-xs font-bold text-nb-muted uppercase tracking-wider mb-2">Query your bot</p>
+                        <pre className="bg-gray-950 text-green-300 p-4 font-mono text-xs overflow-x-auto border-2 border-black">{`fetch('${window.location.origin.replace(/:\\d+$/, ':5001')}/api/v1/query', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'X-API-Key': 'rh_your_key_here'
+  },
+  body: JSON.stringify({
+    message: 'What is the refund policy?',
+    sessionId: 'user-123'
+  })
+}).then(r => r.json()).then(console.log);`}</pre>
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-nb-muted uppercase tracking-wider mb-2">Upload a document</p>
+                        <pre className="bg-gray-950 text-green-300 p-4 font-mono text-xs overflow-x-auto border-2 border-black">{`const form = new FormData();
+form.append('document', fileInput.files[0]);
+
+fetch('${window.location.origin.replace(/:\\d+$/, ':5001')}/api/v1/documents/upload', {
+  method: 'POST',
+  headers: { 'X-API-Key': 'rh_your_key_here' },
+  body: form
+}).then(r => r.json()).then(console.log);`}</pre>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </>
       )}
     </div>
   );
@@ -790,13 +1019,13 @@ const DocumentationView = () => {
                   <table className="w-full text-xs">
                     <thead><tr className="bg-nb-blue border-b-2 border-black"><th className="text-left p-2 border-r-2 border-black font-bold">Setting</th><th className="text-left p-2 border-r-2 border-black font-bold">Required Value</th><th className="text-left p-2 font-bold">Why</th></tr></thead>
                     <tbody>
-                      {[['Dimensions','768','Gemini text-embedding-004 output size'],['Metric','cosine','Best for semantic similarity'],['Pod type','Starter','Free tier, sufficient for most use'],['Cloud/Region','Any','Pick closest to your users']].map(([k,v,w]) => (
+                      {[['Dimensions','1536','Gemini gemini-embedding-001 output size'],['Metric','cosine','Best for semantic similarity'],['Pod type','Starter','Free tier, sufficient for most use'],['Cloud/Region','Any','Pick closest to your users']].map(([k,v,w]) => (
                         <tr key={k} className="border-t-2 border-black"><td className="p-2 border-r-2 border-black text-nb-muted font-mono">{k}</td><td className="p-2 border-r-2 border-black font-black">{v}</td><td className="p-2 text-nb-muted">{w}</td></tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
-                <InfoBox type="warning">Dimension must be exactly <strong>768</strong>. Any other value will cause all uploads to fail silently.</InfoBox>
+                <InfoBox type="warning">Dimension must be exactly <strong>1536</strong>. Any other value will cause all uploads to fail silently.</InfoBox>
               </div>
             </div>
           </div>
@@ -1031,6 +1260,30 @@ const DocumentationView = () => {
               <Endpoint method="DELETE" path="/users/account"    desc="Permanently delete account and all associated data (irreversible)" />
             </div>
           </section>
+
+          {/* External API v1 */}
+          <section className="bg-white border-2 border-black shadow-nb overflow-hidden">
+            <div className="bg-nb-yellow border-b-2 border-black p-4 flex items-center gap-2"><Key size={16}/><h3 className="font-black">External API (v1) — Headless Access</h3></div>
+            <div className="p-5 border-b-2 border-black">
+              <p className="text-sm mb-2">Use RAGHost as a backend for your <strong>own custom UI</strong>. No widget or theme needed — authenticate with an <code className="bg-gray-100 px-1 font-mono text-xs">X-API-Key</code> header.</p>
+              <InfoBox type="info">Generate keys from <strong>API Keys → External API Keys</strong> tab in the dashboard. Keys start with <code>rh_</code> and are shown once.</InfoBox>
+            </div>
+            <div>
+              <Endpoint method="POST"   path="/v1/keys"                        desc="Generate a new API key for a bot (Firebase auth required)"
+                body={`{\n  "botId": "YOUR_BOT_ID",\n  "name": "My Website Key",\n  "scopes": ["query", "upload"]\n}`} />
+              <Endpoint method="GET"    path="/v1/keys/:botId"                 desc="List all API keys for a bot (Firebase auth)" />
+              <Endpoint method="DELETE" path="/v1/keys/:keyId"                 desc="Revoke an API key (Firebase auth)" />
+              <Endpoint method="POST"   path="/v1/query"                       auth={false} desc="Send a message and get AI response (X-API-Key, scope: query)"
+                body={`{\n  "message": "What is the refund policy?",\n  "sessionId": "user-123"  // optional\n}`} />
+              <Endpoint method="POST"   path="/v1/documents/upload"            auth={false} desc="Upload a document (X-API-Key, scope: upload). Multipart form-data, field: document" />
+              <Endpoint method="GET"    path="/v1/documents/status/:jobId"     auth={false} desc="Check upload processing progress (X-API-Key, scope: upload)" />
+              <Endpoint method="GET"    path="/v1/documents"                   auth={false} desc="List all documents in bot's knowledge base (X-API-Key, scope: upload)" />
+            </div>
+            <div className="px-5 pb-5">
+              <p className="text-sm font-bold mb-2 mt-3">Query Response:</p>
+              <CodeBlock code={`{\n  "success": true,\n  "data": {\n    "response": "Our refund policy allows returns within 30 days...",\n    "sessionId": "user-123",\n    "responseTime": 1230,\n    "contextUsed": 4,\n    "tokensUsed": 285\n  }\n}`} id="v1-query-resp" lang="json" />
+            </div>
+          </section>
         </div>
       )}
 
@@ -1097,8 +1350,8 @@ const DocumentationView = () => {
           <section className="bg-white border-2 border-black shadow-nb overflow-hidden">
             <div className="bg-nb-blue border-b-2 border-black p-4 flex items-center gap-2"><Database size={16}/><h3 className="font-black">Pinecone Index Requirements</h3></div>
             <div className="p-5">
-              <p className="text-sm mb-3">RAGhost uses <strong>Gemini text-embedding-004</strong> which outputs <strong>768-dimensional</strong> float32 vectors. Your index must be configured exactly as shown:</p>
-              <CodeBlock code={`# Verify via Pinecone Python SDK\nfrom pinecone import Pinecone\npc = Pinecone(api_key="YOUR_KEY")\ninfo = pc.describe_index("your-index-name")\nprint(info.dimension)   # must be 768\nprint(info.metric)      # must be 'cosine'`} id="pine-check" lang="python" />
+              <p className="text-sm mb-3">RAGhost uses <strong>Gemini gemini-embedding-001</strong> which outputs <strong>1536-dimensional</strong> float32 vectors. Your index must be configured exactly as shown:</p>
+              <CodeBlock code={`# Verify via Pinecone Python SDK\nfrom pinecone import Pinecone\npc = Pinecone(api_key="YOUR_KEY")\ninfo = pc.describe_index("your-index-name")\nprint(info.dimension)   # must be 1536\nprint(info.metric)      # must be 'cosine'`} id="pine-check" lang="python" />
               <InfoBox type="danger">Wrong dimensions = all document uploads will appear to succeed but no chunks will ever be returned in queries. Always verify before uploading documents.</InfoBox>
             </div>
           </section>
@@ -1196,7 +1449,7 @@ const DocumentationView = () => {
                 <ol className="space-y-3">
                   {[
                     ['Index name is wrong', 'The name is case-sensitive. Open Pinecone console and copy it exactly.'],
-                    ['Wrong dimensions', 'Dimension must be 768 and metric must be cosine. Delete and recreate the index if needed.'],
+                    ['Wrong dimensions', 'Dimension must be 1536 and metric must be cosine. Delete and recreate the index if needed.'],
                     ['API key is an environment, not a key', 'Pinecone has separate "API Key" and "Environment" values. You need the API key (starts with pcsk_).'],
                     ['Free tier index limit', 'Pinecone free tier allows only 1 index. Delete unused ones first.'],
                     ['IP restrictions on key', 'If you set key restrictions, add the RAGhost server IP to the allowlist.'],
@@ -1223,7 +1476,7 @@ const DocumentationView = () => {
                       {[
                         ['File rejected immediately','Check file size (max 10MB) and format (PDF/TXT/DOCX/MD only)'],
                         ['Stuck on "Processing"','Scanned PDFs without embedded text can\'t be parsed. Use a text-layer PDF.'],
-                        ['Completed but no answers','Verify Pinecone index dimension is exactly 768. Query Pinecone Stats to confirm vector count increased.'],
+                        ['Completed but no answers','Verify Pinecone index dimension is exactly 1536. Query Pinecone Stats to confirm vector count increased.'],
                         ['Upload succeeds, re-upload fails','Known behaviour — re-uploads delete old vectors first. Wait 30s and retry.'],
                       ].map(([s,f]) => <tr key={s} className="border-t-2 border-black"><td className="p-2 border-r-2 border-black text-nb-muted">{s}</td><td className="p-2">{f}</td></tr>)}
                     </tbody>
