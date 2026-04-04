@@ -190,9 +190,6 @@ body {
 
 #root {
   min-height: 100vh;
-  /* NOTE: Do NOT use contain: layout here — it breaks fixed positioning
-     (sidebar, modals, sticky headers become relative to #root instead of viewport) */
-  contain: style paint;
 }
 
 /* Smooth transitions and animations */
