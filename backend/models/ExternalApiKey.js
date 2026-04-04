@@ -58,8 +58,7 @@ const externalApiKeySchema = new mongoose.Schema(
   }
 );
 
-// Compound index for fast lookups
-externalApiKeySchema.index({ keyHash: 1 });
+// Compound index for fast lookups (keyHash already indexed via unique: true)
 externalApiKeySchema.index({ userId: 1, botId: 1 });
 
 /**
