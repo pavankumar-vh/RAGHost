@@ -163,11 +163,21 @@ function parseSize(size) {
  * Prevent brute force attacks - Track failed attempts
  */
 const failedAttempts = new Map();
+const MAX_TRACKED_IPS = 10000;
 
 export const preventBruteForce = (maxAttempts = 5, windowMs = 15 * 60 * 1000) => {
   return (req, res, next) => {
     const identifier = req.ip || req.connection.remoteAddress;
     const now = Date.now();
+
+    // Cap map size to prevent memory exhaustion under DDoS
+    if (failedAttempts.size > MAX_TRACKED_IPS) {
+      // Evict expired entries first
+      for (const [key, val] of failedAttempts.entries()) {
+        if (now > val.resetAt) failedAttempts.delete(key);
+        if (failedAttempts.size <= MAX_TRACKED_IPS * 0.8) break;
+      }
+    }
     
     if (!failedAttempts.has(identifier)) {
       failedAttempts.set(identifier, { count: 0, resetAt: now + windowMs });

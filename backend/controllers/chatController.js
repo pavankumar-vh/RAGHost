@@ -162,8 +162,6 @@ export const sendMessage = async (req, res) => {
     const now = new Date();
     const todayStr = now.toISOString().split('T')[0]; // "YYYY-MM-DD"
     
-    console.log('📅 Updating daily stats for date:', todayStr);
-    
     if (!bot.dailyStats) {
       bot.dailyStats = [];
     }
@@ -171,12 +169,10 @@ export const sendMessage = async (req, res) => {
     // Find or create today's stat entry
     let todayStat = bot.dailyStats.find(stat => {
       const statDateStr = new Date(stat.date).toISOString().split('T')[0];
-      console.log('  Checking stat date:', statDateStr, 'vs today:', todayStr);
       return statDateStr === todayStr;
     });
     
     if (!todayStat) {
-      console.log('  Creating new stat entry for:', todayStr);
       todayStat = {
         date: new Date(todayStr), // Store as date object
         queries: 0,
@@ -185,7 +181,7 @@ export const sendMessage = async (req, res) => {
       };
       bot.dailyStats.push(todayStat);
     } else {
-      console.log('  Found existing stat entry');
+      // existing stat entry found
     }
     
     // Update today's stats
@@ -288,6 +284,14 @@ export const clearChatHistory = async (req, res) => {
       return res.status(400).json({
         success: false,
         error: 'Invalid bot ID format',
+      });
+    }
+
+    // Validate sessionId is not empty/malicious
+    if (!sessionId || sessionId.length < 5 || sessionId.length > 100) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid session ID format',
       });
     }
 

@@ -68,7 +68,7 @@ externalApiKeySchema.index({ userId: 1, botId: 1 });
 externalApiKeySchema.statics.generateKey = function () {
   const raw = `rh_${crypto.randomBytes(32).toString('hex')}`;
   const hash = crypto.createHash('sha256').update(raw).digest('hex');
-  const prefix = raw.substring(0, 7) + '...';
+  const prefix = raw.substring(0, 12) + '...';
   return { raw, hash, prefix };
 };
 

@@ -93,4 +93,11 @@ export const verifyToken = async (idToken) => {
 // Initialize Firebase
 firebaseInitialized = initializeFirebase();
 
+// Fail fast in production if Firebase is not configured
+if (!firebaseInitialized && process.env.NODE_ENV === 'production') {
+  console.error('🚨 FATAL: Firebase not initialized in production. Auth will not work.');
+  console.error('   Set FIREBASE_PROJECT_ID, FIREBASE_PRIVATE_KEY, FIREBASE_CLIENT_EMAIL');
+  process.exit(1);
+}
+
 export default admin;

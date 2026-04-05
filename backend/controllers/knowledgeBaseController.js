@@ -1,6 +1,7 @@
 import KnowledgeBase from '../models/KnowledgeBase.js';
 import Bot from '../models/Bot.js';
 import UploadJob from '../models/UploadJob.js';
+import mongoose from 'mongoose';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -330,6 +331,14 @@ export const deleteDocument = async (req, res) => {
       return res.status(404).json({
         success: false,
         error: 'Knowledge base not found',
+      });
+    }
+
+    // Validate documentId format
+    if (!documentId || !mongoose.Types.ObjectId.isValid(documentId)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid document ID format',
       });
     }
 

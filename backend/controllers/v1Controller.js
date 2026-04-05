@@ -246,8 +246,14 @@ export const queryBot = async (req, res) => {
     await chatSession.save();
 
     // Update bot stats (fire-and-forget)
-    Bot.findByIdAndUpdate(bot._id, {
-      $inc: { totalQueries: 1 },
+    Bot.findById(bot._id).then(async (freshBot) => {
+      if (!freshBot) return;
+      freshBot.totalQueries += 1;
+      freshBot.avgResponseTime =
+        freshBot.avgResponseTime === 0
+          ? responseTime
+          : (freshBot.avgResponseTime + responseTime) / 2;
+      await freshBot.save();
     }).catch(() => {});
 
     res.json({
