@@ -21,6 +21,8 @@ const KnowledgeBaseModal = ({ bot, setShowModal }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [dragActive, setDragActive] = useState(false);
   const [uploadJobs, setUploadJobs] = useState([]); // Track active upload jobs
+  const [uploadProgress, setUploadProgress] = useState(0); // HTTP upload progress 0-100
+  const [uploadStage, setUploadStage] = useState(null); // null | 'uploading' | 'received' | 'processing'
   const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, documentId: null });
 
   useEffect(() => {
@@ -119,6 +121,8 @@ const KnowledgeBaseModal = ({ bot, setShowModal }) => {
 
     try {
       setUploading(true);
+      setUploadStage('uploading');
+      setUploadProgress(0);
       setError('');
       setSuccess('');
 
@@ -134,40 +138,50 @@ const KnowledgeBaseModal = ({ bot, setShowModal }) => {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'multipart/form-data',
           },
+          onUploadProgress: (progressEvent) => {
+            const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setUploadProgress(percent);
+          },
         }
       );
 
-      console.log('📤 Upload response:', response.data);
-      
       const { jobId, filename } = response.data.data;
-      console.log('📋 Job ID:', jobId, 'Filename:', filename);
       
-      // Add job to tracking list
+      // Brief "received" state so user sees the file was accepted
+      setUploadStage('received');
+      setUploadProgress(100);
+      
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      // Transition to processing - add job to tracker
+      setUploadStage('processing');
+      
       const newJob = {
         jobId,
         filename,
-        status: 'processing',
-        progress: { percentage: 10, message: 'Upload started...' },
+        status: 'pending',
+        progress: { percentage: 5, message: 'Queued for processing...' },
       };
-      console.log('➕ Adding job to tracking:', newJob);
-      setUploadJobs(prev => {
-        console.log('📊 Current jobs:', prev);
-        const updated = [...prev, newJob];
-        console.log('📊 Updated jobs:', updated);
-        return updated;
-      });
+      setUploadJobs(prev => [...prev, newJob]);
       
       showSuccess(
         `${filename} uploaded successfully! Processing in background...`,
         'Upload Started'
       );
+      
+      // Small delay before clearing the upload area for visual continuity
+      await new Promise(resolve => setTimeout(resolve, 400));
       setSelectedFile(null);
+      setUploadStage(null);
+      setUploadProgress(0);
       
       // Start polling for job status
       pollJobStatus(jobId, token);
 
     } catch (err) {
       console.error('Upload error:', err);
+      setUploadStage(null);
+      setUploadProgress(0);
       const errorInfo = parseUploadError(err);
       showError(errorInfo.message, errorInfo.title, { 
         duration: 10000,
@@ -180,28 +194,23 @@ const KnowledgeBaseModal = ({ bot, setShowModal }) => {
 
   // Poll job status every 2 seconds
   const pollJobStatus = async (jobId, token) => {
-    console.log('🔄 Starting to poll job:', jobId);
     const maxAttempts = 150; // 5 minutes max (150 * 2 seconds)
     let attempts = 0;
 
     const poll = async () => {
       try {
-        console.log(`🔍 Polling attempt ${attempts + 1} for job ${jobId}`);
         const response = await axios.get(
           `${API_URL}/api/knowledge/${bot.id}/job/${jobId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
         const jobData = response.data.data;
-        console.log('📊 Job status update:', jobData);
 
         // Update job in list
         setUploadJobs(prev => {
-          const updated = prev.map(job =>
+          return prev.map(job =>
             job.jobId === jobId ? { ...job, ...jobData } : job
           );
-          console.log('📊 Jobs after update:', updated);
-          return updated;
         });
 
         // If completed or failed, stop polling
@@ -267,8 +276,6 @@ const KnowledgeBaseModal = ({ bot, setShowModal }) => {
       const response = await axios.delete(`${API_URL}/api/knowledge/${bot.id}/document/${documentId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      
-      console.log('🗑️ Delete response:', response.data);
       
       // Update local state immediately
       setDocuments(prev => prev.filter(doc => doc.id !== documentId));
@@ -361,7 +368,7 @@ const KnowledgeBaseModal = ({ bot, setShowModal }) => {
               <Upload size={18} />Upload Document
             </h3>
             <div
-              className={`border-2 border-dashed p-8 text-center transition-all ${dragActive ? 'border-black bg-nb-yellow/30' : 'border-gray-400 hover:border-black hover:bg-gray-50'}`}
+              className={`border-2 border-dashed p-8 text-center transition-all duration-300 ${dragActive ? 'border-black bg-nb-yellow/30' : uploadStage ? 'border-black bg-nb-yellow/10' : 'border-gray-400 hover:border-black hover:bg-gray-50'}`}
               onDragEnter={handleDrag} onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={handleDrop}
             >
               {selectedFile ? (
@@ -371,13 +378,36 @@ const KnowledgeBaseModal = ({ bot, setShowModal }) => {
                     <p className="font-bold text-nb-text">{selectedFile.name}</p>
                     <p className="text-nb-muted text-sm">{formatFileSize(selectedFile.size)}</p>
                   </div>
-                  <div className="flex gap-3 justify-center">
-                    <button onClick={handleUpload} disabled={uploading}
-                      className="nb-btn bg-black text-white border-black px-5 py-2 disabled:opacity-50 disabled:shadow-none disabled:translate-x-0 disabled:translate-y-0">
-                      {uploading ? <><Loader2 size={14} className="animate-spin" />Uploading...</> : <><Upload size={14} />Upload</>}
-                    </button>
-                    <button onClick={() => setSelectedFile(null)} className="nb-btn bg-white px-5 py-2">Cancel</button>
-                  </div>
+                  
+                  {/* Upload progress indicator */}
+                  {uploadStage && (
+                    <div className="space-y-2 max-w-xs mx-auto">
+                      <div className="w-full bg-gray-200 border-2 border-black h-3 overflow-hidden">
+                        <div
+                          className={`h-full transition-all duration-500 ease-out ${
+                            uploadStage === 'received' ? 'bg-green-400' : 
+                            uploadStage === 'processing' ? 'bg-nb-purple' : 'bg-nb-yellow'
+                          }`}
+                          style={{ width: `${uploadProgress}%` }}
+                        />
+                      </div>
+                      <p className="text-sm font-bold text-nb-text">
+                        {uploadStage === 'uploading' && `Uploading... ${uploadProgress}%`}
+                        {uploadStage === 'received' && '✓ File received! Starting processing...'}
+                        {uploadStage === 'processing' && 'Handing off to processor...'}
+                      </p>
+                    </div>
+                  )}
+                  
+                  {!uploadStage && (
+                    <div className="flex gap-3 justify-center">
+                      <button onClick={handleUpload} disabled={uploading}
+                        className="nb-btn bg-black text-white border-black px-5 py-2 disabled:opacity-50 disabled:shadow-none disabled:translate-x-0 disabled:translate-y-0">
+                        <Upload size={14} />Upload
+                      </button>
+                      <button onClick={() => setSelectedFile(null)} className="nb-btn bg-white px-5 py-2">Cancel</button>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="space-y-3">
