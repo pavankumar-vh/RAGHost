@@ -10,6 +10,8 @@ import {
   uploadDocumentHeadless,
   getUploadStatus,
   listDocuments,
+  getDocumentChunksV1,
+  deleteDocumentV1,
 } from '../controllers/v1Controller.js';
 
 const router = express.Router();
@@ -26,5 +28,7 @@ router.post('/query', authenticateApiKey('query'), queryBot);
 router.post('/documents/upload', authenticateApiKey('upload'), upload.single('document'), uploadDocumentHeadless);
 router.get('/documents/status/:jobId', authenticateApiKey('upload'), getUploadStatus);
 router.get('/documents', authenticateApiKey('upload'), listDocuments);
+router.get('/documents/:documentId/chunks', authenticateApiKey('upload'), getDocumentChunksV1);
+router.delete('/documents/:documentId', authenticateApiKey('upload'), deleteDocumentV1);
 
 export default router;

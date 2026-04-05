@@ -6,7 +6,7 @@ import UploadJob from '../models/UploadJob.js';
 import { decrypt } from '../utils/encryption.js';
 import { queryPinecone } from '../services/pineconeService.js';
 import { generateResponse } from '../services/geminiService.js';
-import { processAndUploadDocument, deleteDocumentFromPinecone } from '../services/embeddingService.js';
+import { processAndUploadDocument, deleteDocumentFromPinecone, chunkText } from '../services/embeddingService.js';
 import { sanitizeString, isValidObjectId } from '../middleware/inputValidation.js';
 import fs from 'fs';
 import path from 'path';
@@ -532,5 +532,115 @@ export const listDocuments = async (req, res) => {
   } catch (error) {
     console.error('List documents error:', error);
     res.status(500).json({ success: false, error: 'Failed to list documents.' });
+  }
+};
+
+/**
+ * @route   GET /api/v1/documents/:documentId/chunks
+ * @desc    Get chunks for a specific document
+ * @access  API Key (scope: upload)
+ */
+export const getDocumentChunksV1 = async (req, res) => {
+  try {
+    const bot = req.bot;
+    const userId = req.user.uid;
+    const { documentId } = req.params;
+
+    if (!documentId || !isValidObjectId(documentId)) {
+      return res.status(400).json({ success: false, error: 'Invalid document ID.' });
+    }
+
+    const kb = await KnowledgeBase.findOne({ botId: bot._id, userId });
+    if (!kb) {
+      return res.status(404).json({ success: false, error: 'Knowledge base not found.' });
+    }
+
+    const document = kb.documents.find(doc => doc._id.toString() === documentId);
+    if (!document) {
+      return res.status(404).json({ success: false, error: 'Document not found.' });
+    }
+
+    const chunks = chunkText(document.content);
+
+    res.json({
+      success: true,
+      data: {
+        documentId: document._id,
+        filename: document.originalName,
+        fileType: document.fileType,
+        chunkCount: chunks.length,
+        chunks: chunks.map((text, index) => ({
+          index,
+          text,
+          charCount: text.length,
+        })),
+      },
+    });
+  } catch (error) {
+    console.error('Get document chunks error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch document chunks.' });
+  }
+};
+
+/**
+ * @route   DELETE /api/v1/documents/:documentId
+ * @desc    Delete a document and its vectors from Pinecone
+ * @access  API Key (scope: upload)
+ */
+export const deleteDocumentV1 = async (req, res) => {
+  try {
+    const bot = req.bot;
+    const userId = req.user.uid;
+    const { documentId } = req.params;
+
+    if (!documentId || !isValidObjectId(documentId)) {
+      return res.status(400).json({ success: false, error: 'Invalid document ID.' });
+    }
+
+    const kb = await KnowledgeBase.findOne({ botId: bot._id, userId });
+    if (!kb) {
+      return res.status(404).json({ success: false, error: 'Knowledge base not found.' });
+    }
+
+    const document = kb.documents.find(doc => doc._id.toString() === documentId);
+    if (!document) {
+      return res.status(404).json({ success: false, error: 'Document not found.' });
+    }
+
+    // Remove from MongoDB
+    kb.documents = kb.documents.filter(doc => doc._id.toString() !== documentId);
+    kb.totalDocuments = kb.documents.length;
+    kb.totalChunks = kb.documents.reduce((sum, doc) => sum + doc.chunkCount, 0);
+    kb.lastUpdated = new Date();
+    await kb.save();
+
+    // Delete vectors from Pinecone in background
+    const pineconeKey = decrypt(bot.pineconeKey);
+    const pineconeHost = bot.pineconeEnvironment;
+
+    deleteDocumentFromPinecone({
+      documentId,
+      filename: document.originalName,
+      chunkCount: document.chunkCount || 0,
+      pineconeKey,
+      pineconeHost,
+    })
+      .then((result) => console.log(`✅ V1: Deleted ${result.deletedCount} vectors for ${documentId}`))
+      .catch(error => console.error(`❌ V1: Failed to delete from Pinecone:`, error));
+
+    res.json({
+      success: true,
+      message: 'Document deleted successfully.',
+      data: {
+        documentId,
+        filename: document.originalName,
+        deletedChunks: document.chunkCount,
+        totalDocuments: kb.totalDocuments,
+        totalChunks: kb.totalChunks,
+      },
+    });
+  } catch (error) {
+    console.error('Delete document error:', error);
+    res.status(500).json({ success: false, error: 'Failed to delete document.' });
   }
 };
