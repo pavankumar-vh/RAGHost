@@ -439,20 +439,33 @@ const KnowledgeBaseModal = ({ bot, setShowModal }) => {
                 <p className="text-nb-muted font-medium">No documents uploaded yet</p>
               </div>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {documents.map((doc) => (
-                  <div key={doc._id} className="flex items-center justify-between p-3 border-2 border-black bg-nb-bg hover:bg-nb-yellow/20 transition-colors">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <div className="text-2xl">{getFileIcon(doc.fileType)}</div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-bold text-nb-text truncate text-sm">{doc.originalName}</p>
-                        <p className="text-nb-muted text-xs">{doc.chunkCount} chunks · {new Date(doc.uploadedAt).toLocaleDateString()}</p>
+                  <div key={doc._id} className="border-2 border-black bg-nb-bg hover:bg-nb-yellow/10 transition-colors">
+                    <div className="flex items-center justify-between p-3">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="text-2xl">{getFileIcon(doc.fileType)}</div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-nb-text truncate text-sm">{doc.originalName}</p>
+                          <p className="text-nb-muted text-xs">{new Date(doc.uploadedAt).toLocaleDateString()}</p>
+                        </div>
                       </div>
+                      <button onClick={() => setConfirmDialog({ isOpen: true, documentId: doc._id })}
+                        className="nb-btn bg-white p-2 hover:bg-red-100 hover:border-red-500 hover:text-red-600">
+                        <Trash2 size={14} />
+                      </button>
                     </div>
-                    <button onClick={() => setConfirmDialog({ isOpen: true, documentId: doc._id })}
-                      className="nb-btn bg-white p-2 hover:bg-red-100 hover:border-red-500 hover:text-red-600">
-                      <Trash2 size={14} />
-                    </button>
+                    <div className="flex items-center gap-3 px-3 pb-3 ml-11">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-bold border border-black bg-nb-blue/20 text-nb-text">
+                        📦 {doc.chunkCount} chunks
+                      </span>
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-bold border border-black bg-nb-purple/20 text-nb-text">
+                        📌 {doc.chunkCount} vectors in Pinecone
+                      </span>
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-bold border border-black bg-gray-100 text-nb-muted uppercase">
+                        {doc.fileType}
+                      </span>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -466,7 +479,12 @@ const KnowledgeBaseModal = ({ bot, setShowModal }) => {
         onClose={() => setConfirmDialog({ isOpen: false, documentId: null })}
         onConfirm={() => handleDelete(confirmDialog.documentId)}
         title="Delete Document?"
-        message="Are you sure you want to delete this document? This will permanently remove it from your knowledge base and delete all associated vectors from Pinecone."
+        message={(() => {
+          const doc = documents.find(d => d._id === confirmDialog.documentId);
+          return doc
+            ? `This will permanently delete "${doc.originalName}" (${doc.chunkCount} chunks, ${doc.chunkCount} vectors) from your knowledge base and Pinecone.`
+            : 'This will permanently remove the document and all associated vectors from Pinecone.';
+        })()}
         confirmText="Delete" cancelText="Cancel" type="warning" danger={true}
       />
     </div>

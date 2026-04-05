@@ -362,13 +362,13 @@ export const deleteDocument = async (req, res) => {
       const pineconeHost = bot.pineconeEnvironment;
       
       deleteDocumentFromPinecone({
-        documentId: documentId,
+        documentId,
+        filename: document.originalName,
+        chunkCount: document.chunkCount || 0,
         pineconeKey,
-        environment: bot.pineconeEnvironment,
-        indexName: bot.pineconeIndexName,
         pineconeHost,
       })
-        .then(() => console.log(`✅ Document vectors deleted from Pinecone: ${documentId}`))
+        .then((result) => console.log(`✅ Deleted ${result.deletedCount} vectors from Pinecone: ${documentId}`))
         .catch(error => console.error(`❌ Failed to delete from Pinecone:`, error));
     }
 

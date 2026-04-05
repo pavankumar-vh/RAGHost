@@ -287,40 +287,46 @@ export const processAndUploadDocument = async ({
 
 /**
  * Delete document vectors from Pinecone
+ * Uses explicit vector IDs (works on all index types including pod-based/starter)
  * @param {Object} config - Configuration
  * @param {string} config.documentId - Document ID to delete
+ * @param {string} config.filename - Original filename used when uploading
+ * @param {number} config.chunkCount - Number of chunks the document was split into
  * @param {string} config.pineconeKey - Pinecone API key
- * @param {string} config.environment - Pinecone environment
- * @param {string} config.indexName - Index name
+ * @param {string} config.pineconeHost - Pinecone host URL
  * @returns {Promise<Object>} - Delete result
  */
-export const deleteDocumentFromPinecone = async ({ documentId, pineconeKey, environment, indexName, pineconeHost }) => {
+export const deleteDocumentFromPinecone = async ({ documentId, filename, chunkCount, pineconeKey, pineconeHost }) => {
   try {
-    // Use pineconeHost directly
     const url = `${pineconeHost}/vectors/delete`;
 
-    // Delete all vectors with this documentId prefix
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Api-Key': pineconeKey,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        filter: {
-          documentId: { $eq: documentId }
-        },
-      }),
-    });
+    // Construct exact vector IDs from the known pattern: {filename}-{documentId}-{index}
+    const ids = Array.from({ length: chunkCount }, (_, i) => `${filename}-${documentId}-${i}`);
 
-    if (!response.ok) {
-      const error = await response.text();
-      console.error('Pinecone delete error:', error);
-      throw new Error(`Pinecone delete failed: ${response.status}`);
+    // Pinecone allows max 1000 IDs per delete request
+    const batchSize = 1000;
+    for (let i = 0; i < ids.length; i += batchSize) {
+      const batch = ids.slice(i, i + batchSize);
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Api-Key': pineconeKey,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ids: batch }),
+      });
+
+      if (!response.ok) {
+        const error = await response.text();
+        console.error('Pinecone delete error:', error);
+        throw new Error(`Pinecone delete failed: ${response.status}`);
+      }
     }
 
+    console.log(`Deleted ${ids.length} vectors from Pinecone for document ${documentId}`);
     return {
       success: true,
+      deletedCount: ids.length,
       message: 'Document vectors deleted from Pinecone',
     };
   } catch (error) {
