@@ -280,8 +280,8 @@ export const getKnowledgeBase = async (req, res) => {
 
     // Return without full content (just metadata)
     const documentsMetadata = knowledgeBase.documents.map(doc => ({
-      id: doc._id,
-      filename: doc.originalName,
+      _id: doc._id,
+      originalName: doc.originalName,
       fileType: doc.fileType,
       chunkCount: doc.chunkCount,
       contentPreview: doc.content.substring(0, 200) + '...',

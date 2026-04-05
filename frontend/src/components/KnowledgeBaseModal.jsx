@@ -280,7 +280,7 @@ const KnowledgeBaseModal = ({ bot, setShowModal }) => {
       });
       
       // Update local state immediately
-      setDocuments(prev => prev.filter(doc => doc.id !== documentId));
+      setDocuments(prev => prev.filter(doc => doc._id !== documentId));
       
       showSuccess(
         'Document and its vectors have been deleted successfully.',
