@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Upload, FileText, Loader2, CheckCircle2, XCircle, Trash2, Database, FileIcon } from 'lucide-react';
+import { X, Upload, FileText, Loader2, CheckCircle2, XCircle, Trash2, Database, FileIcon, ChevronDown, ChevronRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
 import { setAuthToken } from '../services/api';
@@ -24,6 +24,8 @@ const KnowledgeBaseModal = ({ bot, setShowModal }) => {
   const [uploadProgress, setUploadProgress] = useState(0); // HTTP upload progress 0-100
   const [uploadStage, setUploadStage] = useState(null); // null | 'uploading' | 'received' | 'processing'
   const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, documentId: null });
+  const [expandedDoc, setExpandedDoc] = useState(null); // documentId or null
+  const [docChunks, setDocChunks] = useState({}); // { [documentId]: { loading, chunks } }
 
   useEffect(() => {
     fetchKnowledgeBase();
@@ -323,6 +325,30 @@ const KnowledgeBaseModal = ({ bot, setShowModal }) => {
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
 
+  const toggleChunks = async (documentId) => {
+    if (expandedDoc === documentId) {
+      setExpandedDoc(null);
+      return;
+    }
+    setExpandedDoc(documentId);
+
+    // Already fetched
+    if (docChunks[documentId]?.chunks) return;
+
+    // Fetch chunks
+    setDocChunks(prev => ({ ...prev, [documentId]: { loading: true, chunks: null } }));
+    try {
+      const token = await getIdToken();
+      const response = await axios.get(`${API_URL}/api/knowledge/${bot.id}/document/${documentId}/chunks`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setDocChunks(prev => ({ ...prev, [documentId]: { loading: false, chunks: response.data.data.chunks } }));
+    } catch (err) {
+      console.error('Failed to fetch chunks:', err);
+      setDocChunks(prev => ({ ...prev, [documentId]: { loading: false, chunks: null, error: true } }));
+    }
+  };
+
   return (
     <div
       className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 overflow-y-auto"
@@ -440,16 +466,20 @@ const KnowledgeBaseModal = ({ bot, setShowModal }) => {
               </div>
             ) : (
               <div className="space-y-3">
-                {documents.map((doc) => (
-                  <div key={doc._id} className="border-2 border-black bg-nb-bg hover:bg-nb-yellow/10 transition-colors">
-                    <div className="flex items-center justify-between p-3">
-                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                {documents.map((doc) => {
+                  const isExpanded = expandedDoc === doc._id;
+                  const chunkData = docChunks[doc._id];
+                  return (
+                  <div key={doc._id} className="border-2 border-black bg-nb-bg transition-colors">
+                    <div className="flex items-center justify-between p-3 hover:bg-nb-yellow/10 transition-colors">
+                      <button onClick={() => toggleChunks(doc._id)} className="flex items-center gap-3 flex-1 min-w-0 text-left">
+                        {isExpanded ? <ChevronDown size={16} className="flex-shrink-0" /> : <ChevronRight size={16} className="flex-shrink-0" />}
                         <div className="text-2xl">{getFileIcon(doc.fileType)}</div>
                         <div className="flex-1 min-w-0">
                           <p className="font-bold text-nb-text truncate text-sm">{doc.originalName}</p>
                           <p className="text-nb-muted text-xs">{new Date(doc.uploadedAt).toLocaleDateString()}</p>
                         </div>
-                      </div>
+                      </button>
                       <button onClick={() => setConfirmDialog({ isOpen: true, documentId: doc._id })}
                         className="nb-btn bg-white p-2 hover:bg-red-100 hover:border-red-500 hover:text-red-600">
                         <Trash2 size={14} />
@@ -460,14 +490,44 @@ const KnowledgeBaseModal = ({ bot, setShowModal }) => {
                         📦 {doc.chunkCount} chunks
                       </span>
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-bold border border-black bg-nb-purple/20 text-nb-text">
-                        📌 {doc.chunkCount} vectors in Pinecone
+                        📌 {doc.chunkCount} vectors
                       </span>
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-bold border border-black bg-gray-100 text-nb-muted uppercase">
                         {doc.fileType}
                       </span>
                     </div>
+
+                    {/* Expandable Chunks */}
+                    {isExpanded && (
+                      <div className="border-t-2 border-black bg-white px-3 py-3">
+                        {chunkData?.loading ? (
+                          <div className="flex items-center justify-center py-6">
+                            <Loader2 size={18} className="animate-spin text-nb-muted" />
+                            <span className="ml-2 text-sm text-nb-muted">Loading chunks...</span>
+                          </div>
+                        ) : chunkData?.error ? (
+                          <p className="text-sm text-red-500 py-3">Failed to load chunks.</p>
+                        ) : chunkData?.chunks ? (
+                          <div className="space-y-2 max-h-64 overflow-y-auto">
+                            <p className="text-xs font-bold text-nb-muted mb-2">
+                              {chunkData.chunks.length} chunks from "{doc.originalName}"
+                            </p>
+                            {chunkData.chunks.map((chunk) => (
+                              <div key={chunk.index} className="border border-black bg-nb-bg p-2.5 text-xs">
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className="font-bold text-nb-text">Chunk #{chunk.index + 1}</span>
+                                  <span className="text-nb-muted">{chunk.charCount} chars</span>
+                                </div>
+                                <p className="text-nb-muted leading-relaxed break-words whitespace-pre-wrap">{chunk.text}</p>
+                              </div>
+                            ))}
+                          </div>
+                        ) : null}
+                      </div>
+                    )}
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

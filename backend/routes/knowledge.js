@@ -3,6 +3,7 @@ import upload from '../config/multer.js';
 import {
   uploadDocument,
   getKnowledgeBase,
+  getDocumentChunks,
   deleteDocument,
   searchKnowledgeBase,
   getJobStatus,
@@ -23,6 +24,9 @@ router.get('/:botId/job/:jobId', getJobStatus);
 
 // Search knowledge base
 router.get('/:botId/search', searchKnowledgeBase);
+
+// Get chunks for a specific document
+router.get('/:botId/document/:documentId/chunks', getDocumentChunks);
 
 // Delete document from knowledge base
 router.delete('/:botId/document/:documentId', deleteDocument);

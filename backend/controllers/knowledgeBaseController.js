@@ -6,7 +6,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
-import { processAndUploadDocument, deleteDocumentFromPinecone } from '../services/embeddingService.js';
+import { processAndUploadDocument, deleteDocumentFromPinecone, chunkText } from '../services/embeddingService.js';
 import { decrypt } from '../utils/encryption.js';
 
 const require = createRequire(import.meta.url);
@@ -303,6 +303,58 @@ export const getKnowledgeBase = async (req, res) => {
       success: false,
       error: 'Failed to fetch knowledge base',
     });
+  }
+};
+
+/**
+ * @route   GET /api/knowledge/:botId/document/:documentId/chunks
+ * @desc    Get chunks for a specific document
+ * @access  Private
+ */
+export const getDocumentChunks = async (req, res) => {
+  try {
+    const userId = req.user.uid;
+    const { botId, documentId } = req.params;
+
+    const bot = await Bot.findOne({ _id: botId, userId });
+    if (!bot) {
+      return res.status(404).json({ success: false, error: 'Bot not found' });
+    }
+
+    if (!documentId || !mongoose.Types.ObjectId.isValid(documentId)) {
+      return res.status(400).json({ success: false, error: 'Invalid document ID' });
+    }
+
+    const knowledgeBase = await KnowledgeBase.findOne({ botId, userId });
+    if (!knowledgeBase) {
+      return res.status(404).json({ success: false, error: 'Knowledge base not found' });
+    }
+
+    const document = knowledgeBase.documents.find(doc => doc._id.toString() === documentId);
+    if (!document) {
+      return res.status(404).json({ success: false, error: 'Document not found' });
+    }
+
+    // Re-chunk using the same function used during upload
+    const chunks = chunkText(document.content);
+
+    res.json({
+      success: true,
+      data: {
+        documentId: document._id,
+        filename: document.originalName,
+        fileType: document.fileType,
+        chunkCount: chunks.length,
+        chunks: chunks.map((text, index) => ({
+          index,
+          text,
+          charCount: text.length,
+        })),
+      },
+    });
+  } catch (error) {
+    console.error('Get document chunks error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch document chunks' });
   }
 };
 
