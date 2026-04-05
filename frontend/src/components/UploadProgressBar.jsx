@@ -138,6 +138,27 @@ const UploadProgressBar = ({ job }) => {
           <p className="text-xs font-bold text-nb-text">{progress.percentage}%</p>
         )}
       </div>
+
+      {/* Chunk & Vector Stats */}
+      {(progress.chunksCreated || progress.vectorsUploaded) && (
+        <div className="flex gap-3 mt-2 pt-2 border-t border-gray-200">
+          {progress.chunksCreated > 0 && (
+            <span className="text-[11px] font-bold text-nb-muted">
+              📦 {progress.chunksCreated} chunks
+            </span>
+          )}
+          {progress.chunksEmbedded > 0 && (
+            <span className="text-[11px] font-bold text-nb-muted">
+              🧠 {progress.chunksEmbedded}/{progress.chunksCreated} embedded
+            </span>
+          )}
+          {progress.vectorsUploaded > 0 && (
+            <span className="text-[11px] font-bold text-nb-muted">
+              📤 {progress.vectorsUploaded}/{progress.vectorsTotal} uploaded
+            </span>
+          )}
+        </div>
+      )}
     </div>
   );
 };

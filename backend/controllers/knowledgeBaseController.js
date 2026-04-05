@@ -150,7 +150,7 @@ export const uploadDocument = async (req, res) => {
     const pineconeHost = bot.pineconeEnvironment;
 
     // Progress callback to update job status
-    const updateProgress = async (status, percentage, message) => {
+    const updateProgress = async (status, percentage, message, meta = {}) => {
       try {
         await UploadJob.findByIdAndUpdate(uploadJob._id, {
           status,
@@ -159,10 +159,10 @@ export const uploadDocument = async (req, res) => {
             total: 100,
             percentage,
             message,
+            ...meta,
           },
           updatedAt: new Date(),
         });
-        console.log(`� Job ${uploadJob._id}: ${status} - ${percentage}% - ${message}`);
       } catch (error) {
         console.error('Failed to update job progress:', error);
       }

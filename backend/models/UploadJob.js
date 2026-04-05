@@ -47,6 +47,10 @@ const uploadJobSchema = new mongoose.Schema({
       type: String,
       default: 'Initializing...',
     },
+    chunksCreated: Number,
+    chunksEmbedded: Number,
+    vectorsUploaded: Number,
+    vectorsTotal: Number,
   },
   result: {
     chunksProcessed: Number,

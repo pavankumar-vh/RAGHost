@@ -399,11 +399,11 @@ export const uploadDocumentHeadless = async (req, res) => {
     const geminiKey = decrypt(bot.geminiKey);
     const pineconeHost = bot.pineconeEnvironment;
 
-    const updateProgress = async (status, percentage, message) => {
+    const updateProgress = async (status, percentage, message, meta = {}) => {
       try {
         await UploadJob.findByIdAndUpdate(uploadJob._id, {
           status,
-          progress: { current: percentage, total: 100, percentage, message },
+          progress: { current: percentage, total: 100, percentage, message, ...meta },
           updatedAt: new Date(),
         });
       } catch (err) {
