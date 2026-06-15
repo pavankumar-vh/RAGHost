@@ -205,9 +205,13 @@ export const uploadDocument = async (req, res) => {
           updatedAt: new Date(),
         });
 
-        // Update knowledge base chunk count
+        // Update knowledge base chunk count with actual number processed
         const kb = await KnowledgeBase.findOne({ botId, userId });
         if (kb) {
+          const docIndex = kb.documents.findIndex(d => d._id.toString() === documentId.toString());
+          if (docIndex !== -1) {
+            kb.documents[docIndex].chunkCount = result.chunksProcessed;
+          }
           kb.totalChunks = kb.documents.reduce((sum, doc) => sum + doc.chunkCount, 0);
           await kb.save();
         }
