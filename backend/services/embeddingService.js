@@ -233,7 +233,7 @@ export const processAndUploadDocument = async ({
     if (onProgress) await onProgress('embedding', 70, `Generated ${embeddings.length} embeddings`, { chunksCreated: chunks.length, chunksEmbedded: embeddings.length });
 
     // Step 3: Prepare vectors for Pinecone
-    if (onProgress) await onProgress('uploading', 75, `Preparing ${vectors.length} vectors for upload...`, { chunksCreated: chunks.length, chunksEmbedded: embeddings.length });
+    if (onProgress) await onProgress('uploading', 75, `Preparing ${chunks.length} vectors for upload...`, { chunksCreated: chunks.length, chunksEmbedded: embeddings.length });
     console.log(`   📦 Step 3/4: Preparing vectors for Pinecone upsert...`);
     const vectors = chunks.map((chunk, i) => ({
       id: `${filename}-${documentId}-${i}`,
